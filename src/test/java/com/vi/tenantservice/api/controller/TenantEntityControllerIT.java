@@ -14,7 +14,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 @SpringBootTest(classes = TenantServiceApplication.class)
 @AutoConfigureMockMvc(addFilters = false)
-public class TenantControllerIT {
+public class TenantEntityControllerIT {
 
   public static final String TENANT_CREATE = "/tenant/create";
   public static final String USER_IDS_PARAM = "userIds";

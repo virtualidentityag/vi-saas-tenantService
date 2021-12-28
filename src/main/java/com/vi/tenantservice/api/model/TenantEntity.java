@@ -57,4 +57,7 @@ public class TenantEntity {
   @Column(name = "create_date", nullable = false)
   private LocalDateTime createDate;
 
+  @Column(name = "update_date", nullable = false)
+  private LocalDateTime updateDate;
+
 }

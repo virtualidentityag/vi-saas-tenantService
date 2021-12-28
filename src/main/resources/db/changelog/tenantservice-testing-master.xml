@@ -6,4 +6,5 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
                       
 <!-- PLEASE LEAVE THIS FILE EMPTY -->
+
 </databaseChangeLog>

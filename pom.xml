@@ -69,7 +69,6 @@
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
-            <scope>test</scope>
         </dependency>
 
 
@@ -181,6 +180,12 @@
             <version>4.3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.21.0</version>
+            <scope>test</scope>
+        </dependency>
 
     </dependencies>
 
@@ -234,9 +239,9 @@
                         <configuration>
                             <configLocation>google_checks_light.xml</configLocation>
                             <encoding>UTF-8</encoding>
-                            <failsOnError>true</failsOnError>
+                            <failsOnError>false</failsOnError>
                             <consoleOutput>true</consoleOutput>
-                            <failOnViolation>true</failOnViolation>
+                            <failOnViolation>false</failOnViolation>
                             <logViolationsToConsole>true</logViolationsToConsole>
                             <violationSeverity>warning</violationSeverity>
                             <includeTestSourceDirectory>true</includeTestSourceDirectory>

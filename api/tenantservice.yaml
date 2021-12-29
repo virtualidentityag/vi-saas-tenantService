@@ -1,12 +1,12 @@
 openapi: 3.0.1
 
 info:
-  title: will be replaced
+  title: Definition for Tenant API
   description: This information will be replaced by the SpringFox config information
   version: 0.0.1
 
 paths:
-  /tenant/create:
+  /tenant:
     post:
       tags:
         - tenant-controller
@@ -16,82 +16,131 @@ paths:
         content:
           'application/json':
             schema:
-              $ref: '#/components/schemas/CreateTenantMessage'
+              $ref: '#/components/schemas/TenantDTO'
       responses:
         200:
-          description: OK - successfull operation
+          description: OK - successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantDTO'
         400:
           description: BAD REQUEST - invalid/incomplete request or body object
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
-
+  /tenant/{id}:
+      summary: Represents a tenant
+      description: This resource represents an individual tenant in a system.
+      get:
+        tags:
+          - tenant-controller
+        summary: Gets a tenant
+        operationId: getTenantById
+        parameters:
+          - name: id
+            in: path
+            description: Tenant ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+        responses:
+           200:
+             description: Successful operation
+             content:
+               application/json:
+                 schema:
+                   $ref: '#/components/schemas/TenantDTO'
+           404:
+             description: Not found
+           400:
+             description: BAD REQUEST - invalid/incomplete request or body object
+           500:
+             description: INTERNAL SERVER ERROR - server encountered unexpected condition
+      put:
+        tags:
+          - tenant-controller
+        summary: Updates tenant
+        operationId: updateTenant
+        parameters:
+          - name: id
+            in: path
+            description: Tenant ID
+            required: true
+            schema:
+              type: integer
+              format: int64
+        requestBody:
+          content:
+            'application/json':
+              schema:
+                $ref: '#/components/schemas/TenantDTO'
+        responses:
+          200:
+            description: OK - successfull operation
+          400:
+            description: BAD REQUEST - invalid/incomplete request or body object
+          500:
+            description: INTERNAL SERVER ERROR - server encountered unexpected condition
 components:
   schemas:
-    CreateTenantMessage:
+    TenantDTO:
       type: object
       required:
+        - id
         - name
-        - domain
+        - subdomain
       properties:
-        eventType:
-          $ref: '#/components/schemas/EventType'
-        userIds:
-          type: array
-          items:
-            type: string
-        eventContent:
-          $ref: '#/components/schemas/EventContent'
-
-    EventType:
-      type: string
-      enum:
-        - "anonymousEnquiryAccepted"
-        - "anonymousConversationFinished"
-        - "directMessage"
-        - "newAnonymousEnquiry"
-        - "videoCallRequest"
-        - "videoCallDeny"
-
-    StatusSource:
+        id:
+          type: long
+          example: 12132
+        name:
+          type: string
+          example: "Company name AG"
+          maxLength: 100
+        subdomain:
+          type: string
+          example: "companyname"
+          maxLength: 100
+        licensing:
+          $ref: '#/components/schemas/Licensing'
+        theming:
+          $ref:
+            '#/components/schemas/Theming'
+        content:
+          $ref:
+            '#/components/schemas/Content'
+    Licensing:
       type: object
       required:
-        - finishConversationPhase
+        - allowedNumberOfUsers
       properties:
-        finishConversationPhase:
+        allowedNumberOfUsers:
+          type: integer
+          example: 1
+    Theming:
+      type: object
+      properties:
+        logo:
           type: string
-          description: "represents the session status of the anonymous conversation where the
-          anonymousConversationFinished event has been triggered"
-          enum:
-            - "NEW"
-            - "IN_PROGRESS"
-
-    EventContent:
-      description: general used object for all possible incoming DTOs used for socket transfer
-      type:
-        object
-
-    VideoCallRequestDTO:
-      description: the request DTO for event type videoCallRequest
+          example: "base64 encoded image"
+        favicon:
+          type: string
+          example: "base64 encoded image"
+        primaryColor:
+          type: string
+          example: "#FFFFFF"
+        secondaryColor:
+          type: string
+          example: "#FFFFFF"
+    Content:
       type: object
       required:
-        - videoCallUrl
-        - initiatorUsername
-        - initiatorRcUserId
-        - rcGroupId
+        - impressum
       properties:
-        videoCallUrl:
+        impressum:
           type: string
-          example: video.domain.com/44c7644a-5977-11eb-ae93-0242ac130002
-          description: The url of the video server
-        initiatorUsername:
+          example: "Llorem ipsum..."
+        claim:
           type: string
-          example: consultant
-          description: The username of the calling user
-        initiatorRcUserId:
-          type: string
-          example: "ag89h3tjkerg94t"
-          description: The Rocket.Chat user id of the calling user
-        rcGroupId:
-          type: string
-          example: "xGklslk2JJKK"
-          description: The Rocket.Chat room id of the session
+          example: "Llorem ipsum..."

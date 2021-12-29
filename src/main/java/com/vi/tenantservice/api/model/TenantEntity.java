@@ -3,10 +3,7 @@ package com.vi.tenantservice.api.model;
 import javax.persistence.*;
 import java.time.LocalDateTime;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(name = "tenant")
@@ -14,14 +11,12 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
+@EqualsAndHashCode
 public class TenantEntity {
 
   @Id
-  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "tenant_generator")
-  @SequenceGenerator(name="tenant_generator", sequenceName = "SEQUENCE_TENANT", allocationSize=1)
- // @SequenceGenerator(name = "id_seq", allocationSize = 1, sequenceName = "SEQUENCE_TENANT")
- // @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_seq")
-
+  @SequenceGenerator(name = "id_seq", allocationSize = 1, sequenceName = "SEQUENCE_TENANT")
+  @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "id_seq")
   @Column(name = "id", updatable = false, nullable = false)
   private Long id;
 
@@ -32,7 +27,7 @@ public class TenantEntity {
   private String subdomain;
 
   @Column(name = "licensing_allowed_users")
-  private Integer licensingAllowedUsers;
+  private Integer licensingAllowedNumberOfUsers;
 
   @Column(name = "theming_logo")
   private String themingLogo;

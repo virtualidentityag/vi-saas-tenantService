@@ -21,46 +21,52 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @KeycloakConfiguration
 public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
-  /**
-   * Configures the basic http security behavior.
-   *
-   * @param http springs http security
-   */
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http
-        .csrf().disable()
-        .authenticationProvider(keycloakAuthenticationProvider())
-        .addFilterBefore(keycloakAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
-        .and()
-        .authorizeRequests()
-        .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
-        .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/live"))).permitAll()
-        .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/live/**")))
-        .permitAll();
-  }
+    /**
+     * Configures the basic http security behavior.
+     *
+     * @param http springs http security
+     */
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authenticationProvider(keycloakAuthenticationProvider())
+                .addFilterBefore(keycloakAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
+                .and()
+                .authorizeRequests()
+                .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant"))).permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**")))
+                .permitAll()
+                .and()
+                .headers()
+                .xssProtection()
+                .and()
+                .contentSecurityPolicy("script-src 'self'")
+                .and();
+    }
 
-  /**
-   * Provides the authentication strategy.
-   *
-   * @return the configured {@link SessionAuthenticationStrategy}
-   */
-  @Override
-  protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-    return new NullAuthenticatedSessionStrategy();
-  }
+    /**
+     * Provides the authentication strategy.
+     *
+     * @return the configured {@link SessionAuthenticationStrategy}
+     */
+    @Override
+    protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+        return new NullAuthenticatedSessionStrategy();
+    }
 
-  /**
-   * Provides the keycloak configuration resolver bean.
-   *
-   * @return the configured {@link KeycloakConfigResolver}
-   */
-  @Bean
-  public KeycloakConfigResolver keycloakConfigResolver() {
-    return new KeycloakSpringBootConfigResolver();
-  }
+    /**
+     * Provides the keycloak configuration resolver bean.
+     *
+     * @return the configured {@link KeycloakConfigResolver}
+     */
+    @Bean
+    public KeycloakConfigResolver keycloakConfigResolver() {
+        return new KeycloakSpringBootConfigResolver();
+    }
 
 }

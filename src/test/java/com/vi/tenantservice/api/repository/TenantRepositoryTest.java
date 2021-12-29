@@ -21,6 +21,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DataJpaTest
 public class TenantRepositoryTest {
 
+    private static final long EXISTING_ID = 1L;
+
     @Autowired
     private TenantRepository tenantRepository;
 
@@ -35,7 +37,7 @@ public class TenantRepositoryTest {
     @Test
     public void shouldRemoveTenantById() {
         // given, when
-        tenantRepository.deleteById(1L);
+        tenantRepository.deleteById(EXISTING_ID);
         Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
         // then
         assertThat(tenantEntity).isNotPresent();
@@ -57,5 +59,23 @@ public class TenantRepositoryTest {
         // then
         assertThat(tenantEntity).isPresent();
         assertThat(tenantEntity.get()).isEqualTo(entity);
+    }
+
+    @Test
+    public void shouldUpdateTenant() {
+        // given
+        TenantEntity tenant = tenantRepository.findById(EXISTING_ID).get();
+
+        // when
+        tenant.setName("updated name");
+        tenant.setSubdomain("updated subdomain");
+        tenantRepository.save(tenant);
+        tenantRepository.flush();
+
+        Optional<TenantEntity> tenantEntity = tenantRepository.findById(EXISTING_ID);
+        // then
+        assertThat(tenantEntity).isPresent();
+        assertThat(tenantEntity.get().getName()).isEqualTo("updated name");
+        assertThat(tenantEntity.get().getSubdomain()).isEqualTo("updated subdomain");
     }
 }

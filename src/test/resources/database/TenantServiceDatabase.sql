@@ -11,7 +11,7 @@ CREATE TABLE TENANT
     content_impressum longtext,
     content_claim varchar(1024),
     create_date datetime NOT NULL,
-    update_date datetime NOT NULL,
+    update_date datetime,
     PRIMARY KEY (ID)
 );
 
@@ -23,4 +23,4 @@ CREATE SEQUENCE SEQUENCE_TENANT
     INCREMENT BY 1;
 
 INSERT INTO TENANT (`id`, `name`, `subdomain`, `licensing_allowed_users`, `content_impressum`, `create_date`, `update_date`)
-                  VALUES (1, 'Mucoviscidose EV Gmbh', 'mucoviscidose', 5, 'Impressum', '2021-12-28', '2021-12-29')
+                  VALUES (1, 'Mucoviscidose EV Gmbh', 'mucoviscidose', 5, 'Impressum', '2021-12-28', '2021-12-29');

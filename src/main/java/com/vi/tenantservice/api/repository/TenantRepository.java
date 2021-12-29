@@ -1,9 +1,9 @@
 package com.vi.tenantservice.api.repository;
 
 import com.vi.tenantservice.api.model.TenantEntity;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface TenantRepository extends CrudRepository<TenantEntity, Long> {
+public interface TenantRepository extends JpaRepository<TenantEntity, Long> {
 
 
 }

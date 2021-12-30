@@ -18,11 +18,10 @@ public class TenantConverter {
         return builder.build();
     }
 
-    public TenantEntity toEntity(TenantEntity entity, TenantDTO tenantDTO) {
+    public TenantEntity toEntity(TenantEntity targetEntity, TenantDTO tenantDTO) {
         TenantEntity sourceEntity = toEntity(tenantDTO);
-        BeanUtils.copyProperties(sourceEntity, entity, "id", "createDate", "updateDate");
-        return entity;
-
+        BeanUtils.copyProperties(sourceEntity, targetEntity, "id", "createDate", "updateDate");
+        return targetEntity;
     }
 
     private void contentToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
@@ -58,6 +57,12 @@ public class TenantConverter {
         dto.setContent(toContentDTO(tenant));
         dto.setTheming(toThemingDTO(tenant));
         dto.setLicensing(toLicensingDTO(tenant));
+        if (tenant.getCreateDate() != null) {
+            dto.setCreateDate(tenant.getCreateDate().toString());
+        }
+        if (tenant.getUpdateDate() != null) {
+            dto.setUpdateDate(tenant.getUpdateDate().toString());
+        }
         return dto;
     }
 

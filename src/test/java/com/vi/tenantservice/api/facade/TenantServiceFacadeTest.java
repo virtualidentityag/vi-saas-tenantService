@@ -4,9 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
 import java.util.Optional;
-
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.TenantDTO;
@@ -35,7 +33,7 @@ class TenantServiceFacadeTest {
   private TenantServiceFacade tenantServiceFacade;
 
   @Test
-  public void shouldCreateTenant() {
+  public void createTenant_Should_createTenant() {
     // given
     when(converter.toEntity(tenantDTO)).thenReturn(tenantEntity);
 
@@ -48,7 +46,7 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void shouldUpdateTenantAndThrowExceptionIfIdNotFound() {
+  public void updateTenant_Should_ThrowException_When_IdNotFound() {
     // given
     // then
     assertThrows(TenantNotFoundException.class, () -> {
@@ -59,16 +57,16 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void shouldNotFindTenantById() {
+  public void findTenantById_Should_notFindTenant_When_NotExistingIdIsPassed() {
     // given, when
-    Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(ID);
+    Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(2L);
 
     // then
     assertThat(tenantById).isNotPresent();
   }
 
   @Test
-  public void shouldFindTenantById() {
+  public void findTenantById_Should_findTenant_When_ExistingIdIsPassed() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toDTO(tenantEntity)).thenReturn(tenantDTO);
@@ -79,7 +77,7 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void shouldUpdateTenant() {
+  public void updateTenant_Should_updateTenant_When_tenantIsFound() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, tenantDTO)).thenReturn(tenantEntity);
@@ -90,7 +88,4 @@ class TenantServiceFacadeTest {
     verify(converter).toEntity(tenantEntity, tenantDTO);
     verify(tenantService).update(tenantEntity);
   }
-
-
-
 }

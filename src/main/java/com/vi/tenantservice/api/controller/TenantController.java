@@ -4,7 +4,9 @@ import javax.validation.Valid;
 import java.util.Optional;
 
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.generated.api.controller.PublicApi;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiParam;
@@ -16,6 +18,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.NativeWebRequest;
 
 /**
  * Controller for tenant API operations.
@@ -23,12 +26,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequiredArgsConstructor
 @Api(tags = "tenant-controller")
-public class TenantController implements TenantApi {
+public class TenantController implements TenantApi, PublicApi {
 
   private final @NonNull TenantServiceFacade tenantServiceFacade;
 
+
   @Override
-  @PreAuthorize("hasAnyAuthority('tenant-admin', 'tenant-reader')")
+  @PreAuthorize("hasAuthority('tenant-admin')")
   public ResponseEntity<TenantDTO> getTenantById(@ApiParam(value = "Tenant ID",required=true) @PathVariable("id") Long id) {
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(id);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
@@ -42,9 +46,21 @@ public class TenantController implements TenantApi {
   }
 
   @Override
-  @PreAuthorize("hasAuthority('tenant-admin')")
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
   public ResponseEntity<Void> updateTenant(@ApiParam(value = "Tenant ID",required=true) @PathVariable("id") Long id,@ApiParam()  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
+    //TODO validate that single-tenant-admin can modify only it's tenant
     tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataBySubdomain(String subdomain) {
+    Optional<RestrictedTenantDTO> tenantById = tenantServiceFacade.findTenantBySubdomain(subdomain);
+    return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
+  }
+
+  @Override
+  public Optional<NativeWebRequest> getRequest() {
+    return TenantApi.super.getRequest();
   }
 }

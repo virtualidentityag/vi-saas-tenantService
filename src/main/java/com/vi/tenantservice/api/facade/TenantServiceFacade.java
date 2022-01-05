@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
@@ -44,5 +45,10 @@ public class TenantServiceFacade {
     public Optional<TenantDTO> findTenantById(Long id) {
         Optional<TenantEntity> tenantById = tenantService.findTenantById(id);
         return tenantById.isEmpty() ? Optional.empty() : Optional.of(tenantConverter.toDTO(tenantById.get()));
+    }
+
+    public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {
+        Optional<TenantEntity> tenantById = tenantService.findTenantBySubdomain(subdomain);
+        return tenantById.isEmpty() ? Optional.empty() : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
     }
 }

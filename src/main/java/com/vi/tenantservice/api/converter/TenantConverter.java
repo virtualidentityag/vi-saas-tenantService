@@ -66,6 +66,15 @@ public class TenantConverter {
         return dto;
     }
 
+    public RestrictedTenantDTO toRestrictedDTO(TenantEntity tenant) {
+        RestrictedTenantDTO dto = new RestrictedTenantDTO();
+        dto.setId(tenant.getId());
+        dto.setName(tenant.getName());
+        dto.setContent(toContentDTO(tenant));
+        dto.setTheming(toThemingDTO(tenant));
+        return dto;
+    }
+
     private Licensing toLicensingDTO(TenantEntity tenant) {
         Licensing licensing = new Licensing();
         licensing.setAllowedNumberOfUsers(tenant.getLicensingAllowedNumberOfUsers());

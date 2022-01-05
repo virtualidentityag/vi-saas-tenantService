@@ -1,10 +1,7 @@
 package com.vi.tenantservice.api.service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
-import java.util.function.Predicate;
-import java.util.stream.Collectors;
 
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -32,21 +29,19 @@ public class TenantService {
     }
 
     private void validateTenantSubdomainDoesNotExist(TenantEntity tenantEntity) {
-        List<TenantEntity> dbTenants = tenantRepository.findBySubdomain(tenantEntity.getSubdomain());
-        List<TenantEntity> dbTenantsNotMatchingCurrentTenantId = dbTenants.stream().filter(tenantIdNotEqualPredicate(tenantEntity)).collect(Collectors.toList());
-
-        if (!dbTenantsNotMatchingCurrentTenantId.isEmpty()) {
+       TenantEntity dbTenant = tenantRepository.findBySubdomain(tenantEntity.getSubdomain());
+        if (dbTenant != null  && !dbTenant.equals(tenantEntity)) {
             throw new TenantValidationException("Tenant with this subdomain already exists");
         }
     }
 
-    private Predicate<TenantEntity> tenantIdNotEqualPredicate(TenantEntity tenantEntity) {
+   /* private Predicate<TenantEntity> tenantIdNotEqualPredicate(TenantEntity tenantEntity) {
         return dbTenant -> idNotEqual(tenantEntity, dbTenant);
-    }
+    }*/
 
-    private boolean idNotEqual(TenantEntity tenantEntity, TenantEntity dbTenant) {
+  /*  private boolean idNotEqual(TenantEntity tenantEntity, TenantEntity dbTenant) {
         return !dbTenant.getId().equals(tenantEntity.getId());
-    }
+    }*/
 
     public TenantEntity update(TenantEntity tenantEntity) {
         validate(tenantEntity);
@@ -56,5 +51,10 @@ public class TenantService {
 
     public Optional<TenantEntity> findTenantById(Long id) {
         return tenantRepository.findById(id);
+    }
+
+    public Optional<TenantEntity> findTenantBySubdomain(String subdomain) {
+        TenantEntity bySubdomain = tenantRepository.findBySubdomain(subdomain);
+        return bySubdomain != null ? Optional.of(bySubdomain) : Optional.empty();
     }
 }

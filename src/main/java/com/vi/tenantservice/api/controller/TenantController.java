@@ -1,7 +1,6 @@
 package com.vi.tenantservice.api.controller;
 
 import javax.validation.Valid;
-
 import java.util.Optional;
 
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
@@ -35,14 +34,14 @@ public class TenantController implements TenantApi {
   }
 
   @Override
-  @PreAuthorize("hasAuthority('technical')")
+  @PreAuthorize("hasAuthority('tenant-admin')")
   public ResponseEntity<TenantDTO> createTenant(@ApiParam(value = "")  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
     TenantDTO tenant = tenantServiceFacade.createTenant(tenantDTO);
     return new ResponseEntity<>(tenant, HttpStatus.OK);
   }
 
   @Override
-  @PreAuthorize("hasAuthority('technical')")
+  @PreAuthorize("hasAuthority('tenant-admin')")
   public ResponseEntity<Void> updateTenant(@ApiParam(value = "Tenant ID",required=true) @PathVariable("id") Long id,@ApiParam(value = ""  )  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
     tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(HttpStatus.OK);

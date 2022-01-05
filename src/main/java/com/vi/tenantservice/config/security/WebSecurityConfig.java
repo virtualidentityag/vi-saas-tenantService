@@ -1,6 +1,7 @@
 package com.vi.tenantservice.config.security;
 
 
+import com.vi.tenantservice.api.config.SpringFoxConfig;
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.session.NullAuthenticated
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 /**
  * Configuration class to provide the keycloak security configuration.
@@ -45,13 +47,11 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
                 .and()
                 .authorizeRequests()
-                .requestMatchers(new AntPathRequestMatcher("/tenant")).hasAuthority("technical")
-                .requestMatchers(new AntPathRequestMatcher("/tenant/**")).hasAuthority("technical")
-                /*.antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
-                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant"))).authenticated()
-                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**"))).authenticated()
-                */
-
+                .requestMatchers(new AntPathRequestMatcher("/tenant")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/tenant/**")).authenticated()
+                .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant"))).permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**"))).permitAll()
                 .and()
                 .headers()
                 .xssProtection()

@@ -1,24 +1,31 @@
 package com.vi.tenantservice.config.security;
 
 
-import com.vi.tenantservice.api.config.SpringFoxConfig;
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
+import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
-import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 /**
  * Configuration class to provide the keycloak security configuration.
  */
 @KeycloakConfiguration
+@EnableGlobalMethodSecurity(
+        prePostEnabled = true)
+@EnableWebSecurity(debug = true)
 public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
     /**
@@ -32,15 +39,19 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .csrf().disable()
                 .authenticationProvider(keycloakAuthenticationProvider())
                 .addFilterBefore(keycloakAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
+                .anonymous().disable()
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
                 .and()
                 .authorizeRequests()
-                .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
-                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant"))).permitAll()
-                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**")))
-                .permitAll()
+                .requestMatchers(new AntPathRequestMatcher("/tenant")).hasAuthority("technical")
+                .requestMatchers(new AntPathRequestMatcher("/tenant/**")).hasAuthority("technical")
+                /*.antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant"))).authenticated()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**"))).authenticated()
+                */
+
                 .and()
                 .headers()
                 .xssProtection()
@@ -49,11 +60,7 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
                 .and();
     }
 
-    /**
-     * Provides the authentication strategy.
-     *
-     * @return the configured {@link SessionAuthenticationStrategy}
-     */
+
     @Override
     protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
         return new NullAuthenticatedSessionStrategy();
@@ -67,6 +74,14 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     @Bean
     public KeycloakConfigResolver keycloakConfigResolver() {
         return new KeycloakSpringBootConfigResolver();
+    }
+
+
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
+        keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
+        auth.authenticationProvider(keycloakAuthenticationProvider);
     }
 
 }

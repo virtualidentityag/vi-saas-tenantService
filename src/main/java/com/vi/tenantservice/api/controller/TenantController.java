@@ -28,6 +28,7 @@ public class TenantController implements TenantApi {
   private final @NonNull TenantServiceFacade tenantServiceFacade;
 
   @Override
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'tenant-reader')")
   public ResponseEntity<TenantDTO> getTenantById(@ApiParam(value = "Tenant ID",required=true) @PathVariable("id") Long id) {
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(id);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND) : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
@@ -35,14 +36,14 @@ public class TenantController implements TenantApi {
 
   @Override
   @PreAuthorize("hasAuthority('tenant-admin')")
-  public ResponseEntity<TenantDTO> createTenant(@ApiParam(value = "")  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
+  public ResponseEntity<TenantDTO> createTenant(@ApiParam()  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
     TenantDTO tenant = tenantServiceFacade.createTenant(tenantDTO);
     return new ResponseEntity<>(tenant, HttpStatus.OK);
   }
 
   @Override
   @PreAuthorize("hasAuthority('tenant-admin')")
-  public ResponseEntity<Void> updateTenant(@ApiParam(value = "Tenant ID",required=true) @PathVariable("id") Long id,@ApiParam(value = ""  )  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
+  public ResponseEntity<Void> updateTenant(@ApiParam(value = "Tenant ID",required=true) @PathVariable("id") Long id,@ApiParam()  @Valid @RequestBody(required = false) TenantDTO tenantDTO) {
     tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(HttpStatus.OK);
   }

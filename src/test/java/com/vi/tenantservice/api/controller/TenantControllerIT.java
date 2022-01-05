@@ -30,8 +30,10 @@ public class TenantControllerIT {
     public static final String TENANT_CREATE = "/tenant";
     public static final String EXISTING_TENANT = "/tenant/1";
     public static final String NON_EXISTING_TENANT = "/tenant/2";
-    public static final String AUTHORITY_WITH_TENANT_MODIFY_PERMISSIONS = "tenant-admin";
-    public static final String AUTHORITY_WITHOUT_TENANT_MODIFY_PERMISSIONS = "technical";
+    public static final String AUTHORITY_TENANT_ADMIN = "tenant-admin";
+    public static final String AUTHORITY_READ_TENANT = "tenant-reader";
+    public static final String AUTHORITY_WITHOUT_PERMISSIONS = "technical";
+    public static final String USERNAME = "not important";
 
     @Autowired
     private WebApplicationContext context;
@@ -53,7 +55,7 @@ public class TenantControllerIT {
             throws Exception {
 
         mockMvc.perform(post(TENANT_CREATE)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITH_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -61,11 +63,11 @@ public class TenantControllerIT {
     }
 
     @Test
-    public void createTenant_Should_returnStatusForbidden_When_calledWithInvalidUserAuthoririty()
+    public void createTenant_Should_returnStatusForbidden_When_calledWithTenantReadAuthority()
             throws Exception {
 
         mockMvc.perform(post(TENANT_CREATE)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_READ_TENANT))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -78,14 +80,14 @@ public class TenantControllerIT {
         // given
         mockMvc.perform(post(TENANT_CREATE)
                         .contentType(APPLICATION_JSON)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITH_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("sub").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
         // when
         mockMvc.perform(post(TENANT_CREATE)
                         .contentType(APPLICATION_JSON)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITH_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
                         .content(tenantTestDataBuilder.withName("another tenant").withSubdomain("sub").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -93,10 +95,10 @@ public class TenantControllerIT {
     }
 
     @Test
-    public void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
+    public void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndTenantAdminAuthority()
             throws Exception {
         mockMvc.perform(put(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITH_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -105,10 +107,10 @@ public class TenantControllerIT {
 
 
     @Test
-    public void updateTenant_Should_returnStatusForbidden_When_calledWithValidTenantCreateParamsAndInvalidAuthority()
+    public void updateTenant_Should_returnStatusForbidden_When_calledWithValidTenantUpdateParamsAndAuthorityToReadTenant()
             throws Exception {
         mockMvc.perform(put(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_READ_TENANT))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -119,7 +121,7 @@ public class TenantControllerIT {
     public void updateTenant_Should_returnStatusNotFound_When_UpdateAttemptForNonExistingTenant()
             throws Exception {
         mockMvc.perform(put(NON_EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITH_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -127,10 +129,10 @@ public class TenantControllerIT {
     }
 
     @Test
-    public void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAnyValidAuthority()
+    public void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatCanReadTenants()
             throws Exception {
         mockMvc.perform(get(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_READ_TENANT))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -142,10 +144,29 @@ public class TenantControllerIT {
     }
 
     @Test
+    public void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
+            throws Exception {
+        mockMvc.perform(get(EXISTING_TENANT)
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+                        .contentType(APPLICATION_JSON)
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
+
+    @Test
+    public void getTenant_Should_returnStatusForbidden_When_calledWithExistingTenantIdAndForAuthorityWithoutPermissions()
+            throws Exception {
+        mockMvc.perform(get(EXISTING_TENANT)
+                        .with(user(USERNAME).authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
+                        .contentType(APPLICATION_JSON)
+                ).andExpect(status().isForbidden());
+    }
+
+    @Test
     public void getTenant_Should_returnStatusNotFound_When_calledWithNotExistingTenantId()
             throws Exception {
         mockMvc.perform(get(NON_EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_TENANT_MODIFY_PERMISSIONS))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_READ_TENANT))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

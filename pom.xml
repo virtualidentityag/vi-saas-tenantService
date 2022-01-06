@@ -197,6 +197,13 @@
             <version>3.21.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <!-- required only for WebMvc "fluent" API -->
+            <groupId>com.c4-soft.springaddons</groupId>
+            <artifactId>spring-security-oauth2-test-webmvc-addons</artifactId>
+            <version>3.0.1</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 
     <build>

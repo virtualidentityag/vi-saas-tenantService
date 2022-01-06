@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.controller;
 
 
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -33,7 +34,6 @@ public class TenantControllerIT {
     private static final String EXISTING_TENANT = TENANT_RESOURCE_SLASH + "1";
     private static final String NON_EXISTING_TENANT = TENANT_RESOURCE_SLASH + "3";
     private static final String AUTHORITY_TENANT_ADMIN = "tenant-admin";
-    private static final String AUTHORITY_READ_TENANT = "tenant-reader";
     private static final String AUTHORITY_WITHOUT_PERMISSIONS = "technical";
     private static final String USERNAME = "not important";
     private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
@@ -56,9 +56,9 @@ public class TenantControllerIT {
     @Test
     public void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
             throws Exception {
-
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(post(TENANT_RESOURCE)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+                        .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -66,11 +66,12 @@ public class TenantControllerIT {
     }
 
     @Test
-    public void createTenant_Should_returnStatusForbidden_When_calledWithTenantReadAuthority()
+    public void createTenant_Should_returnStatusForbidden_When_calledWithoutTenantAdminAuthority()
             throws Exception {
-
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(post(TENANT_RESOURCE)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_READ_TENANT))
+                        .with(authentication(builder.withAuthority(AUTHORITY_WITHOUT_PERMISSIONS).build()))
+                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -80,17 +81,18 @@ public class TenantControllerIT {
     @Test
     public void createTenant_Should_notCreateTenant_When_SubdomainIsNotUnique()
             throws Exception {
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         // given
         mockMvc.perform(post(TENANT_RESOURCE)
                         .contentType(APPLICATION_JSON)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+                        .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("sub").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
         // when
         mockMvc.perform(post(TENANT_RESOURCE)
                         .contentType(APPLICATION_JSON)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+                        .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
                         .content(tenantTestDataBuilder.withName("another tenant").withSubdomain("sub").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isBadRequest());
@@ -99,8 +101,9 @@ public class TenantControllerIT {
     @Test
     public void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndTenantAdminAuthority()
             throws Exception {
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+                        .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -109,10 +112,12 @@ public class TenantControllerIT {
 
 
     @Test
-    public void updateTenant_Should_returnStatusForbidden_When_calledWithValidTenantUpdateParamsAndAuthorityToReadTenant()
+    public void updateTenant_Should_returnStatusForbidden_When_calledWithValidTenantUpdateParamsAndNoAuthorityToModifyTenant()
             throws Exception {
+
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_READ_TENANT))
+                        .with(authentication(builder.withAuthority("not-a-valid-admin").build()))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -122,8 +127,9 @@ public class TenantControllerIT {
     @Test
     public void updateTenant_Should_returnStatusNotFound_When_UpdateAttemptForNonExistingTenant()
             throws Exception {
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(NON_EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+                        .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
                         .contentType(APPLICATION_JSON)
                         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))

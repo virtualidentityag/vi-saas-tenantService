@@ -15,8 +15,8 @@ public class AuthorisationService {
     }
 
     public Optional<Long> findCustomUserAttributeInAccessToken(String attributeName) {
-        Long tenantId = (Long) getPrincipal().getKeycloakSecurityContext().getToken().getOtherClaims().get(attributeName);
-        return Optional.ofNullable(tenantId);
+        Integer tenantId = (Integer) getPrincipal().getKeycloakSecurityContext().getToken().getOtherClaims().get(attributeName);
+        return Optional.ofNullable(Long.valueOf(tenantId));
     }
 
     public Object getUsername() {

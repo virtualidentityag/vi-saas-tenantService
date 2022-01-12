@@ -1,11 +1,11 @@
 package com.vi.tenantservice.api.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-
-import java.time.LocalDateTime;
-import java.util.Optional;
+import static org.junit.Assert.assertNotNull;
 
 import com.vi.tenantservice.api.model.TenantEntity;
+import java.time.LocalDateTime;
+import java.util.Optional;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,61 +21,71 @@ import org.springframework.test.context.junit4.SpringRunner;
 @DataJpaTest
 public class TenantRepositoryTest {
 
-    private static final long EXISTING_ID = 1L;
+  private static final long EXISTING_ID = 1L;
 
-    @Autowired
-    private TenantRepository tenantRepository;
+  @Autowired
+  private TenantRepository tenantRepository;
 
-    @Test
-    public void shouldFindTenantById() {
-        // given, when
-        Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
-        // then
-        assertThat(tenantEntity).isPresent();
-    }
+  @Test
+  public void shouldFindTenantById() {
+    // given, when
+    Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
+    // then
+    assertThat(tenantEntity).isPresent();
+  }
 
-    @Test
-    public void shouldRemoveTenantById() {
-        // given, when
-        tenantRepository.deleteById(EXISTING_ID);
-        Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
-        // then
-        assertThat(tenantEntity).isNotPresent();
-    }
+  @Test
+  public void shouldRemoveTenantById() {
+    // given, when
+    tenantRepository.deleteById(EXISTING_ID);
+    Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
+    // then
+    assertThat(tenantEntity).isNotPresent();
+  }
 
-    @Test
-    public void shouldSaveTenant() {
-        // given
-        TenantEntity entity = new TenantEntity();
-        entity.setName("new tenant");
-        entity.setSubdomain("a subdomain");
-        entity.setCreateDate(LocalDateTime.now());
+  @Test
+  public void shouldSaveTenant() {
+    // given
+    TenantEntity entity = new TenantEntity();
+    entity.setName("new tenant");
+    entity.setSubdomain("a subdomain");
+    entity.setCreateDate(LocalDateTime.now());
 
-        // when
-        TenantEntity saved = tenantRepository.save(entity);
-        tenantRepository.flush();
+    // when
+    TenantEntity saved = tenantRepository.save(entity);
+    tenantRepository.flush();
 
-        Optional<TenantEntity> tenantEntity = tenantRepository.findById(saved.getId());
-        // then
-        assertThat(tenantEntity).isPresent();
-        assertThat(tenantEntity.get()).isEqualTo(entity);
-    }
+    Optional<TenantEntity> tenantEntity = tenantRepository.findById(saved.getId());
+    // then
+    assertThat(tenantEntity).isPresent();
+    assertThat(tenantEntity).contains(entity);
+  }
 
-    @Test
-    public void shouldUpdateTenant() {
-        // given
-        TenantEntity tenant = tenantRepository.findById(EXISTING_ID).get();
+  @Test
+  public void shouldUpdateTenant() {
+    // given
+    TenantEntity tenant = tenantRepository.findById(EXISTING_ID).get();
 
-        // when
-        tenant.setName("updated name");
-        tenant.setSubdomain("updated subdomain");
-        tenantRepository.save(tenant);
-        tenantRepository.flush();
+    // when
+    tenant.setName("updated name");
+    tenant.setSubdomain("updated subdomain");
+    tenantRepository.save(tenant);
+    tenantRepository.flush();
 
-        Optional<TenantEntity> tenantEntity = tenantRepository.findById(EXISTING_ID);
-        // then
-        assertThat(tenantEntity).isPresent();
-        assertThat(tenantEntity.get().getName()).isEqualTo("updated name");
-        assertThat(tenantEntity.get().getSubdomain()).isEqualTo("updated subdomain");
-    }
+    Optional<TenantEntity> tenantEntity = tenantRepository.findById(EXISTING_ID);
+    // then
+    assertThat(tenantEntity).isPresent();
+    assertThat(tenantEntity.get().getName()).isEqualTo("updated name");
+    assertThat(tenantEntity.get().getSubdomain()).isEqualTo("updated subdomain");
+  }
+
+  @Test
+  public void shouldGetBySubdomain() {
+    // when
+    var tenant = tenantRepository.findBySubdomain("mucoviscidose");
+
+    // then
+    assertNotNull(tenant);
+  }
+
 }

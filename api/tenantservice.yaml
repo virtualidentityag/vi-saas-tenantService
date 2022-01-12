@@ -29,87 +29,91 @@ paths:
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
   /tenant/{id}:
-      summary: Represents a tenant
-      description: This resource represents an individual tenant in a system.
-      get:
-        tags:
-          - tenant-controller
-        summary: Gets a tenant
-        operationId: getTenantById
-        parameters:
-          - name: id
-            in: path
-            description: Tenant ID
-            required: true
-            schema:
-              type: integer
-              format: int64
-        responses:
-           200:
-             description: Successful operation
-             content:
-               application/json:
-                 schema:
-                   $ref: '#/components/schemas/TenantDTO'
-           404:
-             description: Not found
-           400:
-             description: BAD REQUEST - invalid/incomplete request or body object
-           500:
-             description: INTERNAL SERVER ERROR - server encountered unexpected condition
-      put:
-        tags:
-          - tenant-controller
-        summary: Updates tenant
-        operationId: updateTenant
-        parameters:
-          - name: id
-            in: path
-            description: Tenant ID
-            required: true
-            schema:
-              type: integer
-              format: int64
-        requestBody:
+    summary: Represents a tenant
+    description: This resource represents an individual tenant in a system.
+    get:
+      tags:
+        - tenant-controller
+      summary: Gets a tenant
+      operationId: getTenantById
+      parameters:
+        - name: id
+          in: path
+          description: Tenant ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successful operation
           content:
-            'application/json':
+            application/json:
               schema:
                 $ref: '#/components/schemas/TenantDTO'
-        responses:
-          200:
-            description: OK - successful operation
-          400:
-            description: BAD REQUEST - invalid/incomplete request or body object
-          500:
-            description: INTERNAL SERVER ERROR - server encountered unexpected condition
-  /public/tenant/{subdomain}:
-      summary: Represents a publicly allowed tenant data
-      description: This resource represents an individual tenant in a system.
-      get:
-        tags:
-          - tenant-controller
-        summary: Gets a tenant
-        operationId: getRestrictedTenantDataBySubdomain
-        parameters:
-          - name: subdomain
-            in: path
-            description: Subdomain
-            required: true
+        404:
+          description: Not found
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+    put:
+      tags:
+        - tenant-controller
+      summary: Updates tenant
+      operationId: updateTenant
+      parameters:
+        - name: id
+          in: path
+          description: Tenant ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          'application/json':
             schema:
-              type: string
-        responses:
-          200:
-            description: Successful operation
-            content:
-              application/json:
-                schema:
-                  $ref: '#/components/schemas/RestrictedTenantDTO'
-          404:
-            description: Not found
-          400:
-            description: BAD REQUEST - invalid/incomplete request or body object
-          500:
-            description: INTERNAL SERVER ERROR - server encountered unexpected condition
+              $ref: '#/components/schemas/TenantDTO'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TenantDTO'
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+  /public/tenant/{subdomain}:
+    summary: Represents a publicly allowed tenant data
+    description: This resource represents an individual tenant in a system.
+    get:
+      tags:
+        - tenant-controller
+      summary: Gets a tenant
+      operationId: getRestrictedTenantDataBySubdomain
+      parameters:
+        - name: subdomain
+          in: path
+          description: Subdomain
+          required: true
+          schema:
+            type: string
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestrictedTenantDTO'
+        404:
+          description: Not found
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
 components:
   schemas:
     TenantDTO:

@@ -46,7 +46,7 @@ public class SpringFoxConfig {
   // White list for path patterns that should be white listed so that swagger UI can be accessed
   // without authorization
   public static final String[] WHITE_LIST =
-      new String[] {"/mails/docs", "/mails/docs/**", "/v2/api-docs", "/configuration/ui",
+      new String[]{"/mails/docs", "/mails/docs/**", "/v2/api-docs", "/configuration/ui",
           "/swagger-resources/**", "/configuration/security", "/swagger-ui.html", "/webjars/**"};
 
   @Bean
@@ -60,7 +60,7 @@ public class SpringFoxConfig {
 
   /**
    * Returns the API protocols (for documentation).
-   * 
+   *
    * @return the provided protocols
    */
   private Set<String> protocols() {
@@ -80,7 +80,7 @@ public class SpringFoxConfig {
 
   /**
    * Returns the API information (defined in application.properties)
-   * 
+   *
    * @return the static api info
    */
   private ApiInfo getApiInfo() {

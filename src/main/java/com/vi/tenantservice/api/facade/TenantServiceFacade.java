@@ -1,18 +1,16 @@
 package com.vi.tenantservice.api.facade;
 
 
-import java.util.Optional;
-
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
-import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import java.util.Optional;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -24,29 +22,24 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TenantServiceFacade {
 
-  @Autowired
-  TenantService tenantService;
-
-  @Autowired
-  AuthorisationService authorisationService;
-
-  @Autowired
-  TenantConverter tenantConverter;
+  private final @NonNull TenantService tenantService;
+  private final @NonNull AuthorisationService authorisationService;
+  private final @NonNull TenantConverter tenantConverter;
 
   public TenantDTO createTenant(TenantDTO tenantDTO) {
     log.info("Creating new tenant");
-    TenantEntity entity = tenantConverter.toEntity(tenantDTO);
+    var entity = tenantConverter.toEntity(tenantDTO);
     return tenantConverter.toDTO(tenantService.create(entity));
   }
 
   public TenantDTO updateTenant(Long id, TenantDTO tenantDTO) {
     assertUserIsAuthorizedToAccessTenant(id);
     log.info("Attempting to update tenant with id {}", id);
-    Optional<TenantEntity> tenantById = tenantService.findTenantById(id);
+    var tenantById = tenantService.findTenantById(id);
     if (tenantById.isPresent()) {
-      TenantEntity updatedEntity = tenantConverter.toEntity(tenantById.get(), tenantDTO);
+      var updatedEntity = tenantConverter.toEntity(tenantById.get(), tenantDTO);
       log.info("Tenant with id {} updated", id);
-      tenantService.update(updatedEntity);
+      updatedEntity = tenantService.update(updatedEntity);
       return tenantConverter.toDTO(updatedEntity);
     } else {
       throw new TenantNotFoundException("Tenant with given id could not be found : " + id);
@@ -58,7 +51,7 @@ public class TenantServiceFacade {
     if (isSingleTenantAdmin()) {
       log.info("User is single tenant admin. Checking if he has authority to modify tenant with id "
           + tenantId);
-      Optional<Long> tenantIdFromAccessToken = authorisationService.findCustomUserAttributeInAccessToken(
+      var tenantIdFromAccessToken = authorisationService.findCustomUserAttributeInAccessToken(
           "tenantId");
       if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
         throw new AccessDeniedException("User " + authorisationService.getUsername()
@@ -68,7 +61,7 @@ public class TenantServiceFacade {
   }
 
   private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {
-    return tenantId.isEmpty() || (tenantId.isPresent() && !tenantId.get().equals(id));
+    return tenantId.isEmpty() || !tenantId.get().equals(id);
   }
 
   private boolean isSingleTenantAdmin() {
@@ -81,13 +74,13 @@ public class TenantServiceFacade {
 
   public Optional<TenantDTO> findTenantById(Long id) {
     assertUserIsAuthorizedToAccessTenant(id);
-    Optional<TenantEntity> tenantById = tenantService.findTenantById(id);
+    var tenantById = tenantService.findTenantById(id);
     return tenantById.isEmpty() ? Optional.empty()
         : Optional.of(tenantConverter.toDTO(tenantById.get()));
   }
 
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {
-    Optional<TenantEntity> tenantById = tenantService.findTenantBySubdomain(subdomain);
+    var tenantById = tenantService.findTenantBySubdomain(subdomain);
     return tenantById.isEmpty() ? Optional.empty()
         : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
   }

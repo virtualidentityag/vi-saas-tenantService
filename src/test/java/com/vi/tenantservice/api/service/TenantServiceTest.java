@@ -22,10 +22,10 @@ class TenantServiceTest {
     @InjectMocks
     private TenantService tenantService;
 
-    private TenantEntity tenantEntity = new TenantEntity();
+    private final TenantEntity tenantEntity = new TenantEntity();
 
     @Test
-    public void shouldCreateTenantAndSetCreationDate() {
+    void shouldCreateTenantAndSetCreationDate() {
         // when
         tenantService.create(tenantEntity);
         // then
@@ -35,7 +35,7 @@ class TenantServiceTest {
     }
 
     @Test
-    public void shouldUpdateTenantAndModifyUpdateDate() {
+    void shouldUpdateTenantAndModifyUpdateDate() {
         LocalDateTime previousUpdateDate = tenantEntity.getUpdateDate();
         // when
         tenantService.update(tenantEntity);
@@ -46,7 +46,7 @@ class TenantServiceTest {
     }
 
     @Test
-    public void shouldFindTenantById() {
+    void shouldFindTenantById() {
         // given
         long tenantId = 1L;
         // when

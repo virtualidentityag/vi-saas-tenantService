@@ -5,14 +5,13 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.util.Optional;
-
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -27,8 +26,8 @@ class TenantServiceFacadeTest {
   private static final long ID = 1L;
   private static final String MULTI_TENANT_ADMIN = "tenant-admin";
   private static final String TENANT_ID = "tenantId";
-  private TenantDTO tenantDTO = new TenantDTO();
-  private TenantEntity tenantEntity = new TenantEntity();
+  private final TenantDTO tenantDTO = new TenantDTO();
+  private final TenantEntity tenantEntity = new TenantEntity();
 
   @Mock
   private TenantConverter converter;
@@ -43,7 +42,7 @@ class TenantServiceFacadeTest {
   private TenantServiceFacade tenantServiceFacade;
 
   @Test
-  public void createTenant_Should_createTenant() {
+  void createTenant_Should_createTenant() {
     // given
     when(converter.toEntity(tenantDTO)).thenReturn(tenantEntity);
 
@@ -56,7 +55,7 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsMultipleTenantAdmin() {
+  void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsMultipleTenantAdmin() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, tenantDTO)).thenReturn(tenantEntity);
@@ -72,25 +71,27 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void updateTenant_Should_ThrowTenantNotFoundException_When_IdNotFound() {
+  void updateTenant_Should_ThrowTenantNotFoundException_When_IdNotFound() {
     // given
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(true);
+
     // then
     assertThrows(TenantNotFoundException.class, () -> {
 
-              // when
-              tenantServiceFacade.updateTenant(ID, tenantDTO);
-            });
+      // when
+      tenantServiceFacade.updateTenant(ID, tenantDTO);
+    });
     verify(tenantService).findTenantById(ID);
   }
 
   @Test
-  public void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
+  void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, tenantDTO)).thenReturn(tenantEntity);
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID)).thenReturn(Optional.of(ID));
+    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+        .thenReturn(Optional.of(ID));
 
     // when
     tenantServiceFacade.updateTenant(ID, tenantDTO);
@@ -102,10 +103,11 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesNotHaveAnyTokenIdKeycloakAttribute() {
+  void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesNotHaveAnyTokenIdKeycloakAttribute() {
     // given
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID)).thenReturn(Optional.empty());
+    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+        .thenReturn(Optional.empty());
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
@@ -115,11 +117,12 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesAndTokenIdAttributeDoesNotMatch() {
+  void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesAndTokenIdAttributeDoesNotMatch() {
     // given
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
     Long notMatchingId = ID + 1;
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID)).thenReturn(Optional.of(notMatchingId));
+    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+        .thenReturn(Optional.of(notMatchingId));
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
@@ -129,8 +132,12 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void findTenantById_Should_notFindTenant_When_NotExistingIdIsPassed() {
-    // given, when
+  void findTenantById_Should_notFindTenant_When_NotExistingIdIsPassedForSingleTenantAdmin() {
+    // given
+    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+        .thenReturn(Optional.of(2L));
+
+    // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(2L);
 
     // then
@@ -138,13 +145,14 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  public void findTenantById_Should_findTenant_When_ExistingIdIsPassed() {
+  void findTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
     // given
+    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+        .thenReturn(Optional.of(ID));
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toDTO(tenantEntity)).thenReturn(tenantDTO);
     // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(ID);
-    assertThat(tenantById).isPresent();
-    assertThat(tenantById.get()).isEqualTo(tenantDTO);
+    assertThat(tenantById).contains(tenantDTO);
   }
 }

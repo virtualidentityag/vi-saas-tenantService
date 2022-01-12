@@ -3,6 +3,7 @@ package com.vi.tenantservice.config.security;
 import java.util.Optional;
 
 import org.keycloak.KeycloakPrincipal;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class AuthorisationService {
 
     public Optional<Long> findCustomUserAttributeInAccessToken(String attributeName) {
         Integer tenantId = (Integer) getPrincipal().getKeycloakSecurityContext().getToken().getOtherClaims().get(attributeName);
+        if (tenantId == null) {
+            throw new AccessDeniedException("tenantId attribute not found in the access token");
+        }
         return Optional.ofNullable(Long.valueOf(tenantId));
     }
 

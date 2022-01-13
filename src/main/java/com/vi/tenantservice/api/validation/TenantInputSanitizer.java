@@ -29,7 +29,7 @@ public class TenantInputSanitizer {
     TenantDTO output = new TenantDTO();
     output.setId(input.getId());
     output.setCreateDate(input.getCreateDate());
-    output.setCreateDate(input.getUpdateDate());
+    output.setUpdateDate(input.getUpdateDate());
     output.setContent(new Content());
     output.setTheming(new Theming());
     output.setLicensing(input.getLicensing());

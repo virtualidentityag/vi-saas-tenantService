@@ -6,20 +6,20 @@ import static org.junit.Assert.assertNotNull;
 import com.vi.tenantservice.api.model.TenantEntity;
 import java.time.LocalDateTime;
 import java.util.Optional;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 
 @TestPropertySource(properties = "spring.profiles.active=testing")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @DataJpaTest
-public class TenantRepositoryTest {
+class TenantRepositoryTest {
 
   private static final long EXISTING_ID = 1L;
 
@@ -27,7 +27,7 @@ public class TenantRepositoryTest {
   private TenantRepository tenantRepository;
 
   @Test
-  public void shouldFindTenantById() {
+  void findById_Should_findTenantById() {
     // given, when
     Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
     // then
@@ -35,16 +35,16 @@ public class TenantRepositoryTest {
   }
 
   @Test
-  public void shouldRemoveTenantById() {
-    // given, when
+  void delete_Should_removeTenantById() {
+    // when
     tenantRepository.deleteById(EXISTING_ID);
-    Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
     // then
+    Optional<TenantEntity> tenantEntity = tenantRepository.findById(1L);
     assertThat(tenantEntity).isNotPresent();
   }
 
   @Test
-  public void shouldSaveTenant() {
+  void save_Should_saveTenant() {
     // given
     TenantEntity entity = new TenantEntity();
     entity.setName("new tenant");
@@ -62,7 +62,7 @@ public class TenantRepositoryTest {
   }
 
   @Test
-  public void shouldUpdateTenant() {
+  void save_Should_updateTenant() {
     // given
     TenantEntity tenant = tenantRepository.findById(EXISTING_ID).get();
 
@@ -80,7 +80,7 @@ public class TenantRepositoryTest {
   }
 
   @Test
-  public void shouldGetBySubdomain() {
+  void findBySubdomain_Should_FindTenantBySubdomain() {
     // when
     var tenant = tenantRepository.findBySubdomain("mucoviscidose");
 

@@ -30,11 +30,6 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @EnableWebSecurity(debug = true)
 public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
-  /**
-   * Configures the basic http security behavior.
-   *
-   * @param http springs http security
-   */
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http
@@ -47,8 +42,8 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         .and()
         .authorizeRequests()
         .requestMatchers(new AntPathRequestMatcher("/tenant")).authenticated()
-        .requestMatchers(new AntPathRequestMatcher("/tenant/**")).authenticated()
-        .requestMatchers(new AntPathRequestMatcher("/public/tenant/**")).permitAll()
+        .requestMatchers(new AntPathRequestMatcher("/tenant/*")).authenticated()
+        .requestMatchers(new AntPathRequestMatcher("/tenant/public/**")).permitAll()
         .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
         .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant")))
         .permitAll()
@@ -61,22 +56,15 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         .contentSecurityPolicy("script-src 'self'");
   }
 
-
   @Override
   protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
     return new NullAuthenticatedSessionStrategy();
   }
 
-  /**
-   * Provides the keycloak configuration resolver bean.
-   *
-   * @return the configured {@link KeycloakConfigResolver}
-   */
   @Bean
   public KeycloakConfigResolver keycloakConfigResolver() {
     return new KeycloakSpringBootConfigResolver();
   }
-
 
   @Autowired
   public void configureGlobal(AuthenticationManagerBuilder auth) {

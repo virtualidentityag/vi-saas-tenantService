@@ -4,10 +4,8 @@ import com.vi.tenantservice.api.facade.TenantServiceFacade;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import com.vi.tenantservice.generated.api.controller.PublicApi;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
 import io.swagger.annotations.Api;
-import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -15,7 +13,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.context.request.NativeWebRequest;
 
 /**
  * Controller for tenant API operations.
@@ -24,7 +21,7 @@ import org.springframework.web.context.request.NativeWebRequest;
 @RequiredArgsConstructor
 @Api(tags = "tenant-controller")
 @Slf4j
-public class TenantController implements TenantApi, PublicApi {
+public class TenantController implements TenantApi {
 
   private final @NonNull TenantServiceFacade tenantServiceFacade;
   private final @NonNull AuthorisationService authorisationService;
@@ -59,10 +56,5 @@ public class TenantController implements TenantApi, PublicApi {
     var tenantById = tenantServiceFacade.findTenantBySubdomain(subdomain);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
-  }
-
-  @Override
-  public Optional<NativeWebRequest> getRequest() {
-    return TenantApi.super.getRequest();
   }
 }

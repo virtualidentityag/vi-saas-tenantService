@@ -1,5 +1,7 @@
 package com.vi.tenantservice.api.service;
 
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.SUBDOMAIN_NOT_UNIQUE;
+
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.repository.TenantRepository;
@@ -20,16 +22,24 @@ public class TenantService {
 
     public TenantEntity create(TenantEntity tenantEntity) {
         validateTenantSubdomainDoesNotExist(tenantEntity);
+        setCreateAndUpdateDate(tenantEntity);
+        return tenantRepository.save(tenantEntity);
+    }
+
+    private void setCreateAndUpdateDate(TenantEntity tenantEntity) {
         tenantEntity.setCreateDate(LocalDateTime.now(ZoneOffset.UTC));
         tenantEntity.setUpdateDate(LocalDateTime.now(ZoneOffset.UTC));
-        return tenantRepository.save(tenantEntity);
     }
 
     private void validateTenantSubdomainDoesNotExist(TenantEntity tenantEntity) {
        var dbTenant = tenantRepository.findBySubdomain(tenantEntity.getSubdomain());
-        if (dbTenant != null  && !dbTenant.equals(tenantEntity)) {
-            throw new TenantValidationException("Tenant with this subdomain already exists");
+        if (tenantWithSuchSubdomainAlreadyExists(tenantEntity, dbTenant)) {
+            throw new TenantValidationException(SUBDOMAIN_NOT_UNIQUE);
         }
+    }
+
+    private boolean tenantWithSuchSubdomainAlreadyExists(TenantEntity tenantEntity, TenantEntity dbTenant) {
+        return dbTenant != null && !dbTenant.equals(tenantEntity);
     }
 
     public TenantEntity update(TenantEntity tenantEntity) {

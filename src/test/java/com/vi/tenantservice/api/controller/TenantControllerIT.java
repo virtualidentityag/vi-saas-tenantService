@@ -102,7 +102,7 @@ class TenantControllerIT {
             tenantTestDataBuilder.withName("another tenant").withSubdomain("sub").withLicensing()
                 .jsonify())
         .contentType(APPLICATION_JSON))
-        .andExpect(status().isBadRequest());
+        .andExpect(status().isConflict());
   }
 
   @Test
@@ -137,7 +137,6 @@ class TenantControllerIT {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(NON_EXISTING_TENANT)
         .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
-        .contentType(APPLICATION_JSON)
         .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
             .withLicensing().jsonify())
         .contentType(APPLICATION_JSON))
@@ -181,6 +180,27 @@ class TenantControllerIT {
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1));
+  }
+
+  @Test
+  void updateTenant_Should_sanitizeInput_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
+      throws Exception {
+    String script = "<script>some malicious content</script>";
+    String jsonRequest = tenantTestDataBuilder.withName(script + "name")
+            .withSubdomain(script + "subdomain")
+            .withContent(script + "<b>impressum</b>", script+"<b>claim</b>").jsonify();
+
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    mockMvc.perform(put(EXISTING_TENANT)
+            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
+            .contentType(APPLICATION_JSON)
+            .content(jsonRequest)
+            .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.name").value("name"))
+        .andExpect(jsonPath("$.subdomain").value("subdomain"))
+        .andExpect(jsonPath("$.content.impressum").value("<b>impressum</b>"))
+        .andExpect(jsonPath("$.content.claim").value("<b>claim</b>"));
   }
 
   @Test

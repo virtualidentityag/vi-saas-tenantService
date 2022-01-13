@@ -32,6 +32,7 @@ public class TenantController implements TenantApi, PublicApi {
   @Override
   @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
   public ResponseEntity<TenantDTO> getTenantById(Long id) {
+
     var tenantById = tenantServiceFacade.findTenantById(id);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);

@@ -43,6 +43,14 @@ public class TenantTestDataBuilder {
     return this;
   }
 
+  public TenantTestDataBuilder withContent(String impressum, String claim) {
+    Content content = new Content();
+    content.setImpressum(impressum);
+    content.setClaim(claim);
+    tenantDTO.setContent(content);
+    return this;
+  }
+
   public TenantTestDataBuilder withTheming() {
     tenantDTO.setTheming(theming());
     return this;

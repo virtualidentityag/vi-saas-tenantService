@@ -55,8 +55,7 @@ public class TenantServiceFacade {
     if (isSingleTenantAdmin()) {
       log.info("User is single tenant admin. Checking if he has authority to modify tenant with id "
           + tenantId);
-      var tenantIdFromAccessToken = authorisationService.findCustomUserAttributeInAccessToken(
-          "tenantId");
+      var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
       if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
         throw new AccessDeniedException("User " + authorisationService.getUsername()
             + " not authorized to edit tenant with id: " + tenantId);

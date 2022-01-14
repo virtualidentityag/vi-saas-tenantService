@@ -15,9 +15,9 @@ public class AuthorisationService {
         .anyMatch(role -> authorityName.equals(role.getAuthority()));
   }
 
-  public Optional<Long> findCustomUserAttributeInAccessToken(String attributeName) {
+  public Optional<Long> findTenantIdInAccessToken() {
     Integer tenantId = (Integer) getPrincipal().getKeycloakSecurityContext().getToken()
-        .getOtherClaims().get(attributeName);
+        .getOtherClaims().get("tenantId");
     if (tenantId == null) {
       throw new AccessDeniedException("tenantId attribute not found in the access token");
     }

@@ -98,7 +98,7 @@ class TenantServiceFacadeTest {
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+    when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.of(ID));
 
     // when
@@ -114,7 +114,7 @@ class TenantServiceFacadeTest {
   void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesNotHaveAnyTokenIdKeycloakAttribute() {
     // given
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+    when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.empty());
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -129,7 +129,7 @@ class TenantServiceFacadeTest {
     // given
     when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
     Long notMatchingId = ID + 1;
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+    when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.of(notMatchingId));
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -142,7 +142,7 @@ class TenantServiceFacadeTest {
   @Test
   void findTenantById_Should_notFindTenant_When_NotExistingIdIsPassedForSingleTenantAdmin() {
     // given
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+    when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.of(2L));
 
     // when
@@ -155,7 +155,7 @@ class TenantServiceFacadeTest {
   @Test
   void findTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
     // given
-    when(authorisationService.findCustomUserAttributeInAccessToken(TENANT_ID))
+    when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.of(ID));
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toDTO(tenantEntity)).thenReturn(tenantDTO);

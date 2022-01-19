@@ -10,7 +10,7 @@ paths:
     post:
       tags:
         - tenant-controller
-      summary: Creates tenant
+      summary: 'Creates a new tenant [Authorization: Role: tenant-admin]'
       operationId: createTenant
       requestBody:
         content:
@@ -34,7 +34,7 @@ paths:
     get:
       tags:
         - tenant-controller
-      summary: Gets a tenant
+      summary: 'Gets a tenant by its id [Authorization: Role: tenant-admin or single-tenant-admin]'
       operationId: getTenantById
       parameters:
         - name: id
@@ -60,7 +60,7 @@ paths:
     put:
       tags:
         - tenant-controller
-      summary: Updates tenant
+      summary: 'Updates a tenant [Authorization: Role: tenant-admin or single-tenant-admin]'
       operationId: updateTenant
       parameters:
         - name: id
@@ -82,17 +82,17 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TenantDTO'
-        400:
-          description: BAD REQUEST - invalid/incomplete request or body object
+        409:
+          description: CONFLICT - unique constraint validation fails
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
-  /public/tenant/{subdomain}:
-    summary: Represents a publicly allowed tenant data
+  /tenant/public/{subdomain}:
+    summary: 'Represents a publicly allowed tenant data'
     description: This resource represents an individual tenant in a system.
     get:
       tags:
         - tenant-controller
-      summary: Gets a tenant
+      summary: 'Gets a tenant public information [Authorization: no-auth]'
       operationId: getRestrictedTenantDataBySubdomain
       parameters:
         - name: subdomain

@@ -1,11 +1,21 @@
 package com.vi.tenantservice.api.exception;
 
+import com.vi.tenantservice.api.exception.httpresponse.CustomHttpHeader;
+import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
+import lombok.Getter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ResponseStatus;
 
-@ResponseStatus(value= HttpStatus.BAD_REQUEST, reason="Tenant validation exception")
+@Getter
 public class TenantValidationException extends RuntimeException {
-    public TenantValidationException(String message) {
-        super(message);
+
+    private final HttpHeaders customHttpHeaders;
+    private final HttpStatus httpStatus;
+
+    public TenantValidationException(HttpStatusExceptionReason exceptionReason) {
+        super();
+        this.customHttpHeaders = new CustomHttpHeader(exceptionReason)
+            .buildHeader();
+        this.httpStatus = HttpStatus.CONFLICT;
     }
 }

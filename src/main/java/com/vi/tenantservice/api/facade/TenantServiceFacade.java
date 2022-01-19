@@ -6,6 +6,7 @@ import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.service.TenantService;
+import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import java.util.Optional;
 import lombok.NonNull;
@@ -25,19 +26,22 @@ public class TenantServiceFacade {
   private final @NonNull TenantService tenantService;
   private final @NonNull AuthorisationService authorisationService;
   private final @NonNull TenantConverter tenantConverter;
+  private final @NonNull TenantInputSanitizer tenantInputSanitizer;
 
   public TenantDTO createTenant(TenantDTO tenantDTO) {
     log.info("Creating new tenant");
-    var entity = tenantConverter.toEntity(tenantDTO);
+    TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+    var entity = tenantConverter.toEntity(sanitizedTenantDTO);
     return tenantConverter.toDTO(tenantService.create(entity));
   }
 
   public TenantDTO updateTenant(Long id, TenantDTO tenantDTO) {
     assertUserIsAuthorizedToAccessTenant(id);
+    TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     log.info("Attempting to update tenant with id {}", id);
     var tenantById = tenantService.findTenantById(id);
     if (tenantById.isPresent()) {
-      var updatedEntity = tenantConverter.toEntity(tenantById.get(), tenantDTO);
+      var updatedEntity = tenantConverter.toEntity(tenantById.get(), sanitizedTenantDTO);
       log.info("Tenant with id {} updated", id);
       updatedEntity = tenantService.update(updatedEntity);
       return tenantConverter.toDTO(updatedEntity);
@@ -51,8 +55,7 @@ public class TenantServiceFacade {
     if (isSingleTenantAdmin()) {
       log.info("User is single tenant admin. Checking if he has authority to modify tenant with id "
           + tenantId);
-      var tenantIdFromAccessToken = authorisationService.findCustomUserAttributeInAccessToken(
-          "tenantId");
+      var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
       if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
         throw new AccessDeniedException("User " + authorisationService.getUsername()
             + " not authorized to edit tenant with id: " + tenantId);

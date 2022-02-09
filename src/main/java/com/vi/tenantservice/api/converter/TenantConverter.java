@@ -34,7 +34,9 @@ public class TenantConverter {
     if (tenantDTO.getContent() != null) {
       builder
           .contentClaim(tenantDTO.getContent().getClaim())
-          .contentImpressum(tenantDTO.getContent().getImpressum());
+          .contentImpressum(tenantDTO.getContent().getImpressum())
+          .contentPrivacy(tenantDTO.getContent().getPrivacy())
+          .contentTermsAndConditions(tenantDTO.getContent().getTermsAndConditions());
     }
   }
 
@@ -96,6 +98,8 @@ public class TenantConverter {
   private Content toContentDTO(TenantEntity tenant) {
     return new Content()
         .claim(tenant.getContentClaim())
-        .impressum(tenant.getContentImpressum());
+        .impressum(tenant.getContentImpressum())
+        .privacy(tenant.getContentPrivacy())
+        .termsAndConditions(tenant.getContentTermsAndConditions());
   }
 }

@@ -53,6 +53,10 @@ public class TenantInputSanitizer {
           .setImpressum(inputSanitizer.sanitizeAllowingFormatting(content.getImpressum()));
       output.getContent()
           .setClaim(inputSanitizer.sanitizeAllowingFormatting(content.getClaim()));
+      output.getContent()
+          .setPrivacy(inputSanitizer.sanitizeAllowingFormatting(content.getPrivacy()));
+      output.getContent()
+          .setTermsAndConditions(inputSanitizer.sanitizeAllowingFormatting(content.getTermsAndConditions()));
     }
   }
 }

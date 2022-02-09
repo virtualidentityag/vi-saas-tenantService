@@ -10,6 +10,8 @@ CREATE TABLE TENANT
     theming_secondary_color varchar(15),
     content_impressum longtext,
     content_claim varchar(1024),
+    content_privacy longtext,
+    content_termsandconditions longtext,
     create_date datetime NOT NULL,
     update_date datetime,
     PRIMARY KEY (ID)
@@ -22,7 +24,7 @@ CREATE SEQUENCE SEQUENCE_TENANT
     START WITH 100000
     INCREMENT BY 1;
 
-INSERT INTO TENANT (`id`, `name`, `subdomain`, `licensing_allowed_users`, `content_impressum`, `create_date`, `update_date`)
-                  VALUES (1, 'Mucoviscidose EV Gmbh', 'mucoviscidose', 5, 'Impressum', '2021-12-28', '2021-12-29');
-INSERT INTO TENANT (`id`, `name`, `subdomain`, `licensing_allowed_users`, `content_impressum`, `create_date`, `update_date`)
-                  VALUES (2, 'Another tenant', 'examplesubdomain', 10, 'Impressum', '2021-12-28', '2021-12-29');
+INSERT INTO TENANT (`id`, `name`, `subdomain`, `licensing_allowed_users`, `content_impressum`,`content_privacy`, `create_date`, `update_date`)
+                  VALUES (1, 'Mucoviscidose EV Gmbh', 'mucoviscidose', 5, 'Impressum', 'Privacy', '2021-12-28', '2021-12-29');
+INSERT INTO TENANT (`id`, `name`, `subdomain`, `licensing_allowed_users`, `content_impressum`,`content_privacy`,  `create_date`, `update_date`)
+                  VALUES (2, 'Another tenant', 'examplesubdomain', 10, 'Impressum', 'Privacy','2021-12-28', '2021-12-29');

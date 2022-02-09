@@ -42,6 +42,8 @@ class TenantInputSanitizerTest {
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getFavicon());
     verify(inputSanitizer).sanitizeAllowingFormatting(tenantDTO.getContent().getClaim());
     verify(inputSanitizer).sanitizeAllowingFormatting(tenantDTO.getContent().getImpressum());
+    verify(inputSanitizer).sanitizeAllowingFormatting(tenantDTO.getContent().getPrivacy());
+    verify(inputSanitizer).sanitizeAllowingFormatting(tenantDTO.getContent().getTermsAndConditions());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getPrimaryColor());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getSecondaryColor());
     verifyNoMoreInteractions(inputSanitizer);

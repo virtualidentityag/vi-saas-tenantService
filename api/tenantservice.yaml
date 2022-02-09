@@ -199,3 +199,9 @@ components:
         claim:
           type: string
           example: "Llorem ipsum..."
+        privacy:
+          type: string
+          example: "Llorem ipsum..."
+        termsAndConditions:
+          type: string
+          example: "Llorem ipsum..."

@@ -17,6 +17,8 @@ public class TenantTestDataBuilder {
   private static final String FAVICON = "favicon";
   private static final String LOGO = "logo";
   private static final int ALLOWED_NUMBER_OF_USERS = 2000;
+  private static final String PRIVACY = "privacy";
+  private static final String TERMS_AND_CONDITIONS = "termsandconditions";
 
   TenantDTO tenantDTO = new TenantDTO();
 
@@ -84,6 +86,8 @@ public class TenantTestDataBuilder {
     Content content = new Content();
     content.setImpressum(IMPRESSUM);
     content.setClaim(CLAIM);
+    content.setPrivacy(PRIVACY);
+    content.setTermsAndConditions(TERMS_AND_CONDITIONS);
     return content;
   }
 

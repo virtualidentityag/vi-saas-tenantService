@@ -56,6 +56,12 @@ public class TenantEntity {
   @Column(name = "content_claim")
   private String contentClaim;
 
+  @Column(name = "content_privacy")
+  private String contentPrivacy;
+
+  @Column(name = "content_termsandconditions")
+  private String contentTermsAndConditions;
+
   @Column(name = "create_date", nullable = false)
   private LocalDateTime createDate;
 

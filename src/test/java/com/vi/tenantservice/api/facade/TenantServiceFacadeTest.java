@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -11,7 +12,6 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
-import com.vi.tenantservice.config.security.AuthorisationService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,8 +25,6 @@ import org.springframework.security.access.AccessDeniedException;
 class TenantServiceFacadeTest {
 
   private static final long ID = 1L;
-  private static final String MULTI_TENANT_ADMIN = "tenant-admin";
-  private static final String TENANT_ID = "tenantId";
   private final TenantDTO tenantDTO = new TenantDTO();
   private final TenantDTO sanitizedTenantDTO = new TenantDTO();
   private final TenantEntity tenantEntity = new TenantEntity();
@@ -38,13 +36,13 @@ class TenantServiceFacadeTest {
   private TenantService tenantService;
 
   @Mock
-  private AuthorisationService authorisationService;
-
-  @Mock
   private TenantInputSanitizer tenantInputSanitizer;
 
   @InjectMocks
   private TenantServiceFacade tenantServiceFacade;
+
+  @Mock
+  private TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
 
   @Test
   void createTenant_Should_createTenant() {
@@ -66,7 +64,6 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
-    when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(true);
 
     // when
     tenantServiceFacade.updateTenant(ID, tenantDTO);
@@ -79,9 +76,6 @@ class TenantServiceFacadeTest {
 
   @Test
   void updateTenant_Should_ThrowTenantNotFoundException_When_IdNotFound() {
-    // given
-    when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(true);
-
     // then
     assertThrows(TenantNotFoundException.class, () -> {
 
@@ -97,9 +91,6 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
-    when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    when(authorisationService.findTenantIdInAccessToken())
-        .thenReturn(Optional.of(ID));
 
     // when
     tenantServiceFacade.updateTenant(ID, tenantDTO);
@@ -111,11 +102,9 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesNotHaveAnyTokenIdKeycloakAttribute() {
+  void updateTenant_Should_ThrowAccessDeniedException_When_UserNotAuthorizedToPerformOperation() {
     // given
-    when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    when(authorisationService.findTenantIdInAccessToken())
-        .thenReturn(Optional.empty());
+    doThrow(AccessDeniedException.class).when(tenantFacadeAuthorisationService).assertUserIsAuthorizedToAccessTenant(ID);
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
@@ -127,24 +116,21 @@ class TenantServiceFacadeTest {
   @Test
   void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesAndTokenIdAttributeDoesNotMatch() {
     // given
-    when(authorisationService.hasAuthority(MULTI_TENANT_ADMIN)).thenReturn(false);
-    Long notMatchingId = ID + 1;
-    when(authorisationService.findTenantIdInAccessToken())
-        .thenReturn(Optional.of(notMatchingId));
+    when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
+    when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
+
+    Mockito.doThrow(AccessDeniedException.class)
+            .when(tenantFacadeAuthorisationService).assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(TenantDTO.class), Mockito.any(TenantEntity.class));
+
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
       tenantServiceFacade.updateTenant(ID, tenantDTO);
     });
-    verify(tenantService, Mockito.never()).findTenantById(ID);
   }
 
   @Test
   void findTenantById_Should_notFindTenant_When_NotExistingIdIsPassedForSingleTenantAdmin() {
-    // given
-    when(authorisationService.findTenantIdInAccessToken())
-        .thenReturn(Optional.of(2L));
-
     // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(2L);
 
@@ -155,8 +141,6 @@ class TenantServiceFacadeTest {
   @Test
   void findTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
     // given
-    when(authorisationService.findTenantIdInAccessToken())
-        .thenReturn(Optional.of(ID));
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toDTO(tenantEntity)).thenReturn(tenantDTO);
     // when

@@ -65,7 +65,7 @@ public class TenantFacadeAuthorisationService {
     }
 
     if (!Objects.equals(sanitizedTenantDTO.getLicensing().getAllowedNumberOfUsers(), existingTenant.getLicensingAllowedNumberOfUsers())) {
-      throw new AccessDeniedException("Single tenant admin cannot change subdomain");
+      throw new AccessDeniedException("Single tenant admin cannot change allowed number of users");
     }
   }
 

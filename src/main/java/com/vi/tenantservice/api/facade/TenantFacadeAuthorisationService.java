@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
+import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.config.security.AuthorisationService;
@@ -19,7 +20,7 @@ public class TenantFacadeAuthorisationService {
   private final @NonNull AuthorisationService authorisationService;
 
   private boolean isSingleTenantAdmin() {
-    return authorisationService.hasAuthority("single-tenant-admin");
+    return authorisationService.hasAuthority(UserRole.SINGLE_TENANT_ADMIN.getValue());
   }
 
   private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {

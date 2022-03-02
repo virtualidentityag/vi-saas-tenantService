@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -20,7 +21,6 @@ import org.springframework.security.access.AccessDeniedException;
 @ExtendWith(MockitoExtension.class)
 class TenantFacadeAuthorisationServiceTest {
 
-  private static final String SINGLE_TENANT_ADMIN = "single-tenant-admin";
   private static final long ID = 1L;
 
   @InjectMocks
@@ -32,7 +32,7 @@ class TenantFacadeAuthorisationServiceTest {
   @Test
   void assertUserIsAuthorizedToAccessTenant_Should_AllowOperation_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
     // given
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
     when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.of(ID));
 
@@ -46,7 +46,7 @@ class TenantFacadeAuthorisationServiceTest {
   @Test
   void assertUserIsAuthorizedToAccessTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesNotHaveAnyTokenIdKeycloakAttribute() {
     // given
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
     when(authorisationService.findTenantIdInAccessToken())
         .thenReturn(Optional.empty());
     // then
@@ -62,7 +62,7 @@ class TenantFacadeAuthorisationServiceTest {
     TenantEntity tenantEntity = TenantEntity.builder()
         .licensingAllowedNumberOfUsers(1).build();
     TenantDTO tenantDTO = new TenantDTO().licensing(new Licensing().allowedNumberOfUsers(2));
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -76,7 +76,7 @@ class TenantFacadeAuthorisationServiceTest {
     // given
     TenantEntity tenantEntity = TenantEntity.builder().build();
     TenantDTO tenantDTO = new TenantDTO().licensing(new Licensing().allowedNumberOfUsers(2));
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -91,7 +91,7 @@ class TenantFacadeAuthorisationServiceTest {
     TenantEntity tenantEntity = TenantEntity.builder()
         .subdomain("old subdomain").build();
     TenantDTO tenantDTO = new TenantDTO().subdomain("new subdomain");
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -105,7 +105,7 @@ class TenantFacadeAuthorisationServiceTest {
     // given
     TenantEntity tenantEntity = TenantEntity.builder().build();
     TenantDTO tenantDTO = new TenantDTO().subdomain("new subdomain");
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -120,7 +120,7 @@ class TenantFacadeAuthorisationServiceTest {
     TenantEntity tenantEntity = TenantEntity.builder()
         .subdomain("old subdomain").licensingAllowedNumberOfUsers(1).build();
     TenantDTO tenantDTO = new TenantDTO().subdomain("old subdomain").licensing(new Licensing().allowedNumberOfUsers(1)).theming(new Theming().logo("logo"));
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // when
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
@@ -132,7 +132,7 @@ class TenantFacadeAuthorisationServiceTest {
     TenantEntity tenantEntity = TenantEntity.builder()
         .subdomain("old subdomain").licensingAllowedNumberOfUsers(1).build();
     TenantDTO tenantDTO = new TenantDTO().subdomain("old subdomain").licensing(new Licensing().allowedNumberOfUsers(1)).theming(new Theming().logo("logo"));
-    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN)).thenReturn(true);
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // when
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);

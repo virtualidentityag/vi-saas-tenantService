@@ -15,7 +15,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TenantInputSanitizerTest {
 
-  public static final String LINK_CONTENT = "<a href=\"http://onlineberatung.net\">content</a>further content";
+  private static final String LINK_CONTENT = "<a href=\"http://onlineberatung.net\">content</a>further content";
+
   @InjectMocks
   TenantInputSanitizer tenantInputSanitizer;
 

@@ -169,7 +169,7 @@ class TenantControllerIT {
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(2))
         .andExpect(jsonPath("$.name").exists())
-        .andExpect(jsonPath("$.subdomain").doesNotExist())
+        .andExpect(jsonPath("$.subdomain").exists())
         .andExpect(jsonPath("$.licensing").doesNotExist())
         .andExpect(jsonPath("$.theming").exists())
         .andExpect(jsonPath("$.content").exists());

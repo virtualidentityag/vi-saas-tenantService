@@ -66,6 +66,12 @@ public class TenantServiceFacade {
         : Optional.of(tenantConverter.toDTO(tenantById.get()));
   }
 
+  public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
+    var tenantById = tenantService.findTenantById(id);
+    return tenantById.isEmpty() ? Optional.empty()
+        : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
+  }
+
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {
     var tenantById = tenantService.findTenantBySubdomain(subdomain);
     return tenantById.isEmpty() ? Optional.empty()

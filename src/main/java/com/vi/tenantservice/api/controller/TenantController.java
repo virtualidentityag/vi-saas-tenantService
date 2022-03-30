@@ -1,17 +1,20 @@
 package com.vi.tenantservice.api.controller;
 
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
+import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
 import io.swagger.annotations.Api;
+import java.util.List;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -33,6 +36,15 @@ public class TenantController implements TenantApi {
     var tenantById = tenantServiceFacade.findTenantById(id);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
+  }
+
+  @Override
+  @PreAuthorize("hasAuthority('tenant-admin')")
+  public ResponseEntity<List<BasicTenantLicensingDTO>> getAllTenants() {
+    var tenants = tenantServiceFacade.getAllTenants();
+    return !CollectionUtils.isEmpty(tenants)
+        ? new ResponseEntity<>(tenants, HttpStatus.OK)
+        : new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 
   @Override

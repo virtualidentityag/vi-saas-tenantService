@@ -104,7 +104,8 @@ class TenantServiceFacadeTest {
   @Test
   void updateTenant_Should_ThrowAccessDeniedException_When_UserNotAuthorizedToPerformOperation() {
     // given
-    doThrow(AccessDeniedException.class).when(tenantFacadeAuthorisationService).assertUserIsAuthorizedToAccessTenant(ID);
+    doThrow(AccessDeniedException.class).when(tenantFacadeAuthorisationService)
+        .assertUserIsAuthorizedToAccessTenant(ID);
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
@@ -120,7 +121,9 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
 
     Mockito.doThrow(AccessDeniedException.class)
-            .when(tenantFacadeAuthorisationService).assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(TenantDTO.class), Mockito.any(TenantEntity.class));
+        .when(tenantFacadeAuthorisationService)
+        .assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(TenantDTO.class),
+            Mockito.any(TenantEntity.class));
 
     // then
     assertThrows(AccessDeniedException.class, () -> {
@@ -146,5 +149,13 @@ class TenantServiceFacadeTest {
     // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(ID);
     assertThat(tenantById).contains(tenantDTO);
+  }
+
+  @Test
+  void getAllTenant_Should_CallServiceToGetAllTenants() {
+    // when
+    tenantServiceFacade.getAllTenants();
+    // then
+    verify(tenantService).getAllTenants();
   }
 }

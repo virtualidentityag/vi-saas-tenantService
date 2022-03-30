@@ -25,7 +25,7 @@ class TenantServiceTest {
     private final TenantEntity tenantEntity = new TenantEntity();
 
     @Test
-    void shouldCreateTenantAndSetCreationDate() {
+    void create_Should_CreateTenantAndSetCreationDate() {
         // when
         tenantService.create(tenantEntity);
         // then
@@ -35,7 +35,7 @@ class TenantServiceTest {
     }
 
     @Test
-    void shouldUpdateTenantAndModifyUpdateDate() {
+    void update_Should_UpdateTenantAndModifyUpdateDate() {
         LocalDateTime previousUpdateDate = tenantEntity.getUpdateDate();
         // when
         tenantService.update(tenantEntity);
@@ -46,13 +46,21 @@ class TenantServiceTest {
     }
 
     @Test
-    void shouldFindTenantById() {
+    void findTenantById_Should_CallFindById() {
         // given
         long tenantId = 1L;
         // when
         tenantService.findTenantById(tenantId);
         // then
         verify(tenantRepository).findById(tenantId);
+    }
+
+    @Test
+    void getAllTenants_Should_CallFindAllTenants() {
+        // when
+        tenantService.getAllTenants();
+        // then
+        verify(tenantRepository).findAll();
     }
 
 }

@@ -69,6 +69,12 @@ public class TenantServiceFacade {
         : Optional.of(tenantConverter.toDTO(tenantById.get()));
   }
 
+  public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
+    var tenantById = tenantService.findTenantById(id);
+    return tenantById.isEmpty() ? Optional.empty()
+        : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
+  }
+  
   public List<BasicTenantLicensingDTO> getAllTenants() {
     var tenantEntities = tenantService.getAllTenants();
     return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).collect(

@@ -80,7 +80,8 @@ public class TenantConverter {
         .id(tenant.getId())
         .name(tenant.getName())
         .content(toContentDTO(tenant))
-        .theming(toThemingDTO(tenant));
+        .theming(toThemingDTO(tenant))
+        .subdomain(tenant.getSubdomain());
   }
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {

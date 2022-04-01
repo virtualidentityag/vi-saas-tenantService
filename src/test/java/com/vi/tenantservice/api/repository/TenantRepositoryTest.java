@@ -1,7 +1,7 @@
 package com.vi.tenantservice.api.repository;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import com.vi.tenantservice.api.model.TenantEntity;
 import java.time.LocalDateTime;
@@ -82,7 +82,7 @@ class TenantRepositoryTest {
   @Test
   void findBySubdomain_Should_FindTenantBySubdomain() {
     // when
-    var tenant = tenantRepository.findBySubdomain("mucoviscidose");
+    var tenant = tenantRepository.findBySubdomain("happylife");
 
     // then
     assertNotNull(tenant);

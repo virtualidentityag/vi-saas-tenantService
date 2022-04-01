@@ -3,12 +3,15 @@ package com.vi.tenantservice.api.facade;
 
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
+import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -70,6 +73,12 @@ public class TenantServiceFacade {
     var tenantById = tenantService.findTenantById(id);
     return tenantById.isEmpty() ? Optional.empty()
         : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
+  }
+  
+  public List<BasicTenantLicensingDTO> getAllTenants() {
+    var tenantEntities = tenantService.getAllTenants();
+    return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).collect(
+        Collectors.toList());
   }
 
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {

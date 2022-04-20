@@ -30,6 +30,9 @@ public class InputSanitizer {
         .allowElements("a")
         .allowAttributes("href","target")
         .onElements("a")
+        .allowElements("img")
+        .allowAttributes("src", "width", "height")
+        .onElements("img")
         .toFactory();
     return sanitizer.sanitize(input);
   }

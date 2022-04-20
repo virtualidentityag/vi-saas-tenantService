@@ -16,6 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class TenantInputSanitizerTest {
 
   private static final String LINK_CONTENT = "<a href=\"http://onlineberatung.net\">content</a>further content";
+  private static final String IMAGE_CONTENT = "<img src=\"http://onlineberatung.net/images/test.png\" width=\"272\" height=\"92\" />";
 
   @InjectMocks
   TenantInputSanitizer tenantInputSanitizer;
@@ -53,6 +54,24 @@ class TenantInputSanitizerTest {
     assertThat(sanitized.getContent().getTermsAndConditions()).contains(LINK_CONTENT);
     assertThat(sanitized.getContent().getPrivacy()).contains(LINK_CONTENT);
     assertThat(sanitized.getContent().getImpressum()).contains(LINK_CONTENT);
+  }
+
+  @Test
+  void sanitize_Should_sanitizeAndAllowImageSrcForContentInTenantDTO() {
+    // given
+    EasyRandom generator = new EasyRandom();
+    TenantDTO tenantDTO = generator.nextObject(TenantDTO.class);
+    tenantDTO.getContent().setTermsAndConditions(IMAGE_CONTENT);
+    tenantDTO.getContent().setPrivacy(IMAGE_CONTENT);
+    tenantDTO.getContent().setImpressum(IMAGE_CONTENT);
+    TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
+    // when
+    TenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
+
+    // then
+    assertThat(sanitized.getContent().getTermsAndConditions()).contains(IMAGE_CONTENT);
+    assertThat(sanitized.getContent().getPrivacy()).contains(IMAGE_CONTENT);
+    assertThat(sanitized.getContent().getImpressum()).contains(IMAGE_CONTENT);
   }
 
   private void verifyNeededSanitizationsAreCalled(TenantDTO tenantDTO) {

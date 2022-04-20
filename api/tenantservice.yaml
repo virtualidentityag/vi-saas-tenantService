@@ -185,7 +185,7 @@ components:
         name:
           type: string
           example: "Company name AG"
-          maxLength: 100
+          maxLength: 40
         subdomain:
           type: string
           example: "companyname"
@@ -215,7 +215,7 @@ components:
         name:
           type: string
           example: "Company name AG"
-          maxLength: 100
+          maxLength: 40
         subdomain:
           type: string
           example: "companyname"
@@ -238,7 +238,7 @@ components:
         name:
           type: string
           example: "Company name AG"
-          maxLength: 100
+          maxLength: 40
         subdomain:
           type: string
           example: "subdomain"
@@ -283,7 +283,7 @@ components:
         claim:
           type: string
           example: "Llorem ipsum..."
-          maxLength: 100
+          maxLength: 40
         privacy:
           type: string
           example: "Llorem ipsum..."

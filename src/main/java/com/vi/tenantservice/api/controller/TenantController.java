@@ -50,7 +50,7 @@ public class TenantController implements TenantApi {
 
   @Override
   @PreAuthorize("hasAuthority('tenant-admin')")
-  public ResponseEntity<TenantDTO> createTenant(TenantDTO tenantDTO) {
+  public ResponseEntity<TenantDTO> createTenant(@Valid TenantDTO tenantDTO) {
     log.info("Creating tenant with by user {} ", authorisationService.getUsername());
     var tenant = tenantServiceFacade.createTenant(tenantDTO);
     return new ResponseEntity<>(tenant, HttpStatus.OK);
@@ -58,7 +58,7 @@ public class TenantController implements TenantApi {
 
   @Override
   @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
-  public ResponseEntity<TenantDTO> updateTenant(Long id, TenantDTO tenantDTO) {
+  public ResponseEntity<TenantDTO> updateTenant(Long id, @Valid TenantDTO tenantDTO) {
     log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
     var updatedTenantDTO = tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);

@@ -41,7 +41,7 @@ class TenantControllerIT {
   private static final String AUTHORITY_WITHOUT_PERMISSIONS = "technical";
   private static final String USERNAME = "not important";
   private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
-  private static final String SCRIPT_CONTENT = "<script>some malicious content</script>";
+  private static final String SCRIPT_CONTENT = "<script>error</script>";
 
   @Autowired
   private WebApplicationContext context;
@@ -65,7 +65,7 @@ class TenantControllerIT {
     mockMvc.perform(post(TENANT_RESOURCE)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing()
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
                 .jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -80,7 +80,7 @@ class TenantControllerIT {
             .with(user("not important")
                 .authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing()
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
                 .jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -95,7 +95,7 @@ class TenantControllerIT {
             .contentType(APPLICATION_JSON)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .content(
-                tenantTestDataBuilder.withName("tenant").withSubdomain("sub").withLicensing().jsonify())
+                tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("sub").withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk());
     // when
@@ -103,7 +103,7 @@ class TenantControllerIT {
             .contentType(APPLICATION_JSON)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .content(
-                tenantTestDataBuilder.withName("another tenant").withSubdomain("sub").withLicensing()
+                tenantTestDataBuilder.withId(2L).withName("another tenant").withSubdomain("sub").withLicensing()
                     .jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isConflict())
@@ -117,7 +117,7 @@ class TenantControllerIT {
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -130,7 +130,7 @@ class TenantControllerIT {
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority("not-a-valid-admin").build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -142,7 +142,7 @@ class TenantControllerIT {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(NON_EXISTING_TENANT)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isNotFound());
@@ -231,7 +231,7 @@ class TenantControllerIT {
   }
 
   private String prepareRequestWithInvalidScriptContent() {
-    return tenantTestDataBuilder.withName(appendMalciousScript("name"))
+    return tenantTestDataBuilder.withId(1L).withName(appendMalciousScript("name"))
         .withSubdomain(appendMalciousScript("subdomain"))
         .withContent(appendMalciousScript("<b>impressum</b>"), appendMalciousScript("<b>claim</b>"))
         .jsonify();

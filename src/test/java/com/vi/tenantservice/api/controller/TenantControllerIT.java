@@ -1,7 +1,9 @@
 package com.vi.tenantservice.api.controller;
 
 
+import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -13,6 +15,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vi.tenantservice.TenantServiceApplication;
+import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -35,11 +38,10 @@ class TenantControllerIT {
   private static final String PUBLIC_TENANT_RESOURCE = "/tenant/public/";
   private static final String EXISTING_TENANT = TENANT_RESOURCE_SLASH + "1";
   private static final String NON_EXISTING_TENANT = TENANT_RESOURCE_SLASH + "3";
-  private static final String AUTHORITY_TENANT_ADMIN = "tenant-admin";
   private static final String AUTHORITY_WITHOUT_PERMISSIONS = "technical";
   private static final String USERNAME = "not important";
   private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
-  private static final String SCRIPT_CONTENT = "<script>some malicious content</script>";
+  private static final String SCRIPT_CONTENT = "<script>error</script>";
 
   @Autowired
   private WebApplicationContext context;
@@ -61,9 +63,9 @@ class TenantControllerIT {
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(post(TENANT_RESOURCE)
-            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
+            .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing()
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
                 .jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -78,7 +80,7 @@ class TenantControllerIT {
             .with(user("not important")
                 .authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing()
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
                 .jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -91,17 +93,17 @@ class TenantControllerIT {
     // given
     mockMvc.perform(post(TENANT_RESOURCE)
             .contentType(APPLICATION_JSON)
-            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
+            .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .content(
-                tenantTestDataBuilder.withName("tenant").withSubdomain("sub").withLicensing().jsonify())
+                tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("sub").withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk());
     // when
     mockMvc.perform(post(TENANT_RESOURCE)
             .contentType(APPLICATION_JSON)
-            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
+            .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .content(
-                tenantTestDataBuilder.withName("another tenant").withSubdomain("sub").withLicensing()
+                tenantTestDataBuilder.withId(2L).withName("another tenant").withSubdomain("sub").withLicensing()
                     .jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isConflict())
@@ -113,9 +115,9 @@ class TenantControllerIT {
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(EXISTING_TENANT)
-            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
+            .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk());
@@ -128,7 +130,7 @@ class TenantControllerIT {
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority("not-a-valid-admin").build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isForbidden());
@@ -139,8 +141,8 @@ class TenantControllerIT {
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(NON_EXISTING_TENANT)
-            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
-            .content(tenantTestDataBuilder.withName("tenant").withSubdomain("changed subdomain")
+            .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isNotFound());
@@ -150,7 +152,7 @@ class TenantControllerIT {
   void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
       throws Exception {
     mockMvc.perform(get(EXISTING_TENANT)
-            .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+            .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
             .contentType(APPLICATION_JSON)
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1))
@@ -162,6 +164,31 @@ class TenantControllerIT {
   }
 
   @Test
+  void getAllTenants_Should_returnForbidden_When_calledForAuthorityThatIsSingleTenantAdmin()
+      throws Exception {
+    mockMvc.perform(get(TENANT_RESOURCE)
+            .with(user("not important").authorities((GrantedAuthority) UserRole.SINGLE_TENANT_ADMIN::getValue))
+            .contentType(APPLICATION_JSON)
+        ).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getAllTenants_Should_returnStatusBasicTenantLicensingData_When_calledForAuthorityThatIsTenantAdmin()
+      throws Exception {
+    mockMvc.perform(get(TENANT_RESOURCE)
+            .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
+            .contentType(APPLICATION_JSON)
+        ).andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)))
+        .andExpect(jsonPath("$[0].id").value(1))
+        .andExpect(jsonPath("$[0].name").exists())
+        .andExpect(jsonPath("$[0].subdomain").exists())
+        .andExpect(jsonPath("$[0].licensing").exists())
+        .andExpect(jsonPath("$[0].theming").doesNotExist())
+        .andExpect(jsonPath("$[0].content").doesNotExist());
+  }
+
+  @Test
   void getRestrictedTenantDataBySubdomain_Should_returnStatusOk_When_calledWithExistingTenantSubdomainAndNoAuthentication()
       throws Exception {
     mockMvc.perform(get(PUBLIC_TENANT_RESOURCE + EXISTING_SUBDOMAIN)
@@ -169,7 +196,7 @@ class TenantControllerIT {
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(2))
         .andExpect(jsonPath("$.name").exists())
-        .andExpect(jsonPath("$.subdomain").doesNotExist())
+        .andExpect(jsonPath("$.subdomain").exists())
         .andExpect(jsonPath("$.licensing").doesNotExist())
         .andExpect(jsonPath("$.theming").exists())
         .andExpect(jsonPath("$.content").exists());
@@ -179,7 +206,7 @@ class TenantControllerIT {
   void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
       throws Exception {
     mockMvc.perform(get(EXISTING_TENANT)
-            .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+            .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
             .contentType(APPLICATION_JSON)
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1));
@@ -192,7 +219,7 @@ class TenantControllerIT {
 
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(EXISTING_TENANT)
-            .with(authentication(builder.withAuthority(AUTHORITY_TENANT_ADMIN).build()))
+            .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
             .content(jsonRequest)
             .contentType(APPLICATION_JSON))
@@ -204,7 +231,7 @@ class TenantControllerIT {
   }
 
   private String prepareRequestWithInvalidScriptContent() {
-    return tenantTestDataBuilder.withName(appendMalciousScript("name"))
+    return tenantTestDataBuilder.withId(1L).withName(appendMalciousScript("name"))
         .withSubdomain(appendMalciousScript("subdomain"))
         .withContent(appendMalciousScript("<b>impressum</b>"), appendMalciousScript("<b>claim</b>"))
         .jsonify();
@@ -215,9 +242,18 @@ class TenantControllerIT {
   }
 
   @Test
-  void getTenant_Should_returnStatusForbidden_When_calledWithExistingTenantIdAndForAuthorityWithoutPermissions()
+  void getAllTenant_Should_returnStatusForbidden_When_calledWithExistingTenantIdAndForAuthorityWithoutPermissions()
       throws Exception {
     mockMvc.perform(get(EXISTING_TENANT)
+        .with(user(USERNAME).authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
+        .contentType(APPLICATION_JSON)
+    ).andExpect(status().isForbidden());
+  }
+
+  @Test
+  void getTenant_Should_returnStatusForbidden_When_calledWithExistingTenantIdAndForAuthorityWithoutPermissions()
+      throws Exception {
+    mockMvc.perform(get(TENANT_RESOURCE)
         .with(user(USERNAME).authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
         .contentType(APPLICATION_JSON)
     ).andExpect(status().isForbidden());
@@ -227,7 +263,7 @@ class TenantControllerIT {
   void getTenant_Should_returnStatusNotFound_When_calledWithNotExistingTenantId()
       throws Exception {
     mockMvc.perform(get(NON_EXISTING_TENANT)
-            .with(user("not important").authorities((GrantedAuthority) () -> AUTHORITY_TENANT_ADMIN))
+            .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
             .contentType(APPLICATION_JSON))
         .andExpect(status().isNotFound());
   }

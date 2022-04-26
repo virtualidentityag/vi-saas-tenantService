@@ -30,6 +30,11 @@ public class TenantTestDataBuilder {
     return this;
   }
 
+  public TenantTestDataBuilder withId(Long id) {
+    tenantDTO.setId(id);
+    return this;
+  }
+
   public TenantTestDataBuilder withName(String name) {
     tenantDTO.setName(name);
     return this;

@@ -50,13 +50,13 @@ public class TenantInputSanitizer {
     Content content = input.getContent();
     if (content != null) {
       output.getContent()
-          .setImpressum(inputSanitizer.sanitizeAllowingFormatting(content.getImpressum()));
+          .setImpressum(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getImpressum()));
       output.getContent()
           .setClaim(inputSanitizer.sanitizeAllowingFormatting(content.getClaim()));
       output.getContent()
-          .setPrivacy(inputSanitizer.sanitizeAllowingFormatting(content.getPrivacy()));
+          .setPrivacy(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getPrivacy()));
       output.getContent()
-          .setTermsAndConditions(inputSanitizer.sanitizeAllowingFormatting(content.getTermsAndConditions()));
+          .setTermsAndConditions(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getTermsAndConditions()));
     }
   }
 }

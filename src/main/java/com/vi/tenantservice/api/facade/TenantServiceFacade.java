@@ -3,16 +3,18 @@ package com.vi.tenantservice.api.facade;
 
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
+import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
-import com.vi.tenantservice.config.security.AuthorisationService;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 /**
@@ -24,9 +26,9 @@ import org.springframework.stereotype.Service;
 public class TenantServiceFacade {
 
   private final @NonNull TenantService tenantService;
-  private final @NonNull AuthorisationService authorisationService;
   private final @NonNull TenantConverter tenantConverter;
   private final @NonNull TenantInputSanitizer tenantInputSanitizer;
+  private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
 
   public TenantDTO createTenant(TenantDTO tenantDTO) {
     log.info("Creating new tenant");
@@ -36,50 +38,47 @@ public class TenantServiceFacade {
   }
 
   public TenantDTO updateTenant(Long id, TenantDTO tenantDTO) {
-    assertUserIsAuthorizedToAccessTenant(id);
+    tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
     TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     log.info("Attempting to update tenant with id {}", id);
+    return updateWithSanitizedInput(id, sanitizedTenantDTO);
+  }
+
+  private TenantDTO updateWithSanitizedInput(Long id, TenantDTO sanitizedTenantDTO) {
     var tenantById = tenantService.findTenantById(id);
     if (tenantById.isPresent()) {
-      var updatedEntity = tenantConverter.toEntity(tenantById.get(), sanitizedTenantDTO);
-      log.info("Tenant with id {} updated", id);
-      updatedEntity = tenantService.update(updatedEntity);
-      return tenantConverter.toDTO(updatedEntity);
+      return updateExistingTenant(sanitizedTenantDTO, tenantById.get());
     } else {
       throw new TenantNotFoundException("Tenant with given id could not be found : " + id);
     }
   }
 
-  private void assertUserIsAuthorizedToAccessTenant(Long tenantId) {
-    log.info("Asserting user is authorized to update tenant with id " + tenantId);
-    if (isSingleTenantAdmin()) {
-      log.info("User is single tenant admin. Checking if he has authority to modify tenant with id "
-          + tenantId);
-      var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
-      if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
-        throw new AccessDeniedException("User " + authorisationService.getUsername()
-            + " not authorized to edit tenant with id: " + tenantId);
-      }
-    }
-  }
-
-  private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {
-    return tenantId.isEmpty() || !tenantId.get().equals(id);
-  }
-
-  private boolean isSingleTenantAdmin() {
-    return !isMultitenantAdmin();
-  }
-
-  private boolean isMultitenantAdmin() {
-    return authorisationService.hasAuthority("tenant-admin");
+  private TenantDTO updateExistingTenant(TenantDTO sanitizedTenantDTO,
+      TenantEntity existingTenant) {
+    tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
+    var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
+    log.info("Tenant with id {} updated", existingTenant.getId());
+    updatedEntity = tenantService.update(updatedEntity);
+    return tenantConverter.toDTO(updatedEntity);
   }
 
   public Optional<TenantDTO> findTenantById(Long id) {
-    assertUserIsAuthorizedToAccessTenant(id);
+    tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
     var tenantById = tenantService.findTenantById(id);
     return tenantById.isEmpty() ? Optional.empty()
         : Optional.of(tenantConverter.toDTO(tenantById.get()));
+  }
+
+  public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
+    var tenantById = tenantService.findTenantById(id);
+    return tenantById.isEmpty() ? Optional.empty()
+        : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
+  }
+  
+  public List<BasicTenantLicensingDTO> getAllTenants() {
+    var tenantEntities = tenantService.getAllTenants();
+    return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).collect(
+        Collectors.toList());
   }
 
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {

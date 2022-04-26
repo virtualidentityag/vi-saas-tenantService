@@ -7,6 +7,7 @@ import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.repository.TenantRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.List;
 import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -55,5 +56,9 @@ public class TenantService {
     public Optional<TenantEntity> findTenantBySubdomain(String subdomain) {
         var bySubdomain = tenantRepository.findBySubdomain(subdomain);
         return bySubdomain != null ? Optional.of(bySubdomain) : Optional.empty();
+    }
+
+    public List<TenantEntity> getAllTenants() {
+        return tenantRepository.findAll();
     }
 }

@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.converter;
 
+import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
@@ -79,10 +80,28 @@ public class TenantConverter {
         .id(tenant.getId())
         .name(tenant.getName())
         .content(toContentDTO(tenant))
-        .theming(toThemingDTO(tenant));
+        .theming(toThemingDTO(tenant))
+        .subdomain(tenant.getSubdomain());
   }
 
-  private Licensing toLicensingDTO(TenantEntity tenant) {
+  public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
+    var basicTenantLicensingDTO = new BasicTenantLicensingDTO()
+        .id(tenant.getId())
+        .name(tenant.getName())
+        .subdomain(tenant.getSubdomain())
+        .licensing(toLicensingDTO(tenant));
+
+    if (tenant.getCreateDate() != null) {
+      basicTenantLicensingDTO.setCreateDate(tenant.getCreateDate().toString());
+    }
+    if (tenant.getUpdateDate() != null) {
+      basicTenantLicensingDTO.setUpdateDate(tenant.getUpdateDate().toString());
+    }
+    return basicTenantLicensingDTO;
+  }
+
+
+  public Licensing toLicensingDTO(TenantEntity tenant) {
     return new Licensing()
         .allowedNumberOfUsers(tenant.getLicensingAllowedNumberOfUsers());
   }

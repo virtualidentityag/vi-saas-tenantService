@@ -3,9 +3,11 @@ package com.vi.tenantservice.api.converter;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
-import com.vi.tenantservice.api.model.RestrictedTenantDTO;
+import com.vi.tenantservice.api.model.LimitedTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.Theming;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -22,7 +24,15 @@ public class TenantConverter {
     contentToEntity(tenantDTO, builder);
     licensingToEntity(tenantDTO, builder);
     themingToEntity(tenantDTO, builder);
+    settingsToEntity(tenantDTO, builder);
     return builder.build();
+  }
+
+  private void settingsToEntity(TenantDTO tenantDTO, TenantEntityBuilder builder) {
+    if (tenantDTO.getSettings() != null) {
+      builder.settingsTopicsInRegistrationEnabled(tenantDTO.getSettings()
+          .getTopicsInRegistrationEnabled());
+    }
   }
 
   public TenantEntity toEntity(TenantEntity targetEntity, TenantDTO tenantDTO) {
@@ -65,7 +75,8 @@ public class TenantConverter {
         .subdomain(tenant.getSubdomain())
         .content(toContentDTO(tenant))
         .theming(toThemingDTO(tenant))
-        .licensing(toLicensingDTO(tenant));
+        .licensing(toLicensingDTO(tenant))
+        .settings(toSettingsDTO(tenant));
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
     }
@@ -75,13 +86,18 @@ public class TenantConverter {
     return tenantDTO;
   }
 
-  public RestrictedTenantDTO toRestrictedDTO(TenantEntity tenant) {
-    return new RestrictedTenantDTO()
+  private Settings toSettingsDTO(TenantEntity tenant) {
+    return new Settings().topicsInRegistrationEnabled(tenant.getSettingsTopicsInRegistrationEnabled());
+  }
+
+  public LimitedTenantDTO toLimitedTenantDTO(TenantEntity tenant) {
+    return new LimitedTenantDTO()
         .id(tenant.getId())
         .name(tenant.getName())
         .content(toContentDTO(tenant))
         .theming(toThemingDTO(tenant))
-        .subdomain(tenant.getSubdomain());
+        .subdomain(tenant.getSubdomain())
+        .settings(toSettingsDTO(tenant));
   }
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {

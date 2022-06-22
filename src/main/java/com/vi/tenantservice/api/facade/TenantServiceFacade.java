@@ -4,7 +4,7 @@ package com.vi.tenantservice.api.facade;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
-import com.vi.tenantservice.api.model.RestrictedTenantDTO;
+import com.vi.tenantservice.api.model.LimitedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
@@ -69,10 +69,10 @@ public class TenantServiceFacade {
         : Optional.of(tenantConverter.toDTO(tenantById.get()));
   }
 
-  public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
+  public Optional<LimitedTenantDTO> findLimitedTenantDataById(Long id) {
     var tenantById = tenantService.findTenantById(id);
     return tenantById.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
+        : Optional.of(tenantConverter.toLimitedTenantDTO(tenantById.get()));
   }
   
   public List<BasicTenantLicensingDTO> getAllTenants() {
@@ -81,9 +81,9 @@ public class TenantServiceFacade {
         Collectors.toList());
   }
 
-  public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {
+  public Optional<LimitedTenantDTO> findTenantBySubdomain(String subdomain) {
     var tenantById = tenantService.findTenantBySubdomain(subdomain);
     return tenantById.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toRestrictedDTO(tenantById.get()));
+        : Optional.of(tenantConverter.toLimitedTenantDTO(tenantById.get()));
   }
 }

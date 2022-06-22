@@ -121,7 +121,7 @@ paths:
       tags:
         - tenant-controller
       summary: 'Gets a tenant public information [Authorization: no-auth]'
-      operationId: getRestrictedTenantDataBySubdomain
+      operationId: getLimitedTenantDataBySubdomain
       parameters:
         - name: subdomain
           in: path
@@ -135,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestrictedTenantDTO'
+                $ref: '#/components/schemas/LimitedTenantDTO'
         404:
           description: Not found
         400:
@@ -149,7 +149,7 @@ paths:
       tags:
         - tenant-controller
       summary: 'Gets a tenant public information [Authorization: no-auth]'
-      operationId: getRestrictedTenantDataByTenantId
+      operationId: getLimitedTenantDataByTenantId
       parameters:
         - name: tenantId
           in: path
@@ -163,7 +163,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RestrictedTenantDTO'
+                $ref: '#/components/schemas/LimitedTenantDTO'
         404:
           description: Not found
         400:
@@ -202,6 +202,9 @@ components:
         content:
           $ref:
             '#/components/schemas/Content'
+        settings:
+          $ref:
+            '#/components/schemas/Settings'
     BasicTenantLicensingDTO:
       type: object
       required:
@@ -226,7 +229,7 @@ components:
           type: string
         licensing:
           $ref: '#/components/schemas/Licensing'
-    RestrictedTenantDTO:
+    LimitedTenantDTO:
       type: object
       required:
         - id
@@ -249,6 +252,9 @@ components:
         content:
           $ref:
             '#/components/schemas/Content'
+        settings:
+          $ref:
+            '#/components/schemas/Settings'
     Licensing:
       type: object
       required:
@@ -290,3 +296,11 @@ components:
         termsAndConditions:
           type: string
           example: "Llorem ipsum..."
+    Settings:
+      type: object
+      required:
+        - impressum
+      properties:
+        topicsInRegistrationEnabled:
+          type: boolean
+          example: "false"

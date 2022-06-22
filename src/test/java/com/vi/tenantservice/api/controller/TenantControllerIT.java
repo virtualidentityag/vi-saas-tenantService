@@ -117,10 +117,12 @@ class TenantControllerIT {
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain").withSettingTopicsInRegistrationEnabled(true)
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
+        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value(true));
   }
 
   @Test
@@ -160,7 +162,8 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.subdomain").exists())
         .andExpect(jsonPath("$.licensing").exists())
         .andExpect(jsonPath("$.theming").exists())
-        .andExpect(jsonPath("$.content").exists());
+        .andExpect(jsonPath("$.content").exists())
+        .andExpect(jsonPath("$.settings").exists());
   }
 
   @Test
@@ -189,7 +192,7 @@ class TenantControllerIT {
   }
 
   @Test
-  void getRestrictedTenantDataBySubdomain_Should_returnStatusOk_When_calledWithExistingTenantSubdomainAndNoAuthentication()
+  void getLimitedTenantDataBySubdomain_Should_returnStatusOk_When_calledWithExistingTenantSubdomainAndNoAuthentication()
       throws Exception {
     mockMvc.perform(get(PUBLIC_TENANT_RESOURCE + EXISTING_SUBDOMAIN)
             .contentType(APPLICATION_JSON)
@@ -199,7 +202,9 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.subdomain").exists())
         .andExpect(jsonPath("$.licensing").doesNotExist())
         .andExpect(jsonPath("$.theming").exists())
-        .andExpect(jsonPath("$.content").exists());
+        .andExpect(jsonPath("$.content").exists())
+        .andExpect(jsonPath("$.settings").exists())
+    ;
   }
 
   @Test

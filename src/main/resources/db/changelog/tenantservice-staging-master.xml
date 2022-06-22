@@ -6,4 +6,5 @@
                       http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.2.xsd">
   <include file="db/changelog/changeset/0001_initsql/initSql.xml"/>
   <include file="db/changelog/changeset/0003_change_tenant_attributes/0003-changeSet.xml"/>
+  <include file="db/changelog/changeset/0004_add_tenant_settings/0004-changeSet.xml"/>
 </databaseChangeLog>

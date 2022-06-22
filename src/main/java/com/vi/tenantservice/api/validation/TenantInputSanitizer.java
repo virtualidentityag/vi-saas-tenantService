@@ -33,6 +33,7 @@ public class TenantInputSanitizer {
     output.setContent(new Content());
     output.setTheming(new Theming());
     output.setLicensing(input.getLicensing());
+    output.setSettings(input.getSettings());
     return output;
   }
 

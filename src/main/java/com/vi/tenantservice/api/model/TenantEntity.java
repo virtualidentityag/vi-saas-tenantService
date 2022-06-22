@@ -62,6 +62,9 @@ public class TenantEntity {
   @Column(name = "content_termsandconditions")
   private String contentTermsAndConditions;
 
+  @Column(name = "settings_topics_in_registration_enabled")
+  private Boolean settingsTopicsInRegistrationEnabled;
+
   @Column(name = "create_date", nullable = false)
   private LocalDateTime createDate;
 

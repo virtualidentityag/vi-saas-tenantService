@@ -3,6 +3,7 @@ package com.vi.tenantservice.api.converter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
@@ -16,13 +17,32 @@ class TenantConverterTest {
   void toEntity_should_convertToEntityAndBackToDTO() {
     // given
     TenantDTO tenantDTO = new TenantTestDataBuilder().tenantDTO()
-        .withContent().withTheming().withLicensing().build();
+        .withContent().withTheming().withLicensing().withSettings().build();
 
     // when
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // then
     assertThat(tenantConverter.toDTO(entity)).isEqualTo(tenantDTO);
+  }
+
+  @Test
+  void toRestrictedTenantDTO_should_convertAttributesProperly() {
+    // given
+    TenantDTO tenantDTO = new TenantTestDataBuilder().tenantDTO()
+        .withContent().withTheming().withLicensing().withSettings().build();
+    TenantEntity entity = tenantConverter.toEntity(tenantDTO);
+
+    // when
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity);
+
+    // then
+    assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
+    assertThat(restrictedTenantDTO.getId()).isEqualTo(tenantDTO.getId());
+    assertThat(restrictedTenantDTO.getSubdomain()).isEqualTo(tenantDTO.getSubdomain());
+    assertThat(restrictedTenantDTO.getTheming()).isEqualTo(tenantDTO.getTheming());
+    assertThat(restrictedTenantDTO.getContent()).isEqualTo(tenantDTO.getContent());
+    assertThat(restrictedTenantDTO.getSettings()).isEqualTo(tenantDTO.getSettings());
   }
 
   @Test

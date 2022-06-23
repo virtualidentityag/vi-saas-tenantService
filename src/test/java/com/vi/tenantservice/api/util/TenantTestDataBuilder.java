@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.util;
 
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.Theming;
 
@@ -45,6 +46,11 @@ public class TenantTestDataBuilder {
     return this;
   }
 
+  public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(boolean topicsInRegistrationEnabled) {
+    tenantDTO.setSettings(new Settings().topicsInRegistrationEnabled(topicsInRegistrationEnabled));
+    return this;
+  }
+
   public TenantTestDataBuilder withContent() {
     tenantDTO.setContent(content());
     return this;
@@ -65,6 +71,11 @@ public class TenantTestDataBuilder {
 
   public TenantTestDataBuilder withLicensing() {
     tenantDTO.setLicensing(licensing());
+    return this;
+  }
+
+  public TenantTestDataBuilder withSettings() {
+    tenantDTO.setSettings(settings());
     return this;
   }
 
@@ -99,5 +110,9 @@ public class TenantTestDataBuilder {
   public String jsonify() {
     TenantDTO build = build();
     return JsonConverter.convert(build);
+  }
+
+  public Settings settings() {
+    return new Settings().topicsInRegistrationEnabled(true);
   }
 }

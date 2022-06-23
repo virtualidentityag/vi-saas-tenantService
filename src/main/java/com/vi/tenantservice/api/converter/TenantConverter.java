@@ -3,7 +3,7 @@ package com.vi.tenantservice.api.converter;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
-import com.vi.tenantservice.api.model.LimitedTenantDTO;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -90,8 +90,8 @@ public class TenantConverter {
     return new Settings().topicsInRegistrationEnabled(tenant.getSettingsTopicsInRegistrationEnabled());
   }
 
-  public LimitedTenantDTO toLimitedTenantDTO(TenantEntity tenant) {
-    return new LimitedTenantDTO()
+  public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {
+    return new RestrictedTenantDTO()
         .id(tenant.getId())
         .name(tenant.getName())
         .content(toContentDTO(tenant))

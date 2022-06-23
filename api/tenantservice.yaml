@@ -121,7 +121,7 @@ paths:
       tags:
         - tenant-controller
       summary: 'Gets a tenant public information [Authorization: no-auth]'
-      operationId: getLimitedTenantDataBySubdomain
+      operationId: getRestrictedTenantDataBySubdomain
       parameters:
         - name: subdomain
           in: path
@@ -135,7 +135,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LimitedTenantDTO'
+                $ref: '#/components/schemas/RestrictedTenantDTO'
         404:
           description: Not found
         400:
@@ -149,7 +149,7 @@ paths:
       tags:
         - tenant-controller
       summary: 'Gets a tenant public information [Authorization: no-auth]'
-      operationId: getLimitedTenantDataByTenantId
+      operationId: getRestrictedTenantDataByTenantId
       parameters:
         - name: tenantId
           in: path
@@ -163,7 +163,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/LimitedTenantDTO'
+                $ref: '#/components/schemas/RestrictedTenantDTO'
         404:
           description: Not found
         400:
@@ -229,7 +229,7 @@ components:
           type: string
         licensing:
           $ref: '#/components/schemas/Licensing'
-    LimitedTenantDTO:
+    RestrictedTenantDTO:
       type: object
       required:
         - id

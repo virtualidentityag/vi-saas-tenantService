@@ -2,7 +2,7 @@ package com.vi.tenantservice.api.controller;
 
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
-import com.vi.tenantservice.api.model.LimitedTenantDTO;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
@@ -65,15 +65,15 @@ public class TenantController implements TenantApi {
   }
 
   @Override
-  public ResponseEntity<LimitedTenantDTO> getLimitedTenantDataBySubdomain(String subdomain) {
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataBySubdomain(String subdomain) {
     var tenantById = tenantServiceFacade.findTenantBySubdomain(subdomain);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<LimitedTenantDTO> getLimitedTenantDataByTenantId(Long tenantId) {
-    var tenantById = tenantServiceFacade.findLimitedTenantDataById(tenantId);
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataByTenantId(Long tenantId) {
+    var tenantById = tenantServiceFacade.findRestrictedTenantById(tenantId);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
   }

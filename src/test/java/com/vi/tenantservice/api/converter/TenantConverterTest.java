@@ -3,7 +3,7 @@ package com.vi.tenantservice.api.converter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
-import com.vi.tenantservice.api.model.LimitedTenantDTO;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
@@ -27,22 +27,22 @@ class TenantConverterTest {
   }
 
   @Test
-  void toLimitedTenantDTO_should_convertAttributesProperly() {
+  void toRestrictedTenantDTO_should_convertAttributesProperly() {
     // given
     TenantDTO tenantDTO = new TenantTestDataBuilder().tenantDTO()
         .withContent().withTheming().withLicensing().withSettings().build();
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    LimitedTenantDTO limitedTenantDTO = tenantConverter.toLimitedTenantDTO(entity);
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity);
 
     // then
-    assertThat(limitedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
-    assertThat(limitedTenantDTO.getId()).isEqualTo(tenantDTO.getId());
-    assertThat(limitedTenantDTO.getSubdomain()).isEqualTo(tenantDTO.getSubdomain());
-    assertThat(limitedTenantDTO.getTheming()).isEqualTo(tenantDTO.getTheming());
-    assertThat(limitedTenantDTO.getContent()).isEqualTo(tenantDTO.getContent());
-    assertThat(limitedTenantDTO.getSettings()).isEqualTo(tenantDTO.getSettings());
+    assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
+    assertThat(restrictedTenantDTO.getId()).isEqualTo(tenantDTO.getId());
+    assertThat(restrictedTenantDTO.getSubdomain()).isEqualTo(tenantDTO.getSubdomain());
+    assertThat(restrictedTenantDTO.getTheming()).isEqualTo(tenantDTO.getTheming());
+    assertThat(restrictedTenantDTO.getContent()).isEqualTo(tenantDTO.getContent());
+    assertThat(restrictedTenantDTO.getSettings()).isEqualTo(tenantDTO.getSettings());
   }
 
   @Test

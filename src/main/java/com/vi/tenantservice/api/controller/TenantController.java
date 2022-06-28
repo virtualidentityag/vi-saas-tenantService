@@ -77,4 +77,12 @@ public class TenantController implements TenantApi {
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
   }
+
+  @Override
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedSingleTenantData() {
+    var singleTenant = tenantServiceFacade.getSingleTenant();
+    return singleTenant.isEmpty() ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
+        : new ResponseEntity<>(singleTenant.get(), HttpStatus.OK);
+
+  }
 }

@@ -24,6 +24,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.jdbc.Sql;
+import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -36,8 +38,12 @@ class TenantControllerIT {
   private static final String TENANT_RESOURCE = "/tenant";
   private static final String TENANT_RESOURCE_SLASH = TENANT_RESOURCE + "/";
   private static final String PUBLIC_TENANT_RESOURCE = "/tenant/public/";
+  private static final String PUBLIC_TENANT_RESOURCE_BY_ID = "/tenant/public/id/";
+  private static final String PUBLIC_SINGLE_TENANT_RESOURCE = PUBLIC_TENANT_RESOURCE + "single";
   private static final String EXISTING_TENANT = TENANT_RESOURCE_SLASH + "1";
+  private static final String EXISTING_PUBLIC_TENANT = PUBLIC_TENANT_RESOURCE_BY_ID + "1";
   private static final String NON_EXISTING_TENANT = TENANT_RESOURCE_SLASH + "3";
+  private static final String NON_EXISTING_PUBLIC_TENANT = PUBLIC_TENANT_RESOURCE_BY_ID + "3";
   private static final String AUTHORITY_WITHOUT_PERMISSIONS = "technical";
   private static final String USERNAME = "not important";
   private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
@@ -192,7 +198,7 @@ class TenantControllerIT {
   }
 
   @Test
-  void getLimitedTenantDataBySubdomain_Should_returnStatusOk_When_calledWithExistingTenantSubdomainAndNoAuthentication()
+  void getRestrictedTenantDataBySubdomain_Should_returnStatusOk_When_calledWithExistingTenantSubdomainAndNoAuthentication()
       throws Exception {
     mockMvc.perform(get(PUBLIC_TENANT_RESOURCE + EXISTING_SUBDOMAIN)
             .contentType(APPLICATION_JSON)
@@ -205,6 +211,29 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.content").exists())
         .andExpect(jsonPath("$.settings").exists())
     ;
+  }
+
+  @Test
+  void getRestrictedTenantDataByTenantId_Should_returnStatusOk_WHEN_calledWithExistingTenantIdAndNoAuthentication()
+      throws Exception {
+    mockMvc.perform(get(EXISTING_PUBLIC_TENANT)
+            .contentType(APPLICATION_JSON)
+        ).andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.name").exists())
+        .andExpect(jsonPath("$.subdomain").exists())
+        .andExpect(jsonPath("$.licensing").doesNotExist())
+        .andExpect(jsonPath("$.theming").exists())
+        .andExpect(jsonPath("$.content").exists())
+        .andExpect(jsonPath("$.settings").exists());
+  }
+
+  @Test
+  void getRestrictedTenantDataByTenantId_Should_returnStatusNotFound_WHEN_calledWithNonExistingTenantIdAndNoAuthentication()
+      throws Exception {
+    mockMvc.perform(get(NON_EXISTING_PUBLIC_TENANT)
+        .contentType(APPLICATION_JSON)
+    ).andExpect(status().isNotFound());
   }
 
   @Test
@@ -281,4 +310,18 @@ class TenantControllerIT {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  @Sql(value = "/database/SingleTenantData.sql")
+  @Sql(value = "/database/TenantData.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+  void getRestrictedSingleTenantData_Should_() throws Exception {
+    mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(1));
+  }
+
+  @Test
+  void getRestrictedSingleTenantData_Should_return_error() throws Exception {
+    mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
+        .andExpect(status().isConflict());
+  }
 }

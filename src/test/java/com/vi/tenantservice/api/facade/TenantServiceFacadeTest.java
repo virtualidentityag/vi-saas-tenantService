@@ -4,14 +4,18 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
+import com.vi.tenantservice.api.exception.TenantValidationException;
+import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
+import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -27,6 +31,7 @@ class TenantServiceFacadeTest {
   private static final long ID = 1L;
   private final TenantDTO tenantDTO = new TenantDTO();
   private final TenantDTO sanitizedTenantDTO = new TenantDTO();
+  private final RestrictedTenantDTO restrictedTenantDTO = new RestrictedTenantDTO();
   private final TenantEntity tenantEntity = new TenantEntity();
 
   @Mock
@@ -157,5 +162,37 @@ class TenantServiceFacadeTest {
     tenantServiceFacade.getAllTenants();
     // then
     verify(tenantService).getAllTenants();
+  }
+
+  @Test
+  void getSingleTenant_Should_findTenant_When_onlyOneTenantIsPresent() {
+    // given
+    when(tenantService.getAllTenants()).thenReturn(List.of(tenantEntity));
+    when(converter.toRestrictedTenantDTO(tenantEntity)).thenReturn(restrictedTenantDTO);
+
+    // when
+    tenantServiceFacade.getSingleTenant();
+
+    // then
+    verify(tenantService).getAllTenants();
+    verify(converter).toRestrictedTenantDTO(tenantEntity);
+  }
+
+  @Test
+  void getSingleTenant_Should_shouldThrowTenantValidationException_When_moreTenantsArePresent() {
+    // given
+    TenantEntity secondTenantEntity = new TenantEntity();
+    secondTenantEntity.setId(2L);
+    when(tenantService.getAllTenants()).thenReturn(List.of(tenantEntity, secondTenantEntity));
+
+
+    // then
+    assertThrows(TenantValidationException.class, () -> {
+      // when
+      tenantServiceFacade.getSingleTenant();
+    });
+
+    verify(tenantService).getAllTenants();
+    verifyNoInteractions(converter);
   }
 }

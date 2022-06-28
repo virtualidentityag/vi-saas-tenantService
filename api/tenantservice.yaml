@@ -170,6 +170,27 @@ paths:
           description: BAD REQUEST - invalid/incomplete request or body object
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
+  /tenant/public/single:
+    summary: 'Represents a publicly allowed tenant data'
+    description: This resource represents the tenant in a single-tenant system.
+    get:
+      tags:
+        - tenant-controller
+      summary: 'Gets a tenant public information [Authorization: no-auth]'
+      operationId: getRestrictedSingleTenantData
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestrictedTenantDTO'
+        404:
+          description: Not found
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
 components:
   schemas:
     TenantDTO:

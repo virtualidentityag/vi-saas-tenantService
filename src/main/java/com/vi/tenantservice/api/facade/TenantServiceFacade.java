@@ -1,11 +1,8 @@
 package com.vi.tenantservice.api.facade;
 
 
-import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_A_SINGLE_TENANT;
-
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
-import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
@@ -96,7 +93,7 @@ public class TenantServiceFacade {
       var tenantEntity = tenantEntities.get(0);
       return Optional.of(tenantConverter.toRestrictedTenantDTO(tenantEntity));
     } else {
-      throw new TenantValidationException(NOT_A_SINGLE_TENANT);
+      throw new IllegalStateException("Not exactly one tenant was found.");
     }
   }
 }

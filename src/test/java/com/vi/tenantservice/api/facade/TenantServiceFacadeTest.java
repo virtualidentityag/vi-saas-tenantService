@@ -9,7 +9,6 @@ import static org.mockito.Mockito.when;
 
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
-import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -179,15 +178,14 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  void getSingleTenant_Should_shouldThrowTenantValidationException_When_moreTenantsArePresent() {
+  void getSingleTenant_Should_shouldThrowIllegalStateException_When_moreTenantsArePresent() {
     // given
     TenantEntity secondTenantEntity = new TenantEntity();
     secondTenantEntity.setId(2L);
     when(tenantService.getAllTenants()).thenReturn(List.of(tenantEntity, secondTenantEntity));
 
-
     // then
-    assertThrows(TenantValidationException.class, () -> {
+    assertThrows(IllegalStateException.class, () -> {
       // when
       tenantServiceFacade.getSingleTenant();
     });

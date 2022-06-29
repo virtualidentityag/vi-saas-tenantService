@@ -311,17 +311,18 @@ class TenantControllerIT {
   }
 
   @Test
-  @Sql(value = "/database/SingleTenantData.sql")
-  @Sql(value = "/database/TenantData.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
-  void getRestrictedSingleTenantData_Should_() throws Exception {
+  @Sql(value = "/database/SingleTenantData.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
+  @Sql(value = "/database/MultiTenantData.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
+  void getRestrictedSingleTenantData_Should_returnOkAndTheRequestedTenantData() throws Exception {
     mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1));
   }
 
   @Test
-  void getRestrictedSingleTenantData_Should_return_error() throws Exception {
+  void getRestrictedSingleTenantData_Should_returnConflict_When_notExactlyOneTenantIsFound()
+      throws Exception {
     mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
-        .andExpect(status().isConflict());
+        .andExpect(status().isBadRequest());
   }
 }

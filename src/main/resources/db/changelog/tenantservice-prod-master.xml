@@ -7,4 +7,5 @@
   <include file="db/changelog/changeset/0001_initsql/initSql.xml"/>
   <include file="db/changelog/changeset/0003_change_tenant_attributes/0003-changeSet.xml"/>
   <include file="db/changelog/changeset/0004_add_tenant_settings/0004-changeSet.xml"/>
+  <include file="db/changelog/changeset/0005_change_tenant_settings_structure/0005-changeSet.xml"/>
 </databaseChangeLog>

@@ -5,6 +5,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 
 import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.api.model.TenantSettings;
+import com.vi.tenantservice.api.util.JsonConverter;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +31,7 @@ class TenantInputSanitizerTest {
     // given
     EasyRandom generator = new EasyRandom();
     TenantDTO tenantDTO = generator.nextObject(TenantDTO.class);
+    tenantDTO.settings(validSettings());
 
     // when
     TenantDTO sanitized = tenantInputSanitizer.sanitize(tenantDTO);
@@ -46,6 +49,7 @@ class TenantInputSanitizerTest {
     tenantDTO.getContent().setTermsAndConditions(LINK_CONTENT);
     tenantDTO.getContent().setPrivacy(LINK_CONTENT);
     tenantDTO.getContent().setImpressum(LINK_CONTENT);
+    tenantDTO.settings(validSettings());
     TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
     // when
     TenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
@@ -64,6 +68,7 @@ class TenantInputSanitizerTest {
     tenantDTO.getContent().setTermsAndConditions(IMAGE_CONTENT);
     tenantDTO.getContent().setPrivacy(IMAGE_CONTENT);
     tenantDTO.getContent().setImpressum(IMAGE_CONTENT);
+    tenantDTO.settings(validSettings());
     TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
     // when
     TenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
@@ -72,6 +77,10 @@ class TenantInputSanitizerTest {
     assertThat(sanitized.getContent().getTermsAndConditions()).contains(IMAGE_CONTENT);
     assertThat(sanitized.getContent().getPrivacy()).contains(IMAGE_CONTENT);
     assertThat(sanitized.getContent().getImpressum()).contains(IMAGE_CONTENT);
+  }
+
+  private String validSettings() {
+    return JsonConverter.convertToJson(new TenantSettings());
   }
 
   private void verifyNeededSanitizationsAreCalled(TenantDTO tenantDTO) {

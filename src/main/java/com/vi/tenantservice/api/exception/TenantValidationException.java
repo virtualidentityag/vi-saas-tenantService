@@ -18,4 +18,11 @@ public class TenantValidationException extends RuntimeException {
             .buildHeader();
         this.httpStatus = HttpStatus.CONFLICT;
     }
+
+    public TenantValidationException(HttpStatusExceptionReason exceptionReason, HttpStatus status) {
+        super();
+        this.customHttpHeaders = new CustomHttpHeader(exceptionReason)
+            .buildHeader();
+        this.httpStatus = status;
+    }
 }

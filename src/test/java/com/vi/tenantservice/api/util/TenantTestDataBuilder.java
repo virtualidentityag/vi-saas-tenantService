@@ -2,8 +2,8 @@ package com.vi.tenantservice.api.util;
 
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
-import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
 
 public class TenantTestDataBuilder {
@@ -46,8 +46,11 @@ public class TenantTestDataBuilder {
     return this;
   }
 
-  public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(boolean topicsInRegistrationEnabled) {
-    tenantDTO.setSettings(new Settings().topicsInRegistrationEnabled(topicsInRegistrationEnabled));
+  public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(
+      boolean topicsInRegistrationEnabled) {
+    TenantSettings tenantSettings = TenantSettings.builder()
+        .topicsInRegistrationEnabled(topicsInRegistrationEnabled).build();
+    tenantDTO.setSettings(JsonConverter.convertToJson(tenantSettings));
     return this;
   }
 
@@ -75,7 +78,7 @@ public class TenantTestDataBuilder {
   }
 
   public TenantTestDataBuilder withSettings() {
-    tenantDTO.setSettings(settings());
+    tenantDTO.setSettings(getSettingsJson());
     return this;
   }
 
@@ -109,10 +112,11 @@ public class TenantTestDataBuilder {
 
   public String jsonify() {
     TenantDTO build = build();
-    return JsonConverter.convert(build);
+    return JsonConverter.convertToJson(build);
   }
 
-  public Settings settings() {
-    return new Settings().topicsInRegistrationEnabled(true);
+  private String getSettingsJson() {
+    return JsonConverter.convertToJson(
+        TenantSettings.builder().topicsInRegistrationEnabled(true).build());
   }
 }

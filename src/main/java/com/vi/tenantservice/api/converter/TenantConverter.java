@@ -1,18 +1,23 @@
 package com.vi.tenantservice.api.converter;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
-import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
+import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
+@Slf4j
 public class TenantConverter {
 
   public TenantEntity toEntity(TenantDTO tenantDTO) {
@@ -30,8 +35,7 @@ public class TenantConverter {
 
   private void settingsToEntity(TenantDTO tenantDTO, TenantEntityBuilder builder) {
     if (tenantDTO.getSettings() != null) {
-      builder.settingsTopicsInRegistrationEnabled(tenantDTO.getSettings()
-          .getTopicsInRegistrationEnabled());
+      builder.settings(tenantDTO.getSettings()).build();
     }
   }
 
@@ -76,7 +80,7 @@ public class TenantConverter {
         .content(toContentDTO(tenant))
         .theming(toThemingDTO(tenant))
         .licensing(toLicensingDTO(tenant))
-        .settings(toSettingsDTO(tenant));
+        .settings(getSettings(tenant));
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
     }
@@ -86,8 +90,17 @@ public class TenantConverter {
     return tenantDTO;
   }
 
-  private Settings toSettingsDTO(TenantEntity tenant) {
-    return new Settings().topicsInRegistrationEnabled(tenant.getSettingsTopicsInRegistrationEnabled());
+  private String getSettings(TenantEntity tenant) {
+    return tenant.getSettings() == null ? getDefaultSettings() : tenant.getSettings();
+  }
+
+  private String getDefaultSettings() {
+    try {
+      return new ObjectMapper().writeValueAsString(new TenantSettings());
+    } catch (JsonProcessingException e) {
+      log.error("Unable to serialize default tenant settings", e);
+      throw new RuntimeJsonMappingException("unable to serialize default tenant settings");
+    }
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {
@@ -97,7 +110,7 @@ public class TenantConverter {
         .content(toContentDTO(tenant))
         .theming(toThemingDTO(tenant))
         .subdomain(tenant.getSubdomain())
-        .settings(toSettingsDTO(tenant));
+        .settings(getSettings(tenant));
   }
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {

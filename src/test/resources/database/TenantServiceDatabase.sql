@@ -14,7 +14,7 @@ CREATE TABLE TENANT
     content_termsandconditions longtext,
     create_date datetime NOT NULL,
     update_date datetime,
-    settings_topics_in_registration_enabled BOOLEAN default FALSE,
+    settings VARCHAR(4000) default NULL,
     PRIMARY KEY (ID)
 );
 

@@ -318,10 +318,5 @@ components:
           type: string
           example: "Llorem ipsum..."
     Settings:
-      type: object
-      required:
-        - impressum
-      properties:
-        topicsInRegistrationEnabled:
-          type: boolean
-          example: "false"
+      type: string
+      example: "{ 'topicsInRegistrationEnabled': 'true', 'feature.topics.enabled': 'true', 'feature.demographics.enabled': 'false' }"

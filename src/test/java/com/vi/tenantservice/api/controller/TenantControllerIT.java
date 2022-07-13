@@ -128,7 +128,7 @@ class TenantControllerIT {
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
-        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value(true));
+        .andExpect(jsonPath("$.settings").value("{\"topicsInRegistrationEnabled\":true,\"featureTopicsEnabled\":false,\"featureDemographicsEnabled\":false}"));
   }
 
   @Test
@@ -214,7 +214,7 @@ class TenantControllerIT {
   }
 
   @Test
-  void getRestrictedTenantDataByTenantId_Should_returnStatusOk_WHEN_calledWithExistingTenantIdAndNoAuthentication()
+  void getRestrictedTenantDataByTenantId_Should_returnStatusOk_When_calledWithExistingTenantIdAndNoAuthentication()
       throws Exception {
     mockMvc.perform(get(EXISTING_PUBLIC_TENANT)
             .contentType(APPLICATION_JSON)
@@ -229,7 +229,7 @@ class TenantControllerIT {
   }
 
   @Test
-  void getRestrictedTenantDataByTenantId_Should_returnStatusNotFound_WHEN_calledWithNonExistingTenantIdAndNoAuthentication()
+  void getRestrictedTenantDataByTenantId_Should_returnStatusNotFound_When_calledWithNonExistingTenantIdAndNoAuthentication()
       throws Exception {
     mockMvc.perform(get(NON_EXISTING_PUBLIC_TENANT)
         .contentType(APPLICATION_JSON)

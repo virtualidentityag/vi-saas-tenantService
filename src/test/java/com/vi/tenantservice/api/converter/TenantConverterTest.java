@@ -4,10 +4,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.TenantSettings;
-import com.vi.tenantservice.api.util.JsonConverter;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
 import org.junit.jupiter.api.Test;
 
@@ -63,7 +62,7 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getSubdomain()).isEqualTo(tenantDTO.getSubdomain());
     assertThat(restrictedTenantDTO.getTheming()).isEqualTo(tenantDTO.getTheming());
     assertThat(restrictedTenantDTO.getContent()).isEqualTo(tenantDTO.getContent());
-    assertThat(restrictedTenantDTO.getSettings()).isEqualTo(JsonConverter.convertToJson(new TenantSettings()));
+    assertThat(restrictedTenantDTO.getSettings()).isEqualTo(new Settings());
   }
 
   @Test

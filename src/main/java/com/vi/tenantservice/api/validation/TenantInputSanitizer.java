@@ -1,18 +1,11 @@
 package com.vi.tenantservice.api.validation;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.DeserializationFeature;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.vi.tenantservice.api.exception.TenantValidationException;
-import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.TenantDTO;
-import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 @RequiredArgsConstructor
@@ -29,29 +22,7 @@ public class TenantInputSanitizer {
     output.setSubdomain(inputSanitizer.sanitize(input.getSubdomain()));
     sanitizeTheming(input, output);
     sanitizeContent(input, output);
-    sanitizeSettings(input, output);
     return output;
-  }
-
-  private void sanitizeSettings(TenantDTO input, TenantDTO output) {
-    try {
-      sanitizeSettingsIfValueNotNull(input, output);
-    } catch (JsonProcessingException ex) {
-      throw new TenantValidationException(HttpStatusExceptionReason.INVALID_SETTINGS_VALUE,
-          HttpStatus.BAD_REQUEST);
-    }
-  }
-
-  private void sanitizeSettingsIfValueNotNull(TenantDTO input, TenantDTO output) throws JsonProcessingException {
-    if (input.getSettings() != null) {
-      TenantSettings tenantSettings = tryDeserializeToJson(input.getSettings());
-      output.settings(new ObjectMapper().writeValueAsString(tenantSettings));
-    }
-  }
-
-  private TenantSettings tryDeserializeToJson(String settings) throws JsonProcessingException {
-    ObjectMapper objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
-    return objectMapper.readValue(settings, TenantSettings.class);
   }
 
   private TenantDTO copyNotSanitizedAttributes(TenantDTO input) {
@@ -62,6 +33,7 @@ public class TenantInputSanitizer {
     output.setContent(new Content());
     output.setTheming(new Theming());
     output.setLicensing(input.getLicensing());
+    output.setSettings(input.getSettings());
     return output;
   }
 

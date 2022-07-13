@@ -128,7 +128,7 @@ class TenantControllerIT {
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
-        .andExpect(jsonPath("$.settings").value("{\"topicsInRegistrationEnabled\":true,\"featureTopicsEnabled\":false,\"featureDemographicsEnabled\":false}"));
+        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"));
   }
 
   @Test

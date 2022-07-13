@@ -46,7 +46,7 @@ class TenantServiceFacadeTest {
   private TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
 
   @Mock
-  private TenantFacadeValidationService tenantFacadeValidationService;
+  private TenantFacadeSettingsAuthorisationService tenantFacadeValidationService;
 
   @InjectMocks
   private TenantServiceFacade tenantServiceFacade;

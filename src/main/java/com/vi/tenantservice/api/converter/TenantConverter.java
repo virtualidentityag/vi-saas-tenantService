@@ -1,17 +1,18 @@
 package com.vi.tenantservice.api.converter;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
+import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
+
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
+import com.vi.tenantservice.api.util.JsonConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -35,8 +36,21 @@ public class TenantConverter {
 
   private void settingsToEntity(TenantDTO tenantDTO, TenantEntityBuilder builder) {
     if (tenantDTO.getSettings() != null) {
-      builder.settings(tenantDTO.getSettings()).build();
+      TenantSettings tenantSettings = toEntitySettings(tenantDTO.getSettings());
+      builder.settings(convertToJson(tenantSettings)).build();
     }
+  }
+
+  private TenantSettings toEntitySettings(Settings settings) {
+    return TenantSettings.builder()
+        .topicsInRegistrationEnabled(nullAsFalse(settings.getTopicsInRegistrationEnabled()))
+        .featureDemographicsEnabled(nullAsFalse(settings.getFeatureDemographicsEnabled()))
+        .featureTopicsEnabled(nullAsFalse(settings.getFeatureTopicsEnabled()))
+        .build();
+  }
+
+  private boolean nullAsFalse(Boolean topicsInRegistrationEnabled) {
+    return Boolean.TRUE.equals(topicsInRegistrationEnabled);
   }
 
   public TenantEntity toEntity(TenantEntity targetEntity, TenantDTO tenantDTO) {
@@ -90,17 +104,20 @@ public class TenantConverter {
     return tenantDTO;
   }
 
-  private String getSettings(TenantEntity tenant) {
-    return tenant.getSettings() == null ? getDefaultSettings() : tenant.getSettings();
+  private Settings getSettings(TenantEntity tenant) {
+    if (tenant.getSettings() == null) {
+      return new Settings();
+    } else {
+      return getSettingsIfNotNull(tenant.getSettings());
+    }
   }
 
-  private String getDefaultSettings() {
-    try {
-      return new ObjectMapper().writeValueAsString(new TenantSettings());
-    } catch (JsonProcessingException e) {
-      log.error("Unable to serialize default tenant settings", e);
-      throw new RuntimeJsonMappingException("unable to serialize default tenant settings");
-    }
+  private Settings getSettingsIfNotNull(String settingsJson) {
+    TenantSettings tenantSettings = JsonConverter.convertFromJson(settingsJson);
+    return new Settings()
+        .topicsInRegistrationEnabled(tenantSettings.isTopicsInRegistrationEnabled())
+        .featureDemographicsEnabled(tenantSettings.isFeatureDemographicsEnabled())
+        .featureTopicsEnabled(tenantSettings.isFeatureTopicsEnabled());
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {

@@ -318,5 +318,14 @@ components:
           type: string
           example: "Llorem ipsum..."
     Settings:
-      type: string
-      example: "{ 'topicsInRegistrationEnabled': 'true', 'feature.topics.enabled': 'true', 'feature.demographics.enabled': 'false' }"
+      type: object
+      properties:
+        topicsInRegistrationEnabled:
+          type: boolean
+          example: "false"
+        featureTopicsEnabled:
+          type: boolean
+          example: "false"
+        featureDemographicsEnabled:
+          type: boolean
+          example: "false"

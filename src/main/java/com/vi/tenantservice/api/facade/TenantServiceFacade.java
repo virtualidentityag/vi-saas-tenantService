@@ -29,19 +29,19 @@ public class TenantServiceFacade {
   private final @NonNull TenantConverter tenantConverter;
   private final @NonNull TenantInputSanitizer tenantInputSanitizer;
   private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
-  private final @NonNull TenantFacadeValidationService tenantFacadeValidationService;
+  private final @NonNull TenantFacadeSettingsAuthorisationService tenantFacadeValidationService;
 
   public TenantDTO createTenant(TenantDTO tenantDTO) {
     log.info("Creating new tenant");
     TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
-    tenantFacadeValidationService.validate(tenantDTO);
+    tenantFacadeValidationService.authorizeSettings(tenantDTO);
     var entity = tenantConverter.toEntity(sanitizedTenantDTO);
     return tenantConverter.toDTO(tenantService.create(entity));
   }
 
   public TenantDTO updateTenant(Long id, TenantDTO tenantDTO) {
     tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
-    tenantFacadeValidationService.validate(tenantDTO);
+    tenantFacadeValidationService.authorizeSettings(tenantDTO);
     TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     log.info("Attempting to update tenant with id {}", id);
     return updateWithSanitizedInput(id, sanitizedTenantDTO);

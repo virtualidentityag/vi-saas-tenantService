@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -72,7 +73,7 @@ class TenantFacadeAuthorisationServiceTest {
     when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
-    assertThrows(AccessDeniedException.class, () -> {
+    assertThrows(TenantAuthorisationException.class, () -> {
       // when
       tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
     });
@@ -86,7 +87,7 @@ class TenantFacadeAuthorisationServiceTest {
     when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
-    assertThrows(AccessDeniedException.class, () -> {
+    assertThrows(TenantAuthorisationException.class, () -> {
       // when
       tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
     });
@@ -101,7 +102,7 @@ class TenantFacadeAuthorisationServiceTest {
     when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
-    assertThrows(AccessDeniedException.class, () -> {
+    assertThrows(TenantAuthorisationException.class, () -> {
       // when
       tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
     });
@@ -115,7 +116,7 @@ class TenantFacadeAuthorisationServiceTest {
     when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
 
     // then
-    assertThrows(AccessDeniedException.class, () -> {
+    assertThrows(TenantAuthorisationException.class, () -> {
       // when
       tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
     });
@@ -192,7 +193,7 @@ class TenantFacadeAuthorisationServiceTest {
     when(tenantFacadeChangeDetectionService.determineChangedSettings(tenantDTO, tenantEntity)).thenReturn(
         Lists.newArrayList(TenantSetting.FEATURE_DEMOGRAPHICS_ENABLED));
     // when
-    assertThrows(AccessDeniedException.class, () -> {
+    assertThrows(TenantAuthorisationException.class, () -> {
       tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(
           tenantDTO, tenantEntity);
     });

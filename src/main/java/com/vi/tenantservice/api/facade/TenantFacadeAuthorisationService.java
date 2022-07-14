@@ -1,6 +1,11 @@
 package com.vi.tenantservice.api.facade;
 
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LICENSING;
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SUBDOMAIN;
+
 import com.vi.tenantservice.api.authorisation.UserRole;
+import com.vi.tenantservice.api.exception.TenantAuthorisationException;
+import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantSetting;
@@ -27,7 +32,7 @@ public class TenantFacadeAuthorisationService {
   }
 
   private boolean userHasAnyRoleOf(List<UserRole> roles) {
-    return roles.stream().anyMatch(r -> authorisationService.hasAuthority(r.getValue()));
+    return roles.stream().anyMatch(userRole -> authorisationService.hasAuthority(userRole.getValue()));
   }
 
   private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {
@@ -67,8 +72,8 @@ public class TenantFacadeAuthorisationService {
 
   private void assertUserHasPermissionsToChangeSetting(TenantSetting tenantSetting) {
     if (!userHasAnyRoleOf(tenantSetting.getRolesAuthorisedToChange())) {
-      throw new AccessDeniedException(
-          "User does not have permissions to change setting :" + tenantSetting.name());
+      String msg = "User does not have permissions to change setting: " + tenantSetting.name();
+      logAndThrowTenantAuthorisationException(msg, HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SETTING);
     }
   }
 
@@ -76,7 +81,7 @@ public class TenantFacadeAuthorisationService {
       TenantEntity existingTenant) {
 
     if (!Objects.equals(sanitizedTenantDTO.getSubdomain(), existingTenant.getSubdomain())) {
-      throw new AccessDeniedException("Single tenant admin cannot change subdomain");
+      logAndThrowTenantAuthorisationException("Single tenant admin cannot change subdomain", NOT_ALLOWED_TO_CHANGE_SUBDOMAIN);
     }
     assertSingleTenantAdminDoesNotTryToChangeLicensingInformation(sanitizedTenantDTO,
         existingTenant);
@@ -85,12 +90,11 @@ public class TenantFacadeAuthorisationService {
   private void assertSingleTenantAdminDoesNotTryToChangeLicensingInformation(
       TenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     if (isAttemptToDeleteExistingLicensingInformation(sanitizedTenantDTO, existingTenant)) {
-      throw new AccessDeniedException("Single tenant admin cannot delete licensing");
+      logAndThrowTenantAuthorisationException("Single tenant admin cannot delete licensing", NOT_ALLOWED_TO_CHANGE_LICENSING);
     }
 
     if (sanitizedTenantDTO.getLicensing() != null && licensingChanged(sanitizedTenantDTO, existingTenant)) {
-        throw new AccessDeniedException(
-            "Single tenant admin cannot change allowed number of users");
+      logAndThrowTenantAuthorisationException("Single tenant admin cannot change allowed number of users", NOT_ALLOWED_TO_CHANGE_LICENSING);
     }
   }
 
@@ -103,5 +107,10 @@ public class TenantFacadeAuthorisationService {
       TenantEntity existingTenant) {
     return sanitizedTenantDTO.getLicensing() == null
         && existingTenant.getLicensingAllowedNumberOfUsers() != null;
+  }
+
+  private void logAndThrowTenantAuthorisationException(String msg, HttpStatusExceptionReason reason) {
+    log.warn(msg);
+    throw new TenantAuthorisationException(msg, reason);
   }
 }

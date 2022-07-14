@@ -41,7 +41,6 @@ public class TenantServiceFacade {
 
   public TenantDTO updateTenant(Long id, TenantDTO tenantDTO) {
     tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
-    tenantFacadeValidationService.authorizeSettings(tenantDTO);
     TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     log.info("Attempting to update tenant with id {}", id);
     return updateWithSanitizedInput(id, sanitizedTenantDTO);

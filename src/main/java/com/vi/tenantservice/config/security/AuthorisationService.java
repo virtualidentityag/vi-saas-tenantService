@@ -15,6 +15,7 @@ public class AuthorisationService {
         .anyMatch(role -> authorityName.equals(role.getAuthority()));
   }
 
+
   public Optional<Long> findTenantIdInAccessToken() {
     Integer tenantId = (Integer) getPrincipal().getKeycloakSecurityContext().getToken()
         .getOtherClaims().get("tenantId");

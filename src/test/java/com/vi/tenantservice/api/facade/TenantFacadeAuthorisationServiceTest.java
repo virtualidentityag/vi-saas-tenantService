@@ -5,10 +5,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantSetting;
+import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
+import com.vi.tenantservice.api.util.JsonConverter;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -28,6 +32,9 @@ class TenantFacadeAuthorisationServiceTest {
 
   @Mock
   AuthorisationService authorisationService;
+
+  @Mock
+  TenantFacadeChangeDetectionService tenantFacadeChangeDetectionService;
 
   @Test
   void assertUserIsAuthorizedToAccessTenant_Should_AllowOperation_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
@@ -136,5 +143,58 @@ class TenantFacadeAuthorisationServiceTest {
 
     // when
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
+  }
+
+  @Test
+  void assertUserHasSufficientPermissionsToChangeAttributes_Should_AllowOperation_When_NoChangesInSettingsDetected() {
+    // given
+    TenantSettings tenantSettings = new TenantSettings();
+    String settings = JsonConverter.convertToJson(tenantSettings);
+    TenantEntity tenantEntity = TenantEntity.builder()
+        .settings(settings).build();
+
+    TenantDTO tenantDTO = new TenantDTO().theming(new Theming().logo("logo"));
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
+    when(tenantFacadeChangeDetectionService.determineChangedSettings(tenantDTO, tenantEntity)).thenReturn(
+        Lists.newArrayList());
+    // when
+    tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
+  }
+
+  @Test
+  void assertUserHasSufficientPermissionsToChangeAttributes_Should_AllowOperation_When_ChangesInSettingsDetectedForWhichSingleTenantAdminHavePermissions() {
+    // given
+    TenantSettings tenantSettings = new TenantSettings();
+    String settings = JsonConverter.convertToJson(tenantSettings);
+    TenantEntity tenantEntity = TenantEntity.builder()
+        .settings(settings).build();
+
+    TenantDTO tenantDTO = new TenantDTO().theming(new Theming().logo("logo"));
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
+    when(tenantFacadeChangeDetectionService.determineChangedSettings(tenantDTO, tenantEntity)).thenReturn(
+        Lists.newArrayList());
+    when(tenantFacadeChangeDetectionService.determineChangedSettings(tenantDTO, tenantEntity)).thenReturn(
+        Lists.newArrayList(TenantSetting.ENABLE_TOPICS_IN_REGISTRATION));
+    // when
+    tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(tenantDTO, tenantEntity);
+  }
+
+  @Test
+  void assertUserHasSufficientPermissionsToChangeAttributes_Should_NotAllowOperation_When_ChangesInSettingsDetectedForWhichSingleTenantAdminDoesNotPermissions() {
+    // given
+    TenantSettings tenantSettings = new TenantSettings();
+    String settings = JsonConverter.convertToJson(tenantSettings);
+    TenantEntity tenantEntity = TenantEntity.builder()
+        .settings(settings).build();
+
+    TenantDTO tenantDTO = new TenantDTO().theming(new Theming().logo("logo"));
+    when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
+    when(tenantFacadeChangeDetectionService.determineChangedSettings(tenantDTO, tenantEntity)).thenReturn(
+        Lists.newArrayList(TenantSetting.FEATURE_DEMOGRAPHICS_ENABLED));
+    // when
+    assertThrows(AccessDeniedException.class, () -> {
+      tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(
+          tenantDTO, tenantEntity);
+    });
   }
 }

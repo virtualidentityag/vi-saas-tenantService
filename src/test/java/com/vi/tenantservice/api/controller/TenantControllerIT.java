@@ -1,9 +1,11 @@
 package com.vi.tenantservice.api.controller;
 
 
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.hasSize;
+import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -17,11 +19,14 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.vi.tenantservice.TenantServiceApplication;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
+import com.vi.tenantservice.config.security.AuthorisationService;
+import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -51,6 +56,9 @@ class TenantControllerIT {
 
   @Autowired
   private WebApplicationContext context;
+
+  @MockBean
+  AuthorisationService authorisationService;
 
   private MockMvc mockMvc;
 
@@ -119,12 +127,31 @@ class TenantControllerIT {
   @Test
   void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndTenantAdminAuthority()
       throws Exception {
+    when(authorisationService.hasAuthority("tenant-admin")).thenReturn(true);
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
             .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain").withSettingTopicsInRegistrationEnabled(true)
                 .withLicensing().jsonify())
+            .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
+        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"));
+  }
+
+
+  @Test
+  void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndSingleTenantAdminAuthority()
+      throws Exception {
+    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    mockMvc.perform(put(EXISTING_TENANT)
+            .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
+            .contentType(APPLICATION_JSON)
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
+                .withSettingTopicsInRegistrationEnabled(true)
+                .withLicensing().withSettings().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subdomain").value("changed subdomain"))

@@ -3,7 +3,9 @@ package com.vi.tenantservice.api.facade;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import lombok.NonNull;
@@ -18,9 +20,14 @@ import org.springframework.stereotype.Service;
 public class TenantFacadeAuthorisationService {
 
   private final @NonNull AuthorisationService authorisationService;
+  private final @NonNull TenantFacadeChangeDetectionService tenantFacadeChangeDetectionService;
 
   private boolean isSingleTenantAdmin() {
     return authorisationService.hasAuthority(UserRole.SINGLE_TENANT_ADMIN.getValue());
+  }
+
+  private boolean userHasAnyRoleOf(List<UserRole> roles) {
+    return roles.stream().anyMatch(r -> authorisationService.hasAuthority(r.getValue()));
   }
 
   private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {
@@ -45,8 +52,25 @@ public class TenantFacadeAuthorisationService {
     if (isSingleTenantAdmin()) {
       assertSingleTenantAdminHasPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
     }
+    List<TenantSetting> determineSettingsThatChanged = tenantFacadeChangeDetectionService.determineChangedSettings(
+        sanitizedTenantDTO, existingTenant);
+    log.info("Detected the following changes in setting attributes: " + determineSettingsThatChanged);
+    assertUserHasPermissionsToChangeSettings(determineSettingsThatChanged);
   }
 
+
+  private void assertUserHasPermissionsToChangeSettings(List<TenantSetting> changedSettings) {
+    if (!changedSettings.isEmpty()) {
+      changedSettings.forEach(this::assertUserHasPermissionsToChangeSetting);
+    }
+  }
+
+  private void assertUserHasPermissionsToChangeSetting(TenantSetting tenantSetting) {
+    if (!userHasAnyRoleOf(tenantSetting.getRolesAuthorisedToChange())) {
+      throw new AccessDeniedException(
+          "User does not have permissions to change setting :" + tenantSetting.name());
+    }
+  }
 
   private void assertSingleTenantAdminHasPermissionsToChangeAttributes(TenantDTO sanitizedTenantDTO,
       TenantEntity existingTenant) {
@@ -64,9 +88,15 @@ public class TenantFacadeAuthorisationService {
       throw new AccessDeniedException("Single tenant admin cannot delete licensing");
     }
 
-    if (!Objects.equals(sanitizedTenantDTO.getLicensing().getAllowedNumberOfUsers(), existingTenant.getLicensingAllowedNumberOfUsers())) {
-      throw new AccessDeniedException("Single tenant admin cannot change allowed number of users");
+    if (sanitizedTenantDTO.getLicensing() != null && licensingChanged(sanitizedTenantDTO, existingTenant)) {
+        throw new AccessDeniedException(
+            "Single tenant admin cannot change allowed number of users");
     }
+  }
+
+  private boolean licensingChanged(TenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+    return !Objects.equals(sanitizedTenantDTO.getLicensing().getAllowedNumberOfUsers(),
+        existingTenant.getLicensingAllowedNumberOfUsers());
   }
 
   private boolean isAttemptToDeleteExistingLicensingInformation(TenantDTO sanitizedTenantDTO,

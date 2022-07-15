@@ -11,8 +11,11 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class TenantSettings {
 
-  boolean topicsInRegistrationEnabled;
+  boolean featureMultitenancyEnabled;
+  boolean featureStatisticsEnabled;
   boolean featureTopicsEnabled;
+  boolean topicsInRegistrationEnabled;
   boolean featureDemographicsEnabled;
+  boolean featureAppointmentsEnabled;
 
 }

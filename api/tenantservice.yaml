@@ -320,12 +320,21 @@ components:
     Settings:
       type: object
       properties:
-        topicsInRegistrationEnabled:
+        featureMultitenancyEnabled:
+          type: boolean
+          example: "false"
+        featureStatisticsEnabled:
           type: boolean
           example: "false"
         featureTopicsEnabled:
           type: boolean
           example: "false"
+        topicsInRegistrationEnabled:
+          type: boolean
+          example: "false"
         featureDemographicsEnabled:
+          type: boolean
+          example: "false"
+        featureAppointmentsEnabled:
           type: boolean
           example: "false"

@@ -39,6 +39,18 @@ public class TenantFacadeChangeDetectionService {
         existingSettingsToCompare.isTopicsInRegistrationEnabled())) {
       resultList.add(TenantSetting.ENABLE_TOPICS_IN_REGISTRATION);
     }
+    if (isChanged(inputSettings.getFeatureMultitenancyEnabled(),
+        existingSettingsToCompare.isFeatureMultitenancyEnabled())) {
+      resultList.add(TenantSetting.FEATURE_MULTITENANCY_ENABLED);
+    }
+    if (isChanged(inputSettings.getFeatureStatisticsEnabled(),
+        existingSettingsToCompare.isFeatureStatisticsEnabled())) {
+      resultList.add(TenantSetting.FEATURE_STATISTICS_ENABLED);
+    }
+    if (isChanged(inputSettings.getFeatureAppointmentsEnabled(),
+        existingSettingsToCompare.isFeatureAppointmentsEnabled())) {
+      resultList.add(TenantSetting.FEATURE_APPOINTMENTS_ENABLED);
+    }
     return resultList;
   }
 

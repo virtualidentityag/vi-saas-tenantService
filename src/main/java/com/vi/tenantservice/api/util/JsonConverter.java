@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.vi.tenantservice.api.model.TenantDTO;
@@ -26,7 +27,8 @@ public class JsonConverter {
 
   private static <T> T deserializeFromJsonString(String jsonString, Class<T> clazz) {
     try {
-      return new ObjectMapper().readValue(jsonString, clazz);
+      var objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      return objectMapper.readValue(jsonString, clazz);
     } catch (JsonProcessingException e) {
       throw new RuntimeJsonMappingException(e.getMessage());
     }

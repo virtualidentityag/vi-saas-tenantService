@@ -120,7 +120,10 @@ public class TenantConverter {
     return new Settings()
         .topicsInRegistrationEnabled(tenantSettings.isTopicsInRegistrationEnabled())
         .featureDemographicsEnabled(tenantSettings.isFeatureDemographicsEnabled())
-        .featureTopicsEnabled(tenantSettings.isFeatureTopicsEnabled());
+        .featureTopicsEnabled(tenantSettings.isFeatureTopicsEnabled())
+        .featureAppointmentsEnabled(tenantSettings.isFeatureAppointmentsEnabled())
+        .featureStatisticsEnabled(tenantSettings.isFeatureStatisticsEnabled())
+        .featureMultitenancyEnabled(tenantSettings.isFeatureMultitenancyEnabled());
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {

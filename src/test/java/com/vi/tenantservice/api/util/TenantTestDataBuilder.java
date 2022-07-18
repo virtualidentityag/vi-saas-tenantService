@@ -78,7 +78,11 @@ public class TenantTestDataBuilder {
   public TenantTestDataBuilder withSettings() {
     tenantDTO.setSettings(
         new Settings().topicsInRegistrationEnabled(true).featureTopicsEnabled(false)
-            .featureDemographicsEnabled(false));
+            .featureDemographicsEnabled(false)
+            .featureAppointmentsEnabled(false)
+            .featureStatisticsEnabled(false)
+            .featureTopicsEnabled(false)
+            .featureMultitenancyEnabled(false));
     return this;
   }
 

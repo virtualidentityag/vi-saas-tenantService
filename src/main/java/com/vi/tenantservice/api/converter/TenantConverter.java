@@ -46,6 +46,9 @@ public class TenantConverter {
         .topicsInRegistrationEnabled(nullAsFalse(settings.getTopicsInRegistrationEnabled()))
         .featureDemographicsEnabled(nullAsFalse(settings.getFeatureDemographicsEnabled()))
         .featureTopicsEnabled(nullAsFalse(settings.getFeatureTopicsEnabled()))
+        .featureAppointmentsEnabled(nullAsFalse(settings.getFeatureAppointmentsEnabled()))
+        .featureMultitenancyEnabled(nullAsFalse(settings.getFeatureMultitenancyEnabled()))
+        .featureStatisticsEnabled(nullAsFalse(settings.getFeatureStatisticsEnabled()))
         .build();
   }
 

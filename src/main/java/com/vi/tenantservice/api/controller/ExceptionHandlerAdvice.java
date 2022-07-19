@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.controller;
 
+import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,6 +18,11 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
 
     var customHttpHeader = ((TenantValidationException) ex).getCustomHttpHeaders();
     return handleExceptionInternal(ex, "", customHttpHeader, HttpStatus.CONFLICT, request);
+  }
+
+  @ExceptionHandler(value = {TenantAuthorisationException.class})
+  protected ResponseEntity<Object> handle(TenantAuthorisationException ex, WebRequest request) {
+    return handleExceptionInternal(ex, "", ex.getCustomHttpHeaders(), HttpStatus.FORBIDDEN, request);
   }
 
   @ExceptionHandler(value = {IllegalStateException.class})

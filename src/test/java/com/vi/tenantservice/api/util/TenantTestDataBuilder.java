@@ -46,7 +46,8 @@ public class TenantTestDataBuilder {
     return this;
   }
 
-  public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(boolean topicsInRegistrationEnabled) {
+  public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(
+      boolean topicsInRegistrationEnabled) {
     tenantDTO.setSettings(new Settings().topicsInRegistrationEnabled(topicsInRegistrationEnabled));
     return this;
   }
@@ -75,7 +76,13 @@ public class TenantTestDataBuilder {
   }
 
   public TenantTestDataBuilder withSettings() {
-    tenantDTO.setSettings(settings());
+    tenantDTO.setSettings(
+        new Settings().topicsInRegistrationEnabled(true).featureTopicsEnabled(false)
+            .featureDemographicsEnabled(false)
+            .featureAppointmentsEnabled(false)
+            .featureStatisticsEnabled(false)
+            .featureTopicsEnabled(false)
+            .featureMultitenancyEnabled(false));
     return this;
   }
 
@@ -109,10 +116,6 @@ public class TenantTestDataBuilder {
 
   public String jsonify() {
     TenantDTO build = build();
-    return JsonConverter.convert(build);
-  }
-
-  public Settings settings() {
-    return new Settings().topicsInRegistrationEnabled(true);
+    return JsonConverter.convertToJson(build);
   }
 }

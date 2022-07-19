@@ -42,11 +42,11 @@ class TenantServiceFacadeTest {
   @Mock
   private TenantInputSanitizer tenantInputSanitizer;
 
-  @InjectMocks
-  private TenantServiceFacade tenantServiceFacade;
-
   @Mock
   private TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
+
+  @InjectMocks
+  private TenantServiceFacade tenantServiceFacade;
 
   @Test
   void createTenant_Should_createTenant() {

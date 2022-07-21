@@ -3,7 +3,6 @@ package com.vi.tenantservice.api.facade;
 import static com.vi.tenantservice.api.model.TenantSetting.ENABLE_TOPICS_IN_REGISTRATION;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_APPOINTMENTS_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_DEMOGRAPHICS_ENABLED;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_MULTITENANCY_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_STATISTICS_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_TOPICS_ENABLED;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
@@ -75,29 +74,6 @@ class TenantFacadeChangeDetectionServiceTest {
     // when, then
     assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
         existingTenant)).isEmpty();
-  }
-
-  @Test
-  void determineChangedSettings_Should_DetectMultitenancyFeatureChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
-    // given
-    Settings settings = new Settings().featureMultitenancyEnabled(false)
-        .featureDemographicsEnabled(true)
-        .featureTopicsEnabled(true)
-        .topicsInRegistrationEnabled(true);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
-
-    TenantSettings existingTenantSettings = TenantSettings.builder()
-        .featureDemographicsEnabled(true)
-        .featureTopicsEnabled(true)
-        .topicsInRegistrationEnabled(true)
-        .featureMultitenancyEnabled(true)
-        .build();
-    TenantEntity existingTenant = TenantEntity.builder()
-        .settings(convertToJson(existingTenantSettings)).build();
-    // when, then
-    assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
-        existingTenant))
-        .containsOnly(FEATURE_MULTITENANCY_ENABLED);
   }
 
   @Test

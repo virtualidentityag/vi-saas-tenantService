@@ -320,9 +320,6 @@ components:
     Settings:
       type: object
       properties:
-        featureMultitenancyEnabled:
-          type: boolean
-          example: "false"
         featureStatisticsEnabled:
           type: boolean
           example: "false"

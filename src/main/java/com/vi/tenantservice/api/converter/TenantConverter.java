@@ -47,7 +47,6 @@ public class TenantConverter {
         .featureDemographicsEnabled(nullAsFalse(settings.getFeatureDemographicsEnabled()))
         .featureTopicsEnabled(nullAsFalse(settings.getFeatureTopicsEnabled()))
         .featureAppointmentsEnabled(nullAsFalse(settings.getFeatureAppointmentsEnabled()))
-        .featureMultitenancyEnabled(nullAsFalse(settings.getFeatureMultitenancyEnabled()))
         .featureStatisticsEnabled(nullAsFalse(settings.getFeatureStatisticsEnabled()))
         .build();
   }
@@ -122,8 +121,7 @@ public class TenantConverter {
         .featureDemographicsEnabled(tenantSettings.isFeatureDemographicsEnabled())
         .featureTopicsEnabled(tenantSettings.isFeatureTopicsEnabled())
         .featureAppointmentsEnabled(tenantSettings.isFeatureAppointmentsEnabled())
-        .featureStatisticsEnabled(tenantSettings.isFeatureStatisticsEnabled())
-        .featureMultitenancyEnabled(tenantSettings.isFeatureMultitenancyEnabled());
+        .featureStatisticsEnabled(tenantSettings.isFeatureStatisticsEnabled());
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {

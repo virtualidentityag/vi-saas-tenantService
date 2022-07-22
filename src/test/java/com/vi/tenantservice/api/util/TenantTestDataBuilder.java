@@ -81,8 +81,7 @@ public class TenantTestDataBuilder {
             .featureDemographicsEnabled(false)
             .featureAppointmentsEnabled(false)
             .featureStatisticsEnabled(false)
-            .featureTopicsEnabled(false)
-            .featureMultitenancyEnabled(false));
+            .featureTopicsEnabled(false));
     return this;
   }
 

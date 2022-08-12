@@ -5,6 +5,7 @@ import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMI
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -17,7 +18,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.vi.tenantservice.TenantServiceApplication;
-import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import java.util.Optional;
@@ -28,6 +28,7 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -149,9 +150,10 @@ class TenantControllerIT {
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant")
+                .withSubdomain("changed subdomain")
                 .withSettingTopicsInRegistrationEnabled(true)
-                .withLicensing().withSettings().jsonify())
+                .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
@@ -177,10 +179,24 @@ class TenantControllerIT {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     mockMvc.perform(put(NON_EXISTING_TENANT)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
-            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
-                .withLicensing().jsonify())
+            .content(
+                tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
+                    .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @WithMockUser(authorities = {"tenant-admin"})
+  void getTenant_Should_returnSettings() throws Exception {
+    mockMvc.perform(get(EXISTING_TENANT).contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("settings.featureStatisticsEnabled", is(true)))
+        .andExpect(jsonPath("settings.featureTopicsEnabled", is(true)))
+        .andExpect(jsonPath("settings.topicsInRegistrationEnabled", is(true)))
+        .andExpect(jsonPath("settings.featureDemographicsEnabled", is(true)))
+        .andExpect(jsonPath("settings.featureAppointmentsEnabled", is(true)))
+        .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(true)));
   }
 
   @Test
@@ -203,7 +219,7 @@ class TenantControllerIT {
   void getAllTenants_Should_returnForbidden_When_calledForAuthorityThatIsSingleTenantAdmin()
       throws Exception {
     mockMvc.perform(get(TENANT_RESOURCE)
-            .with(user("not important").authorities((GrantedAuthority) UserRole.SINGLE_TENANT_ADMIN::getValue))
+            .with(user("not important").authorities((GrantedAuthority) SINGLE_TENANT_ADMIN::getValue))
             .contentType(APPLICATION_JSON)
         ).andExpect(status().isForbidden());
   }

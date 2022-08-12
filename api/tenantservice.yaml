@@ -335,3 +335,6 @@ components:
         featureAppointmentsEnabled:
           type: boolean
           example: "false"
+        featureGroupChatV2Enabled:
+          type: boolean
+          example: "false"

@@ -15,7 +15,8 @@ public enum TenantSetting {
   FEATURE_DEMOGRAPHICS_ENABLED(singletonList(UserRole.TENANT_ADMIN)),
   ENABLE_TOPICS_IN_REGISTRATION(List.of(UserRole.TENANT_ADMIN, UserRole.SINGLE_TENANT_ADMIN)),
   FEATURE_STATISTICS_ENABLED(singletonList(UserRole.TENANT_ADMIN)),
-  FEATURE_APPOINTMENTS_ENABLED(singletonList(UserRole.TENANT_ADMIN));
+  FEATURE_APPOINTMENTS_ENABLED(singletonList(UserRole.TENANT_ADMIN)),
+  FEATURE_GROUP_CHAT_V2_ENABLED(singletonList(UserRole.TENANT_ADMIN));
 
   private List<UserRole> rolesAuthorisedToChange;
 

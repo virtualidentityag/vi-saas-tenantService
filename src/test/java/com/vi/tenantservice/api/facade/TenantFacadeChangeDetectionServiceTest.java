@@ -3,6 +3,7 @@ package com.vi.tenantservice.api.facade;
 import static com.vi.tenantservice.api.model.TenantSetting.ENABLE_TOPICS_IN_REGISTRATION;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_APPOINTMENTS_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_DEMOGRAPHICS_ENABLED;
+import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_GROUP_CHAT_V2_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_STATISTICS_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_TOPICS_ENABLED;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
@@ -49,7 +50,7 @@ class TenantFacadeChangeDetectionServiceTest {
   void determineChangedSettings_Should_DetectChanges_When_InputDTOContainsChangesToDefaultValues() {
     // given
     Settings settings = new Settings().featureDemographicsEnabled(true).featureTopicsEnabled(true)
-        .topicsInRegistrationEnabled(true);
+        .topicsInRegistrationEnabled(true).featureGroupChatV2Enabled(true);
     TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
     TenantEntity existingTenant = new TenantEntity();
 
@@ -57,18 +58,19 @@ class TenantFacadeChangeDetectionServiceTest {
     assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
         existingTenant))
         .contains(FEATURE_DEMOGRAPHICS_ENABLED, FEATURE_TOPICS_ENABLED,
-            ENABLE_TOPICS_IN_REGISTRATION);
+            ENABLE_TOPICS_IN_REGISTRATION, FEATURE_GROUP_CHAT_V2_ENABLED);
   }
 
   @Test
   void determineChangedSettings_Should_Not_DetectChanges_When_InputDTOContainsSameSettingsAsEntity() {
     // given
     Settings settings = new Settings().featureDemographicsEnabled(true).featureTopicsEnabled(true)
-        .topicsInRegistrationEnabled(true);
+        .topicsInRegistrationEnabled(true).featureGroupChatV2Enabled(true);
     TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
 
-    TenantSettings existingTenantSettings = TenantSettings.builder().featureDemographicsEnabled(true)
-        .featureTopicsEnabled(true).topicsInRegistrationEnabled(true).build();
+    TenantSettings existingTenantSettings = TenantSettings.builder()
+        .featureDemographicsEnabled(true).featureTopicsEnabled(true)
+        .topicsInRegistrationEnabled(true).featureGroupChatV2Enabled(true).build();
     TenantEntity existingTenant = TenantEntity.builder()
         .settings(convertToJson(existingTenantSettings)).build();
     // when, then
@@ -144,6 +146,23 @@ class TenantFacadeChangeDetectionServiceTest {
     assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
         existingTenant))
         .contains(ENABLE_TOPICS_IN_REGISTRATION);
+  }
+
+  @Test
+  void determineChangedSettings_Should_DetectGroupChatV2FeatureChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
+    // given
+    Settings settings = new Settings().featureGroupChatV2Enabled(false);
+    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+
+    TenantSettings existingTenantSettings = TenantSettings.builder()
+        .featureGroupChatV2Enabled(true)
+        .build();
+    TenantEntity existingTenant = TenantEntity.builder()
+        .settings(convertToJson(existingTenantSettings)).build();
+    // when, then
+    assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
+        existingTenant))
+        .containsOnly(FEATURE_GROUP_CHAT_V2_ENABLED);
   }
 
 }

@@ -48,7 +48,15 @@ public class TenantTestDataBuilder {
 
   public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(
       boolean topicsInRegistrationEnabled) {
-    tenantDTO.setSettings(new Settings().topicsInRegistrationEnabled(topicsInRegistrationEnabled));
+    tenantDTO.setSettings(new Settings()
+        .topicsInRegistrationEnabled(topicsInRegistrationEnabled)
+        // All current settings are required, otherwise the server would detect a change.
+        .featureTopicsEnabled(true)
+        .featureDemographicsEnabled(true)
+        .featureAppointmentsEnabled(true)
+        .featureStatisticsEnabled(true)
+        .featureTopicsEnabled(true)
+        .featureGroupChatV2Enabled(true));
     return this;
   }
 
@@ -77,11 +85,14 @@ public class TenantTestDataBuilder {
 
   public TenantTestDataBuilder withSettings() {
     tenantDTO.setSettings(
-        new Settings().topicsInRegistrationEnabled(true).featureTopicsEnabled(false)
-            .featureDemographicsEnabled(false)
-            .featureAppointmentsEnabled(false)
-            .featureStatisticsEnabled(false)
-            .featureTopicsEnabled(false));
+        new Settings()
+            .topicsInRegistrationEnabled(true)
+            .featureTopicsEnabled(true)
+            .featureDemographicsEnabled(true)
+            .featureAppointmentsEnabled(true)
+            .featureStatisticsEnabled(true)
+            .featureTopicsEnabled(true)
+            .featureGroupChatV2Enabled(true));
     return this;
   }
 

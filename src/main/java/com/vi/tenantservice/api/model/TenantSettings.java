@@ -17,5 +17,6 @@ public class TenantSettings {
   boolean topicsInRegistrationEnabled;
   boolean featureDemographicsEnabled;
   boolean featureAppointmentsEnabled;
+  boolean featureGroupChatV2Enabled;
 
 }

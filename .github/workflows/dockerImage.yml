@@ -82,14 +82,16 @@ jobs:
           repository: ${{ env.DOCKER_IMAGE }}
           tags: ${{ env.DOCKER_IMAGE_TAG}}
       - name: Hint about the Docker Image Tag if successful
+        job-status: ${{ job.status }}
         if: ${{ failure () }} == false
         run: |
           echo "### Docker Image :mega:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Image: ${{ env.DOCKER_IMAGE}}" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Image Tag: ${{ env.DOCKER_IMAGE_TAG}}" >> $GITHUB_STEP_SUMMARY
+          echo "- ${{ job.status }}"
       - name: Hint about the Docker Image Tag if not successful
         if: ${{ failure () }} == true
         run: |
           echo "### Error! :mega:" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "${{ job.status }}" >> $GITHUB_STEP_SUMMARY

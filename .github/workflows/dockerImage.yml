@@ -70,7 +70,7 @@ jobs:
         shell: bash
       - name: Set tag if there is a tag
         if: ${{ steps.checkTag.outputs.exists }} == true
-        run: echo DOCKER_IMAGE_TAG=$(echo "${GUTHUB_REF}_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
+        run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF##*/}_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1.1.1

@@ -66,11 +66,11 @@ jobs:
           echo TIME_STAMP=$(echo -n "${{ steps.time.outputs.time }}") >> $GITHUB_ENV
         shell: bash
       - name: Set timestamp for image without tag
-        if: ${{ steps.checkTag.outputs.exists }} == false
+        if: ${{ env.TYPE }} == "branch"
         run: echo DOCKER_IMAGE_TAG=$(echo "${{ env.BRANCH_NAME }}_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
         shell: bash
       - name: Set tag for image with tag
-        if: ${{ steps.checkTag.outputs.exists }} == true && ${{ env.TYPE }} == "tag"
+        if: ${{ env.TYPE }} == "tag"
         run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash
       - name: Push to GitHub Packages

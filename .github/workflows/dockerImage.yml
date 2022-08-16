@@ -70,9 +70,9 @@ jobs:
         shell: bash
       - name: Set timestamp for image without tag
         if: ${{ steps.checkTag.outputs.exists }} == false
-        run: echo DOCKER_IMAGE_TAG=$(echo "${{ env.BRANCH }}_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
+        run: echo DOCKER_IMAGE_TAG=$(echo "${{ env.BRANCH_NAME }}_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
         shell: bash
-      - name: Set timestamp for image with tag
+      - name: Set tag for image with tag
         if: ${{ steps.checkTag.outputs.exists }} == true
         run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash

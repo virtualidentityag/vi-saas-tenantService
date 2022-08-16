@@ -70,7 +70,7 @@ jobs:
         shell: bash
       - name: Set tag if there is a tag
         if: ${{ steps.checkTag.outputs.exists }} == true
-        run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF##*/}_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
+        run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF#refs/heads/}_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1.1.1
@@ -86,7 +86,7 @@ jobs:
           echo "### Publish Docker image :white_check_mark:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Image name: ${{ env.DOCKER_IMAGE }}" >> $GITHUB_STEP_SUMMARY
-          echo "- Version: ${{ env.DOCKER_IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY          
+          echo "- Version: ${{ env.DOCKER_IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
       - name: Hint about the Docker Image Tag if not successfull
         if: ${{ failure() || cancelled() }}
         run: |

@@ -57,16 +57,11 @@ jobs:
         with:
           timeZone: 2
           format: "YYYYMMDD[_]HHmmss"
-      # TEST
-      - name: Extract branch name
-        shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF_NAME#refs/heads/})"
-        id: extract_branch
       - name: Prepare environment variables
         run: |
           echo "DOCKER_REGISTRY=$(echo "${{ matrix.registry }}/${{ github.repository }}" | awk '{print tolower($0)}')" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=$(echo "${{ github.repository }}" | awk -F / '{print tolower($2)}')" >> $GITHUB_ENV
-          echo BRANCH_NAME=$(echo -n "${GITHUB_REF_NAME}") >> $GITHUB_ENV
+          echo BRANCH_NAME=$(echo -n "${GITHUB_REF_NAME#refs/heads/}") >> $GITHUB_ENV
           echo TYPE=$(echo -n "${GITHUB_REF_TYPE}") >> $GITHUB_ENV
           echo TIME_STAMP=$(echo -n "${{ steps.time.outputs.time }}") >> $GITHUB_ENV
         shell: bash
@@ -74,13 +69,9 @@ jobs:
         if: ${{ steps.checkTag.outputs.exists }} == false
         run: echo DOCKER_IMAGE_TAG=$(echo "${{ env.BRANCH_NAME }}_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
         shell: bash
-      - name: Set tag for image with tag and type = tag
-        if: ${{ steps.checkTag.outputs.exists }} == true && ${{ env.TYPE }} == "tag"
+      - name: Set tag for image with tag
+        if: ${{ steps.checkTag.outputs.exists }} == true
         run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
-        shell: bash
-      - name: Set branch name for image with tag and type = branch
-        if: ${{ steps.checkTag.outputs.exists }} == true && ${{ env.TYPE }} == "branch"
-        run: echo DOCKER_IMAGE_TAG=$(echo "${{ steps.extract_branch.outputs.branch }}") >> $GITHUB_ENV
         shell: bash
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1.1.1

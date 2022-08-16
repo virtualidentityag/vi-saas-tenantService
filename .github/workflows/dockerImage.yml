@@ -57,18 +57,21 @@ jobs:
         with:
           timeZone: 2
           format: "YYYYMMDD[_]HHmmss"
-      - name: Extract branch name
+      # TEST
+      - name: Get branch name (merge)
+        if: github.event_name != 'pull_request'
         shell: bash
-        run: echo "##[set-output name=branch;]$(echo ${GITHUB_REF#refs/heads/})"
-        id: extract_branch
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_REF#refs/heads/} | tr / -)" >> $GITHUB_ENV
+      - name: Get branch name (pull request)
+        if: github.event_name == 'pull_request'
+        shell: bash
+        run: echo "BRANCH_NAME=$(echo ${GITHUB_HEAD_REF} | tr / -)" >> $GITHUB_ENV
+      - name: Debug
+        run: echo ${{ env.BRANCH_NAME }}
       - name: Prepare environment variables
         run: |
           echo "DOCKER_REGISTRY=$(echo "${{ matrix.registry }}/${{ github.repository }}" | awk '{print tolower($0)}')" >> $GITHUB_ENV
           echo "DOCKER_IMAGE=$(echo "${{ github.repository }}" | awk -F / '{print tolower($2)}')" >> $GITHUB_ENV
-          echo BRANCH1=$(echo -n "${GITHUB_HEAD}") >> $GITHUB_ENV
-          echo BRANCH2=$(echo -n "${GITHUB_HEAD_REF}") >> $GITHUB_ENV
-          echo BRANCH3=$(echo -n "${GITHUB_HEAD_NAME}") >> $GITHUB_ENV
-          echo BRANCH3=$(echo -n "${BRANCH_NAME}") >> $GITHUB_ENV
           echo TIME_STAMP=$(echo -n "${{ steps.time.outputs.time }}") >> $GITHUB_ENV
         shell: bash
       - name: Set timestamp for image without tag
@@ -94,7 +97,7 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Image name: ${{ env.DOCKER_IMAGE }}" >> $GITHUB_STEP_SUMMARY
           echo "- Version: ${{ env.DOCKER_IMAGE_TAG }}" >> $GITHUB_STEP_SUMMARY
-          echo "- BRANCH: ${{ steps.extract_branch.outputs.branch }}" >> $GITHUB_STEP_SUMMARY
+          echo "- BRANCH: ${{ env.BRANCH_NAME }}" >> $GITHUB_STEP_SUMMARY
       - name: Hint about the Docker Image Tag if not successfull
         if: ${{ failure() || cancelled() }}
         run: |

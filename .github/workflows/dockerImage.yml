@@ -85,11 +85,11 @@ jobs:
         if: ${{ success() }}
         run: |
           echo "### Publish Docker image :white_check_mark:" >> $GITHUB_STEP_SUMMARY
-          echo """ >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Image: ${{ env.DOCKER_IMAGE}}" >> $GITHUB_STEP_SUMMARY
           echo "- Docker Image Tag: ${{ env.DOCKER_IMAGE_TAG}}" >> $GITHUB_STEP_SUMMARY
       - name: Hint about the Docker Image Tag if not successfull
-        if: ${{ failure() }}
+        if: ${{ failure() || cancelled() }}
         run: |
           echo "### Publish Docker image :x:" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY

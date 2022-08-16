@@ -64,13 +64,13 @@ jobs:
           echo BRANCH=$(echo -n "${GITHUB_REF#refs/heads/}") >> $GITHUB_ENV
           echo TIME_STAMP=$(echo -n "${{ steps.time.outputs.time }}") >> $GITHUB_ENV
         shell: bash
-      - name: Set timestamp for develop image if there is no tag
-        if: (endsWith(env.BRANCH, 'develop') == true) && ${{ steps.checkTag.outputs.exists }} == false
-        run: echo DOCKER_IMAGE_TAG=$(echo "${ GITHUB_REF_NAME }_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
+      - name: Set timestamp for image without tag
+        if: ${{ steps.checkTag.outputs.exists }} == false
+        run: echo DOCKER_IMAGE_TAG=$(echo "${{ GITHUB_REF_NAME }}_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
         shell: bash
-      - name: Set tag if there is a tag
+      - name: Set timestamp for image with tag
         if: ${{ steps.checkTag.outputs.exists }} == true
-        run: echo DOCKER_IMAGE_TAG=$(echo "${ GITHUB_REF_NAME }_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
+        run: echo DOCKER_IMAGE_TAG=$(echo "${{ GITHUB_REF_NAME }}_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1.1.1

@@ -66,15 +66,15 @@ jobs:
           echo TIME_STAMP=$(echo -n "${{ steps.time.outputs.time }}") >> $GITHUB_ENV
         shell: bash
       - name: Set timestamp for image without tag
-        if: ${{ env.TYPE }} == "branch"
+        if: ${{ env.TYPE == "branch" }} 
         run: echo DOCKER_IMAGE_TAG=$(echo "${{ env.BRANCH_NAME }}_${{ env.TIME_STAMP }}") >> $GITHUB_ENV
         shell: bash
       - name: Set tag for image with tag
-        if: ${{ !eq(env.TYPE, "branch")}}
+        if: ${{ env.TYPE == "tag" }}
         run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash
       - name: Show variables
-        run: echo "$GITHUB_CONTEXT" 
+        run: echo "$GITHUB_CONTEXT"
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1.1.1
         with:

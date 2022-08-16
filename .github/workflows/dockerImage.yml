@@ -82,7 +82,6 @@ jobs:
           repository: ${{ env.DOCKER_IMAGE }}
           tags: ${{ env.DOCKER_IMAGE_TAG}}
       - name: Hint about the Docker Image Tag if successful
-        job-status: ${{ job.status }}
         if: ${{ failure () }} == false
         run: |
           echo "### Docker Image :mega:" >> $GITHUB_STEP_SUMMARY

@@ -3,7 +3,7 @@ name: Publish Docker image
 on:
   push:
     branches:
-      - "develop"
+      - "VIC-1128"
     tags:
       - "dockerImage.v.*"
       - "v*"
@@ -70,7 +70,7 @@ jobs:
         shell: bash
       - name: Set timestamp for image with tag
         if: ${{ steps.checkTag.outputs.exists }} == true
-        run: echo DOCKER_IMAGE_TAG=$(echo "${{ env.BRANCH }}_${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
+        run: echo DOCKER_IMAGE_TAG=$(echo "${GITHUB_REF/refs\/tags\//}") >> $GITHUB_ENV
         shell: bash
       - name: Push to GitHub Packages
         uses: docker/build-push-action@v1.1.1

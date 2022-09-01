@@ -338,3 +338,9 @@ components:
         featureGroupChatV2Enabled:
           type: boolean
           example: "false"
+        featureToolsEnabled:
+          type: boolean
+          example: "false"
+        featureToolsOICDToken:
+          type: string
+          example: "1234-1234-1234-1234"

@@ -92,7 +92,10 @@ public class TenantTestDataBuilder {
             .featureAppointmentsEnabled(true)
             .featureStatisticsEnabled(true)
             .featureTopicsEnabled(true)
-            .featureGroupChatV2Enabled(true));
+            .featureGroupChatV2Enabled(true)
+            .featureToolsEnabled(true)
+            .featureToolsOICDToken("1234")
+    );
     return this;
   }
 

@@ -12,17 +12,24 @@ import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TenantService {
+    @Value("${feature.multitenancy.with.single.domain.enabled}")
+    private boolean multitenancyWithSingleDomain;
 
     private final @NonNull TenantRepository tenantRepository;
 
+
+
     public TenantEntity create(TenantEntity tenantEntity) {
-        validateTenantSubdomainDoesNotExist(tenantEntity);
+        if (!multitenancyWithSingleDomain) {
+            validateTenantSubdomainDoesNotExist(tenantEntity);
+        }
         setCreateAndUpdateDate(tenantEntity);
         return tenantRepository.save(tenantEntity);
     }
@@ -44,7 +51,9 @@ public class TenantService {
     }
 
     public TenantEntity update(TenantEntity tenantEntity) {
-        validateTenantSubdomainDoesNotExist(tenantEntity);
+        if (!multitenancyWithSingleDomain) {
+            validateTenantSubdomainDoesNotExist(tenantEntity);
+        }
         tenantEntity.setUpdateDate(LocalDateTime.now(ZoneOffset.UTC));
         return tenantRepository.save(tenantEntity);
     }

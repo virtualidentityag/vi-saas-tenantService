@@ -70,6 +70,6 @@ public class TenantFacadeChangeDetectionService {
   }
 
   boolean nullAsFalse(Boolean value) {
-    return value != null ? value : false;
+    return value != null && value;
   }
 }

@@ -96,6 +96,7 @@ public class TenantTestDataBuilder {
             .featureGroupChatV2Enabled(true)
             .featureToolsEnabled(true)
             .featureToolsOICDToken("1234")
+            .featureAttachmentUploadDisabled(false)
     );
     return this;
   }

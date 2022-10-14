@@ -19,5 +19,7 @@ public class TenantSettings {
   boolean featureAppointmentsEnabled;
   boolean featureGroupChatV2Enabled;
   boolean featureToolsEnabled;
+  boolean featureAttachmentUploadDisabled;
+
   String featureToolsOIDCToken;
 }

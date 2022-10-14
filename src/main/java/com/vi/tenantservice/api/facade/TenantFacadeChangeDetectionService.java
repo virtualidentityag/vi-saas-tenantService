@@ -55,6 +55,10 @@ public class TenantFacadeChangeDetectionService {
         existingSettingsToCompare.isFeatureToolsEnabled())) {
       resultList.add(TenantSetting.FEATURE_TOOLS_ENABLED);
     }
+    if (isChanged(inputSettings.getFeatureAttachmentUploadDisabled(),
+        existingSettingsToCompare.isFeatureAttachmentUploadDisabled())) {
+      resultList.add(TenantSetting.FEATURE_ATTACHMENT_UPLOAD_DISABLED);
+    }
     return resultList;
   }
 

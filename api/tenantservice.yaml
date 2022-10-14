@@ -341,6 +341,9 @@ components:
         featureToolsEnabled:
           type: boolean
           example: "false"
+        featureAttachmentUploadDisabled:
+          type: boolean
+          example: "false"
         featureToolsOICDToken:
           type: string
           example: "1234-1234-1234-1234"

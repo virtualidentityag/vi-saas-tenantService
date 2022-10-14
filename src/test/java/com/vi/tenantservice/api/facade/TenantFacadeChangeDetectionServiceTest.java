@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.facade;
 
 import static com.vi.tenantservice.api.model.TenantSetting.ENABLE_TOPICS_IN_REGISTRATION;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_APPOINTMENTS_ENABLED;
+import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_ATTACHMENT_UPLOAD_DISABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_DEMOGRAPHICS_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_GROUP_CHAT_V2_ENABLED;
 import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_STATISTICS_ENABLED;
@@ -163,6 +164,23 @@ class TenantFacadeChangeDetectionServiceTest {
     assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
         existingTenant))
         .containsOnly(FEATURE_GROUP_CHAT_V2_ENABLED);
+  }
+
+  @Test
+  void determineChangedSettings_Should_DetectFeatureAttachmentUploadDisabledChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
+    // given
+    Settings settings = new Settings().featureAttachmentUploadDisabled(true);
+    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+
+    TenantSettings existingTenantSettings = TenantSettings.builder()
+        .featureAttachmentUploadDisabled(false)
+        .build();
+    TenantEntity existingTenant = TenantEntity.builder()
+        .settings(convertToJson(existingTenantSettings)).build();
+    // when, then
+    assertThat(tenantFacadeChangeDetectionService.determineChangedSettings(sanitizedTenantDTO,
+        existingTenant))
+        .containsOnly(FEATURE_ATTACHMENT_UPLOAD_DISABLED);
   }
 
 }

@@ -51,6 +51,7 @@ public class TenantConverter {
         .featureGroupChatV2Enabled(nullAsFalse(settings.getFeatureGroupChatV2Enabled()))
         .featureToolsEnabled(nullAsFalse(settings.getFeatureToolsEnabled()))
         .featureToolsOIDCToken(settings.getFeatureToolsOICDToken())
+        .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
         .build();
   }
 
@@ -127,7 +128,9 @@ public class TenantConverter {
         .featureStatisticsEnabled(tenantSettings.isFeatureStatisticsEnabled())
         .featureGroupChatV2Enabled(tenantSettings.isFeatureGroupChatV2Enabled())
         .featureToolsOICDToken(tenantSettings.getFeatureToolsOIDCToken())
-        .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled());
+        .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled())
+        .featureAttachmentUploadDisabled(tenantSettings.isFeatureAttachmentUploadDisabled());
+
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {

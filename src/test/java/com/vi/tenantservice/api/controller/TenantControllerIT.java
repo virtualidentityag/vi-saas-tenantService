@@ -197,7 +197,8 @@ class TenantControllerIT {
         .andExpect(jsonPath("settings.topicsInRegistrationEnabled", is(true)))
         .andExpect(jsonPath("settings.featureDemographicsEnabled", is(true)))
         .andExpect(jsonPath("settings.featureAppointmentsEnabled", is(true)))
-        .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(true)));
+        .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(true)))
+        .andExpect(jsonPath("settings.featureAttachmentUploadDisabled", is(false)));
   }
 
   @Test

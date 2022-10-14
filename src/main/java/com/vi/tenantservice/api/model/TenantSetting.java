@@ -17,7 +17,8 @@ public enum TenantSetting {
   FEATURE_STATISTICS_ENABLED(singletonList(UserRole.TENANT_ADMIN)),
   FEATURE_APPOINTMENTS_ENABLED(singletonList(UserRole.TENANT_ADMIN)),
   FEATURE_GROUP_CHAT_V2_ENABLED(singletonList(UserRole.TENANT_ADMIN)),
-  FEATURE_TOOLS_ENABLED(List.of(UserRole.TENANT_ADMIN, UserRole.SINGLE_TENANT_ADMIN));
+  FEATURE_TOOLS_ENABLED(List.of(UserRole.TENANT_ADMIN, UserRole.SINGLE_TENANT_ADMIN)),
+  FEATURE_ATTACHMENT_UPLOAD_DISABLED(List.of(UserRole.TENANT_ADMIN));
 
   private List<UserRole> rolesAuthorisedToChange;
 

@@ -1,8 +1,8 @@
 CREATE TABLE TENANT
 (
-    ID         bigint(21) NOT NULL,
-    name          varchar(36) NOT NULL,
-    subdomain        varchar(255) NOT NULL,
+    ID bigint NOT NULL,
+    name varchar(36) NOT NULL,
+    subdomain varchar(255) NOT NULL,
     licensing_allowed_users int,
     theming_logo longtext,
     theming_favicon longtext,

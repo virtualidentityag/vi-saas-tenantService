@@ -27,7 +27,7 @@
         <spring.security>5.7.3</spring.security>
         <owasp.java.html.sanitizer>20211018.1</owasp.java.html.sanitizer>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
-        <liquibase.maven.plugin.version>4.17.0</liquibase.maven.plugin.version>
+        <liquibase.maven.plugin.version>4.1.1</liquibase.maven.plugin.version>
         <openapi.generator.maven.version>6.2.0</openapi.generator.maven.version>
         <jackson.databind.nullable.version>0.2.3</jackson.databind.nullable.version>
         <springfox.boot.starter.version>3.0.0</springfox.boot.starter.version>
@@ -43,6 +43,7 @@
         <easy-random-core.version>5.0.0</easy-random-core.version>
         <assertj-core.version>3.23.1</assertj-core.version>
         <spring-security-oauth2-test-webmvc-addons.version>3.0.1</spring-security-oauth2-test-webmvc-addons.version>
+        <liquibase-core.version>4.9.1</liquibase-core.version>
     </properties>
 
     <dependencies>
@@ -86,6 +87,12 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-maven-plugin</artifactId>
             <version>${liquibase.maven.plugin.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase-core.version}</version>
         </dependency>
 
         <dependency>

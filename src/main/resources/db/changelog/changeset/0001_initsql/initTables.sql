@@ -9,8 +9,8 @@ CREATE TABLE tenantservice.`tenant` (
   `theming_secondary_color` varchar(15),
   `content_impressum` longtext,
   `content_claim` varchar(1024),
-  `create_date` datetime NOT NULL DEFAULT UTC_TIMESTAMP(),
-  `update_date` datetime NOT NULL DEFAULT UTC_TIMESTAMP(),
+  `create_date` datetime NOT NULL DEFAULT (UTC_TIMESTAMP),
+  `update_date` datetime NOT NULL DEFAULT (UTC_TIMESTAMP),
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
 

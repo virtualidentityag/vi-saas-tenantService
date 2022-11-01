@@ -215,7 +215,6 @@ class TenantServiceFacadeTest {
 
     when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);
     when(authorisationService.resolveTenantFromRequest(null)).thenReturn(Optional.of(2L));
-    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(2L));
     when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
 
     Optional<RestrictedTenantDTO> tenantDTO = tenantServiceFacade.findTenantBySubdomain(subdomain, null);

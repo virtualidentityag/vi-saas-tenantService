@@ -93,7 +93,7 @@ public class TenantServiceFacade {
 
     Optional<Long> tenant = authorisationService.resolveTenantFromRequest(tenantId);
     if (multitenancyWithSingleDomain && tenant.isPresent()) {
-      return getSingleDomainSpecificTenantData(tenantById, tenantId);
+      return getSingleDomainSpecificTenantData(tenantById, tenant.get());
     }
 
     return tenantById.isEmpty() ? Optional.empty()
@@ -102,16 +102,6 @@ public class TenantServiceFacade {
 
   public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
       Optional<TenantEntity> tenant, Long tenantId) {
-
-    if (tenantId == null) {
-      Optional<Long> accessTokenTenantId = authorisationService.findTenantIdInAccessToken();
-      if (accessTokenTenantId.isEmpty()) {
-        if (accessTokenTenantId.isEmpty()) {
-          throw new BadRequestException("tenantId not found in access token");
-        }
-      }
-      tenantId = accessTokenTenantId.get();
-    }
 
     Optional<TenantEntity> tenantFromAuthorisedContext = tenantService.findTenantById(tenantId);
     if (tenantFromAuthorisedContext.isEmpty()) {

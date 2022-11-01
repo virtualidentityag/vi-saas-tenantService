@@ -214,7 +214,7 @@ class TenantServiceFacadeTest {
     Optional<TenantEntity> accessTokenTenantData = Optional.of(accessTokenTenant);
 
     when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);
-    when(authorisationService.isRequestTenantAware(null)).thenReturn(true);
+    when(authorisationService.resolveTenantFromRequest(null)).thenReturn(Optional.of(2L));
     when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(2L));
     when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
 

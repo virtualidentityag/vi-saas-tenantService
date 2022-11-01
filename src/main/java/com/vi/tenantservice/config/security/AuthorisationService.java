@@ -47,14 +47,19 @@ public class AuthorisationService {
     return (KeycloakPrincipal) getAuthentication().getPrincipal();
   }
 
-  public boolean isRequestTenantAware(Long tenantId) {
+  public Optional<Long> resolveTenantFromRequest(Long tenantId) {
     if (tenantId != null) {
-      return true;
+      return Optional.of(tenantId);
     }
     HttpServletRequest request =
         ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
             .getRequest();
     Cookie token = WebUtils.getCookie(request, "keycloak");
+
+    if (token == null) {
+      return Optional.empty();
+    }
+
     String[] chunks = token.getValue().split("\\.");
     Base64.Decoder decoder = Base64.getUrlDecoder();
     String payload = new String(decoder.decode(chunks[1]));
@@ -63,9 +68,10 @@ public class AuthorisationService {
     try {
       Map<String, Object> map = objectMapper.readValue(payload, Map.class);
       Integer tenantIdFromCookie = (Integer) map.get("tenantId");
-      return tenantIdFromCookie != null;
+      return tenantIdFromCookie == null ? Optional.empty()
+          : Optional.of(Long.valueOf(tenantIdFromCookie));
     } catch (JsonProcessingException e) {
-      return false;
+      return Optional.empty();
     }
 
   }

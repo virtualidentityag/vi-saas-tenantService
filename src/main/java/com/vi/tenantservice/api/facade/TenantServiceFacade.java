@@ -91,7 +91,7 @@ public class TenantServiceFacade {
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain, Long tenantId) {
     var tenantById = tenantService.findTenantBySubdomain(subdomain);
 
-    if (multitenancyWithSingleDomain && (authorisationService.isAuthorised() || tenantId != null)) {
+    if (multitenancyWithSingleDomain && authorisationService.isRequestTenantAware(tenantId)) {
       return getSingleDomainSpecificTenantData(tenantById, tenantId);
     }
 

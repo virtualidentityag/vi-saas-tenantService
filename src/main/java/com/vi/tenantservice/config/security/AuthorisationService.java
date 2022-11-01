@@ -1,11 +1,21 @@
 package com.vi.tenantservice.config.security;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.Base64;
+import java.util.Map;
 import java.util.Optional;
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.WebUtils;
 
 @Service
 public class AuthorisationService {
@@ -37,7 +47,26 @@ public class AuthorisationService {
     return (KeycloakPrincipal) getAuthentication().getPrincipal();
   }
 
-  public boolean isAuthorised() {
-    return !"anonymousUser".equals(getAuthentication().getPrincipal());
+  public boolean isRequestTenantAware(Long tenantId) {
+    if (tenantId != null) {
+      return true;
+    }
+    HttpServletRequest request =
+        ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes())
+            .getRequest();
+    Cookie token = WebUtils.getCookie(request, "keycloak");
+    String[] chunks = token.getValue().split("\\.");
+    Base64.Decoder decoder = Base64.getUrlDecoder();
+    String payload = new String(decoder.decode(chunks[1]));
+    var objectMapper = new ObjectMapper()
+        .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+    try {
+      Map<String, Object> map = objectMapper.readValue(payload, Map.class);
+      Integer tenantIdFromCookie = (Integer) map.get("tenantId");
+      return tenantIdFromCookie != null;
+    } catch (JsonProcessingException e) {
+      return false;
+    }
+
   }
 }

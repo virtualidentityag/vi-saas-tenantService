@@ -88,11 +88,11 @@ public class TenantServiceFacade {
         Collectors.toList());
   }
 
-  public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {
+  public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain, Long tenantId) {
     var tenantById = tenantService.findTenantBySubdomain(subdomain);
 
-    if (multitenancyWithSingleDomain) {
-      return getSingleDomainSpecificTenantData(tenantById);
+    if (multitenancyWithSingleDomain && (authorisationService.isAuthorised() || tenantId != null)) {
+      return getSingleDomainSpecificTenantData(tenantById, tenantId);
     }
 
     return tenantById.isEmpty() ? Optional.empty()
@@ -100,16 +100,21 @@ public class TenantServiceFacade {
   }
 
   public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
-      Optional<TenantEntity> tenant) {
-    Optional<Long> accessTokenTenantId = authorisationService.findTenantIdInAccessToken();
-    if(accessTokenTenantId.isEmpty()){
+      Optional<TenantEntity> tenant, Long tenantId) {
+
+    if (tenantId == null) {
+      Optional<Long> accessTokenTenantId = authorisationService.findTenantIdInAccessToken();
       if (accessTokenTenantId.isEmpty()) {
-        throw new BadRequestException("tenantId not found in access token");
+        if (accessTokenTenantId.isEmpty()) {
+          throw new BadRequestException("tenantId not found in access token");
+        }
       }
+      tenantId = accessTokenTenantId.get();
     }
-    Optional<TenantEntity> tenantFromAuthorisedContext = tenantService.findTenantById(accessTokenTenantId.get());
+
+    Optional<TenantEntity> tenantFromAuthorisedContext = tenantService.findTenantById(tenantId);
     if (tenantFromAuthorisedContext.isEmpty()) {
-      throw new BadRequestException("Tenant not found for id " + accessTokenTenantId);
+      throw new BadRequestException("Tenant not found for id " + tenantId);
     }
     return Optional.of(tenantConverter
         .toRestrictedTenantDTOinAuthorisedContext(tenant.get(),

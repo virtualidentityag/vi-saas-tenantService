@@ -36,4 +36,8 @@ public class AuthorisationService {
   private KeycloakPrincipal getPrincipal() {
     return (KeycloakPrincipal) getAuthentication().getPrincipal();
   }
+
+  public boolean isAuthorised() {
+    return !"anonymousUser".equals(getAuthentication().getPrincipal());
+  }
 }

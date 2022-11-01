@@ -200,21 +200,48 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  void findTenantBySubdomain_Should_tenantDataBasedOnTenantFromAccessToken_When_tenantIdPresentInToken(){
+  void findTenantBySubdomain_Should_returnTenantDataBasedOnTenantFromAccessToken_When_tenantIdPresentInToken(){
     String subdomain = "app";
     ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
     ReflectionTestUtils.setField(tenantServiceFacade,"tenantConverter",new TenantConverter());
+
     TenantEntity defaultTenantEntity = new TenantEntity();
     defaultTenantEntity.setContentPrivacy("content1");
     Optional<TenantEntity> defaultTenant = Optional.of(defaultTenantEntity);
-    when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);
-    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(2L));
+
     TenantEntity accessTokenTenant = new TenantEntity();
     accessTokenTenant.setContentPrivacy("content2");
     Optional<TenantEntity> accessTokenTenantData = Optional.of(accessTokenTenant);
+
+    when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);
+    when(authorisationService.isAuthorised()).thenReturn(true);
+    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(2L));
     when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
 
-    Optional<RestrictedTenantDTO> tenantDTO = tenantServiceFacade.findTenantBySubdomain(subdomain);
+    Optional<RestrictedTenantDTO> tenantDTO = tenantServiceFacade.findTenantBySubdomain(subdomain, null);
+    assertThat(tenantDTO.get().getContent().getPrivacy()).contains("content2");
+
+  }
+
+  @Test
+  void findTenantBySubdomain_Should_returnTenantDataBasedOnTenantFromQueryParam_When_tenantIdQueryParam(){
+    String subdomain = "app";
+    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
+    ReflectionTestUtils.setField(tenantServiceFacade,"tenantConverter",new TenantConverter());
+
+    TenantEntity defaultTenantEntity = new TenantEntity();
+    defaultTenantEntity.setContentPrivacy("content1");
+    Optional<TenantEntity> defaultTenant = Optional.of(defaultTenantEntity);
+
+    TenantEntity accessTokenTenant = new TenantEntity();
+    accessTokenTenant.setContentPrivacy("content2");
+    Optional<TenantEntity> queryTenantData = Optional.of(accessTokenTenant);
+
+    when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);
+    when(authorisationService.isAuthorised()).thenReturn(false);
+    when(tenantService.findTenantById(2L)).thenReturn(queryTenantData);
+
+    Optional<RestrictedTenantDTO> tenantDTO = tenantServiceFacade.findTenantBySubdomain(subdomain, 2L);
     assertThat(tenantDTO.get().getContent().getPrivacy()).contains("content2");
 
   }

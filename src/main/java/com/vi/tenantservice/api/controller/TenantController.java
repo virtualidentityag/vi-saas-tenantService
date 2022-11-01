@@ -65,8 +65,8 @@ public class TenantController implements TenantApi {
   }
 
   @Override
-  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataBySubdomain(String subdomain) {
-    var tenantById = tenantServiceFacade.findTenantBySubdomain(subdomain);
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataBySubdomain(String subdomain, Long tenantId) {
+    var tenantById = tenantServiceFacade.findTenantBySubdomain(subdomain, tenantId);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
   }

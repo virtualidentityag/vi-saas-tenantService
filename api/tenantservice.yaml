@@ -129,6 +129,12 @@ paths:
           required: true
           schema:
             type: string
+        - name: tenantId
+          in: query
+          description: Tenant Id
+          required: true
+          schema:
+            type: long
       responses:
         200:
           description: Successful operation

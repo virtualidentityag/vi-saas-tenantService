@@ -132,7 +132,7 @@ paths:
         - name: tenantId
           in: query
           description: Tenant Id
-          required: true
+          required: false
           schema:
             type: long
       responses:

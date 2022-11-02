@@ -143,12 +143,6 @@ public class TenantConverter {
         .settings(getSettings(tenant));
   }
 
-  public RestrictedTenantDTO toRestrictedTenantDTOinAuthorisedContext(TenantEntity mainTenant, TenantEntity tenantFromAuthorisedContext) {
-    RestrictedTenantDTO restrictedTenantDTO = toRestrictedTenantDTO(mainTenant);
-    restrictedTenantDTO.getContent().setPrivacy(tenantFromAuthorisedContext.getContentPrivacy());
-    return restrictedTenantDTO;
-  }
-
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
     var basicTenantLicensingDTO = new BasicTenantLicensingDTO()
         .id(tenant.getId())

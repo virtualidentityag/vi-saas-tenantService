@@ -9,6 +9,7 @@ import java.util.Optional;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import org.keycloak.KeycloakPrincipal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -20,11 +21,13 @@ import org.springframework.web.util.WebUtils;
 @Service
 public class AuthorisationService {
 
+  @Value("${feature.multitenancy.with.single.domain.enabled}")
+  private boolean multitenancyWithSingleDomain;
+
   public boolean hasAuthority(String authorityName) {
     return getAuthentication().getAuthorities().stream()
         .anyMatch(role -> authorityName.equals(role.getAuthority()));
   }
-
 
   public Optional<Long> findTenantIdInAccessToken() {
     Integer tenantId = (Integer) getPrincipal().getKeycloakSecurityContext().getToken()
@@ -48,6 +51,11 @@ public class AuthorisationService {
   }
 
   public Optional<Long> resolveTenantFromRequest(Long tenantId) {
+
+    if(!multitenancyWithSingleDomain){
+      return Optional.empty();
+    }
+
     if (tenantId != null) {
       return Optional.of(tenantId);
     }

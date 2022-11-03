@@ -89,25 +89,25 @@ public class TenantServiceFacade {
   }
 
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain, Long optionalTenantIdOverride) {
-    var tenantById = tenantService.findTenantBySubdomain(subdomain);
+    var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain);
 
-    Optional<Long> tenant = authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
-    if (multitenancyWithSingleDomain && tenant.isPresent()) {
-      return getSingleDomainSpecificTenantData(tenantById, tenant.get());
+    Optional<Long> tenantIdFromRequestOrCookie = authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
+    if (multitenancyWithSingleDomain && tenantIdFromRequestOrCookie.isPresent()) {
+      return getSingleDomainSpecificTenantData(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
     }
 
-    return tenantById.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantById.get()));
+    return tenantBySubdomain.isEmpty() ? Optional.empty()
+        : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantBySubdomain.get()));
   }
 
   public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
-      Optional<TenantEntity> tenant, Long resolvedTenantId) {
+      Optional<TenantEntity> mainTenantForSingleDomainMultitenancy, Long resolvedTenantId) {
 
     Optional<TenantEntity> resolvedTenant = tenantService.findTenantById(resolvedTenantId);
     if (resolvedTenant.isEmpty()) {
       throw new BadRequestException("Tenant not found for id " + resolvedTenantId);
     }
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(tenant.get());
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(mainTenantForSingleDomainMultitenancy.get());
     restrictedTenantDTO.getContent().setPrivacy(resolvedTenant.get().getContentPrivacy());
     return Optional.of(restrictedTenantDTO);
   }

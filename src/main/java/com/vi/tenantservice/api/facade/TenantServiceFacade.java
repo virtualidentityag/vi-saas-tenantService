@@ -9,12 +9,15 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
+import com.vi.tenantservice.config.security.AuthorisationService;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /**
@@ -29,6 +32,10 @@ public class TenantServiceFacade {
   private final @NonNull TenantConverter tenantConverter;
   private final @NonNull TenantInputSanitizer tenantInputSanitizer;
   private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
+  private final @NonNull AuthorisationService authorisationService;
+
+  @Value("${feature.multitenancy.with.single.domain.enabled}")
+  private boolean multitenancyWithSingleDomain;
 
   public TenantDTO createTenant(TenantDTO tenantDTO) {
     log.info("Creating new tenant");
@@ -74,17 +81,35 @@ public class TenantServiceFacade {
     return tenantById.isEmpty() ? Optional.empty()
         : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantById.get()));
   }
-  
+
   public List<BasicTenantLicensingDTO> getAllTenants() {
     var tenantEntities = tenantService.getAllTenants();
     return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).collect(
         Collectors.toList());
   }
 
-  public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain) {
-    var tenantById = tenantService.findTenantBySubdomain(subdomain);
-    return tenantById.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantById.get()));
+  public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain, Long optionalTenantIdOverride) {
+    var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain);
+
+    Optional<Long> tenantIdFromRequestOrCookie = authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
+    if (multitenancyWithSingleDomain && tenantIdFromRequestOrCookie.isPresent()) {
+      return getSingleDomainSpecificTenantData(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
+    }
+
+    return tenantBySubdomain.isEmpty() ? Optional.empty()
+        : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantBySubdomain.get()));
+  }
+
+  public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
+      Optional<TenantEntity> mainTenantForSingleDomainMultitenancy, Long resolvedTenantId) {
+
+    Optional<TenantEntity> resolvedTenant = tenantService.findTenantById(resolvedTenantId);
+    if (resolvedTenant.isEmpty()) {
+      throw new BadRequestException("Tenant not found for id " + resolvedTenantId);
+    }
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(mainTenantForSingleDomainMultitenancy.get());
+    restrictedTenantDTO.getContent().setPrivacy(resolvedTenant.get().getContentPrivacy());
+    return Optional.of(restrictedTenantDTO);
   }
 
   public Optional<RestrictedTenantDTO> getSingleTenant() {

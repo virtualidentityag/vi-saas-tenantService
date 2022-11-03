@@ -14,6 +14,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
+import com.vi.tenantservice.config.security.AuthorisationService;
 import java.util.List;
 import java.util.Optional;
 import org.junit.jupiter.api.Test;
@@ -23,6 +24,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class TenantServiceFacadeTest {
@@ -44,6 +46,9 @@ class TenantServiceFacadeTest {
 
   @Mock
   private TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
+
+  @Mock
+  private AuthorisationService authorisationService;
 
   @InjectMocks
   private TenantServiceFacade tenantServiceFacade;
@@ -193,4 +198,28 @@ class TenantServiceFacadeTest {
     verify(tenantService).getAllTenants();
     verifyNoInteractions(converter);
   }
+
+  @Test
+  void findTenantBySubdomain_Should_returnTenantAwareData_When_RequestIsTenantAware(){
+    String subdomain = "app";
+    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
+    ReflectionTestUtils.setField(tenantServiceFacade,"tenantConverter",new TenantConverter());
+
+    TenantEntity defaultTenantEntity = new TenantEntity();
+    defaultTenantEntity.setContentPrivacy("content1");
+    Optional<TenantEntity> defaultTenant = Optional.of(defaultTenantEntity);
+
+    TenantEntity accessTokenTenant = new TenantEntity();
+    accessTokenTenant.setContentPrivacy("content2");
+    Optional<TenantEntity> accessTokenTenantData = Optional.of(accessTokenTenant);
+
+    when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);
+    when(authorisationService.resolveTenantFromRequest(null)).thenReturn(Optional.of(2L));
+    when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
+
+    Optional<RestrictedTenantDTO> tenantDTO = tenantServiceFacade.findTenantBySubdomain(subdomain, null);
+    assertThat(tenantDTO.get().getContent().getPrivacy()).contains("content2");
+
+  }
+
 }

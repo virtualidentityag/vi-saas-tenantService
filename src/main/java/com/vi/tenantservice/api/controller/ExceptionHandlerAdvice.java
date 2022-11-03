@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.controller;
 
 import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
+import javax.ws.rs.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -25,7 +26,7 @@ public class ExceptionHandlerAdvice extends ResponseEntityExceptionHandler {
     return handleExceptionInternal(ex, "", ex.getCustomHttpHeaders(), HttpStatus.FORBIDDEN, request);
   }
 
-  @ExceptionHandler(value = {IllegalStateException.class})
+  @ExceptionHandler(value = {IllegalStateException.class, BadRequestException.class})
   @ResponseStatus(value = HttpStatus.BAD_REQUEST)
   protected void handleIllegalStateException() {
     // status code is set with ResponseStatus

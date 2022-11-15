@@ -24,16 +24,16 @@
         <java.version>11</java.version>
         <swagger.version>3.0.0</swagger.version>
         <h2.version>2.1.214</h2.version>
-        <spring.security>5.7.3</spring.security>
+        <spring.security>5.7.5</spring.security>
         <owasp.java.html.sanitizer>20211018.1</owasp.java.html.sanitizer>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <liquibase.maven.plugin.version>4.1.1</liquibase.maven.plugin.version>
-        <openapi.generator.maven.version>6.2.0</openapi.generator.maven.version>
+        <openapi.generator.maven.version>6.2.1</openapi.generator.maven.version>
         <jackson.databind.nullable.version>0.2.3</jackson.databind.nullable.version>
         <springfox.boot.starter.version>3.0.0</springfox.boot.starter.version>
         <spring.swagger.ui.version>2.10.0</spring.swagger.ui.version>
         <keycloak-spring-boot-starter.version>19.0.3</keycloak-spring-boot-starter.version>
-        <keycloak-spring-security-adapter.version>15.0.2</keycloak-spring-security-adapter.version>
+        <keycloak-spring-security-adapter.version>16.0.0</keycloak-spring-security-adapter.version>
         <keycloak-admin-client.version>16.0.0</keycloak-admin-client.version>
         <lombok.version>1.18.24</lombok.version>
         <commons-lang3.version>3.12.0</commons-lang3.version>
@@ -194,6 +194,7 @@
         <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
+            <version>${spring.security}</version>
             <scope>test</scope>
         </dependency>
         <dependency>

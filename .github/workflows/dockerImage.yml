@@ -97,6 +97,7 @@ jobs:
           echo "- It seems that something has gone wrong" >> $GITHUB_STEP_SUMMARY
           - name: Deploy Stage
       - name: Deploy to T-Sys
+        if: github.ref == 'refs/heads/tsys-release'
         uses: fjogeleit/http-request-action@v1
         with:
           url: 'https://git.mms-support.de/api/v4/projects/1843/repository/tags?ref=master&tag_name=${{ env.DOCKER_IMAGE_TAG }}'

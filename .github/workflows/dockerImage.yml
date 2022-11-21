@@ -65,7 +65,6 @@ jobs:
           echo CLEAN_REF=$(echo "${GITHUB_REF_NAME#refs/heads/}") >> $GITHUB_ENV
           echo TYPE=$(echo -n "${GITHUB_REF_TYPE}") >> $GITHUB_ENV
           echo TIME_STAMP=$(echo -n "${{ steps.time.outputs.time }}") >> $GITHUB_ENV
-          echo TSYS_CUSTOM_HEADER = $(echo -n "{'PRIVATE-TOKEN': '${{ secrets.TSYS_ACCESS_TOKEN }}}') >> $GITHUB_ENV
         shell: bash
       - name: Set branch_timestamp for image from branch
         if: ${{ env.TYPE == 'branch' }}

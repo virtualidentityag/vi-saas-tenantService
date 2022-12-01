@@ -1,7 +1,6 @@
 package com.vi.tenantservice.api.converter;
 
-import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
-
+import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
@@ -17,167 +16,182 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+
+import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
+
 @Component
 @Slf4j
 public class TenantConverter {
 
-  public TenantEntity toEntity(TenantDTO tenantDTO) {
-    var builder = TenantEntity
-        .builder()
-        .id(tenantDTO.getId())
-        .name(tenantDTO.getName())
-        .subdomain(tenantDTO.getSubdomain());
-    contentToEntity(tenantDTO, builder);
-    licensingToEntity(tenantDTO, builder);
-    themingToEntity(tenantDTO, builder);
-    settingsToEntity(tenantDTO, builder);
-    return builder.build();
-  }
+    public static final String DE = "de";
 
-  private void settingsToEntity(TenantDTO tenantDTO, TenantEntityBuilder builder) {
-    if (tenantDTO.getSettings() != null) {
-      TenantSettings tenantSettings = toEntitySettings(tenantDTO.getSettings());
-      builder.settings(convertToJson(tenantSettings)).build();
+    public TenantEntity toEntity(TenantDTO tenantDTO) {
+        var builder = TenantEntity
+                .builder()
+                .id(tenantDTO.getId())
+                .name(tenantDTO.getName())
+                .subdomain(tenantDTO.getSubdomain());
+        contentToEntity(tenantDTO, builder);
+        licensingToEntity(tenantDTO, builder);
+        themingToEntity(tenantDTO, builder);
+        settingsToEntity(tenantDTO, builder);
+        return builder.build();
     }
-  }
 
-  private TenantSettings toEntitySettings(Settings settings) {
-    return TenantSettings.builder()
-        .topicsInRegistrationEnabled(nullAsFalse(settings.getTopicsInRegistrationEnabled()))
-        .featureDemographicsEnabled(nullAsFalse(settings.getFeatureDemographicsEnabled()))
-        .featureTopicsEnabled(nullAsFalse(settings.getFeatureTopicsEnabled()))
-        .featureAppointmentsEnabled(nullAsFalse(settings.getFeatureAppointmentsEnabled()))
-        .featureStatisticsEnabled(nullAsFalse(settings.getFeatureStatisticsEnabled()))
-        .featureGroupChatV2Enabled(nullAsFalse(settings.getFeatureGroupChatV2Enabled()))
-        .featureToolsEnabled(nullAsFalse(settings.getFeatureToolsEnabled()))
-        .featureToolsOIDCToken(settings.getFeatureToolsOICDToken())
-        .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
-        .build();
-  }
-
-  private boolean nullAsFalse(Boolean topicsInRegistrationEnabled) {
-    return Boolean.TRUE.equals(topicsInRegistrationEnabled);
-  }
-
-  public TenantEntity toEntity(TenantEntity targetEntity, TenantDTO tenantDTO) {
-    var sourceEntity = toEntity(tenantDTO);
-    BeanUtils.copyProperties(sourceEntity, targetEntity, "id", "createDate", "updateDate");
-    return targetEntity;
-  }
-
-  private void contentToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
-    if (tenantDTO.getContent() != null) {
-      builder
-          .contentClaim(tenantDTO.getContent().getClaim())
-          .contentImpressum(tenantDTO.getContent().getImpressum())
-          .contentPrivacy(tenantDTO.getContent().getPrivacy())
-          .contentTermsAndConditions(tenantDTO.getContent().getTermsAndConditions());
+    private void settingsToEntity(TenantDTO tenantDTO, TenantEntityBuilder builder) {
+        if (tenantDTO.getSettings() != null) {
+            TenantSettings tenantSettings = toEntitySettings(tenantDTO.getSettings());
+            builder.settings(convertToJson(tenantSettings)).build();
+        }
     }
-  }
 
-  private void licensingToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
-    if (tenantDTO.getLicensing() != null) {
-      builder
-          .licensingAllowedNumberOfUsers(tenantDTO.getLicensing().getAllowedNumberOfUsers());
+    private TenantSettings toEntitySettings(Settings settings) {
+        return TenantSettings.builder()
+                .topicsInRegistrationEnabled(nullAsFalse(settings.getTopicsInRegistrationEnabled()))
+                .featureDemographicsEnabled(nullAsFalse(settings.getFeatureDemographicsEnabled()))
+                .featureTopicsEnabled(nullAsFalse(settings.getFeatureTopicsEnabled()))
+                .featureAppointmentsEnabled(nullAsFalse(settings.getFeatureAppointmentsEnabled()))
+                .featureStatisticsEnabled(nullAsFalse(settings.getFeatureStatisticsEnabled()))
+                .featureGroupChatV2Enabled(nullAsFalse(settings.getFeatureGroupChatV2Enabled()))
+                .featureToolsEnabled(nullAsFalse(settings.getFeatureToolsEnabled()))
+                .featureToolsOIDCToken(settings.getFeatureToolsOICDToken())
+                .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
+                .activeLanguages(nullAsGerman(settings.getActiveLanguages()))
+                .build();
     }
-  }
 
-  private void themingToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
-    if (tenantDTO.getTheming() != null) {
-      builder
-          .themingFavicon(tenantDTO.getTheming().getFavicon())
-          .themingLogo(tenantDTO.getTheming().getLogo())
-          .themingPrimaryColor(tenantDTO.getTheming().getPrimaryColor())
-          .themingSecondaryColor(tenantDTO.getTheming().getSecondaryColor());
+    private List<String> nullAsGerman(List<String> activeLanguages) {
+        if (activeLanguages == null) {
+            return Lists.newArrayList(DE);
+        }
+        return activeLanguages;
     }
-  }
 
-  public TenantDTO toDTO(TenantEntity tenant) {
-    var tenantDTO = new TenantDTO()
-        .id(tenant.getId())
-        .name(tenant.getName())
-        .subdomain(tenant.getSubdomain())
-        .content(toContentDTO(tenant))
-        .theming(toThemingDTO(tenant))
-        .licensing(toLicensingDTO(tenant))
-        .settings(getSettings(tenant));
-    if (tenant.getCreateDate() != null) {
-      tenantDTO.setCreateDate(tenant.getCreateDate().toString());
+    private boolean nullAsFalse(Boolean topicsInRegistrationEnabled) {
+        return Boolean.TRUE.equals(topicsInRegistrationEnabled);
     }
-    if (tenant.getUpdateDate() != null) {
-      tenantDTO.setUpdateDate(tenant.getUpdateDate().toString());
+
+    public TenantEntity toEntity(TenantEntity targetEntity, TenantDTO tenantDTO) {
+        var sourceEntity = toEntity(tenantDTO);
+        BeanUtils.copyProperties(sourceEntity, targetEntity, "id", "createDate", "updateDate");
+        return targetEntity;
     }
-    return tenantDTO;
-  }
 
-  private Settings getSettings(TenantEntity tenant) {
-    if (tenant.getSettings() == null) {
-      return new Settings();
-    } else {
-      return getSettingsIfNotNull(tenant.getSettings());
+    private void contentToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
+        if (tenantDTO.getContent() != null) {
+            builder
+                    .contentClaim(tenantDTO.getContent().getClaim())
+                    .contentImpressum(tenantDTO.getContent().getImpressum())
+                    .contentPrivacy(tenantDTO.getContent().getPrivacy())
+                    .contentTermsAndConditions(tenantDTO.getContent().getTermsAndConditions());
+        }
     }
-  }
 
-  private Settings getSettingsIfNotNull(String settingsJson) {
-    TenantSettings tenantSettings = JsonConverter.convertFromJson(settingsJson);
-    return new Settings()
-        .topicsInRegistrationEnabled(tenantSettings.isTopicsInRegistrationEnabled())
-        .featureDemographicsEnabled(tenantSettings.isFeatureDemographicsEnabled())
-        .featureTopicsEnabled(tenantSettings.isFeatureTopicsEnabled())
-        .featureAppointmentsEnabled(tenantSettings.isFeatureAppointmentsEnabled())
-        .featureStatisticsEnabled(tenantSettings.isFeatureStatisticsEnabled())
-        .featureGroupChatV2Enabled(tenantSettings.isFeatureGroupChatV2Enabled())
-        .featureToolsOICDToken(tenantSettings.getFeatureToolsOIDCToken())
-        .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled())
-        .featureAttachmentUploadDisabled(tenantSettings.isFeatureAttachmentUploadDisabled());
-
-  }
-
-  public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {
-    return new RestrictedTenantDTO()
-        .id(tenant.getId())
-        .name(tenant.getName())
-        .content(toContentDTO(tenant))
-        .theming(toThemingDTO(tenant))
-        .subdomain(tenant.getSubdomain())
-        .settings(getSettings(tenant));
-  }
-
-  public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
-    var basicTenantLicensingDTO = new BasicTenantLicensingDTO()
-        .id(tenant.getId())
-        .name(tenant.getName())
-        .subdomain(tenant.getSubdomain())
-        .licensing(toLicensingDTO(tenant));
-
-    if (tenant.getCreateDate() != null) {
-      basicTenantLicensingDTO.setCreateDate(tenant.getCreateDate().toString());
+    private void licensingToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
+        if (tenantDTO.getLicensing() != null) {
+            builder
+                    .licensingAllowedNumberOfUsers(tenantDTO.getLicensing().getAllowedNumberOfUsers());
+        }
     }
-    if (tenant.getUpdateDate() != null) {
-      basicTenantLicensingDTO.setUpdateDate(tenant.getUpdateDate().toString());
+
+    private void themingToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
+        if (tenantDTO.getTheming() != null) {
+            builder
+                    .themingFavicon(tenantDTO.getTheming().getFavicon())
+                    .themingLogo(tenantDTO.getTheming().getLogo())
+                    .themingPrimaryColor(tenantDTO.getTheming().getPrimaryColor())
+                    .themingSecondaryColor(tenantDTO.getTheming().getSecondaryColor());
+        }
     }
-    return basicTenantLicensingDTO;
-  }
+
+    public TenantDTO toDTO(TenantEntity tenant) {
+        var tenantDTO = new TenantDTO()
+                .id(tenant.getId())
+                .name(tenant.getName())
+                .subdomain(tenant.getSubdomain())
+                .content(toContentDTO(tenant))
+                .theming(toThemingDTO(tenant))
+                .licensing(toLicensingDTO(tenant))
+                .settings(getSettings(tenant));
+        if (tenant.getCreateDate() != null) {
+            tenantDTO.setCreateDate(tenant.getCreateDate().toString());
+        }
+        if (tenant.getUpdateDate() != null) {
+            tenantDTO.setUpdateDate(tenant.getUpdateDate().toString());
+        }
+        return tenantDTO;
+    }
+
+    private Settings getSettings(TenantEntity tenant) {
+        if (tenant.getSettings() == null) {
+            return new Settings();
+        } else {
+            return getSettingsIfNotNull(tenant.getSettings());
+        }
+    }
+
+    private Settings getSettingsIfNotNull(String settingsJson) {
+        TenantSettings tenantSettings = JsonConverter.convertFromJson(settingsJson);
+        return new Settings()
+                .topicsInRegistrationEnabled(tenantSettings.isTopicsInRegistrationEnabled())
+                .featureDemographicsEnabled(tenantSettings.isFeatureDemographicsEnabled())
+                .featureTopicsEnabled(tenantSettings.isFeatureTopicsEnabled())
+                .featureAppointmentsEnabled(tenantSettings.isFeatureAppointmentsEnabled())
+                .featureStatisticsEnabled(tenantSettings.isFeatureStatisticsEnabled())
+                .featureGroupChatV2Enabled(tenantSettings.isFeatureGroupChatV2Enabled())
+                .featureToolsOICDToken(tenantSettings.getFeatureToolsOIDCToken())
+                .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled())
+                .featureAttachmentUploadDisabled(tenantSettings.isFeatureAttachmentUploadDisabled())
+                .activeLanguages(nullAsGerman(tenantSettings.getActiveLanguages()));
+
+    }
+
+    public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {
+        return new RestrictedTenantDTO()
+                .id(tenant.getId())
+                .name(tenant.getName())
+                .content(toContentDTO(tenant))
+                .theming(toThemingDTO(tenant))
+                .subdomain(tenant.getSubdomain())
+                .settings(getSettings(tenant));
+    }
+
+    public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
+        var basicTenantLicensingDTO = new BasicTenantLicensingDTO()
+                .id(tenant.getId())
+                .name(tenant.getName())
+                .subdomain(tenant.getSubdomain())
+                .licensing(toLicensingDTO(tenant));
+
+        if (tenant.getCreateDate() != null) {
+            basicTenantLicensingDTO.setCreateDate(tenant.getCreateDate().toString());
+        }
+        if (tenant.getUpdateDate() != null) {
+            basicTenantLicensingDTO.setUpdateDate(tenant.getUpdateDate().toString());
+        }
+        return basicTenantLicensingDTO;
+    }
 
 
-  public Licensing toLicensingDTO(TenantEntity tenant) {
-    return new Licensing()
-        .allowedNumberOfUsers(tenant.getLicensingAllowedNumberOfUsers());
-  }
+    public Licensing toLicensingDTO(TenantEntity tenant) {
+        return new Licensing()
+                .allowedNumberOfUsers(tenant.getLicensingAllowedNumberOfUsers());
+    }
 
-  private Theming toThemingDTO(TenantEntity tenant) {
-    return new Theming()
-        .favicon(tenant.getThemingFavicon())
-        .logo(tenant.getThemingLogo())
-        .primaryColor(tenant.getThemingPrimaryColor())
-        .secondaryColor(tenant.getThemingSecondaryColor());
-  }
+    private Theming toThemingDTO(TenantEntity tenant) {
+        return new Theming()
+                .favicon(tenant.getThemingFavicon())
+                .logo(tenant.getThemingLogo())
+                .primaryColor(tenant.getThemingPrimaryColor())
+                .secondaryColor(tenant.getThemingSecondaryColor());
+    }
 
-  private Content toContentDTO(TenantEntity tenant) {
-    return new Content()
-        .claim(tenant.getContentClaim())
-        .impressum(tenant.getContentImpressum())
-        .privacy(tenant.getContentPrivacy())
-        .termsAndConditions(tenant.getContentTermsAndConditions());
-  }
+    private Content toContentDTO(TenantEntity tenant) {
+        return new Content()
+                .claim(tenant.getContentClaim())
+                .impressum(tenant.getContentImpressum())
+                .privacy(tenant.getContentPrivacy())
+                .termsAndConditions(tenant.getContentTermsAndConditions());
+    }
 }

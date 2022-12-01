@@ -1,10 +1,13 @@
 package com.vi.tenantservice.api.util;
 
+import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.Theming;
+
+import java.util.List;
 
 public class TenantTestDataBuilder {
 
@@ -48,16 +51,17 @@ public class TenantTestDataBuilder {
 
   public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(
       boolean topicsInRegistrationEnabled) {
-    tenantDTO.setSettings(new Settings()
-        .topicsInRegistrationEnabled(topicsInRegistrationEnabled)
-        // All current settings are required, otherwise the server would detect a change.
-        .featureTopicsEnabled(true)
-        .featureDemographicsEnabled(true)
-        .featureAppointmentsEnabled(true)
-        .featureStatisticsEnabled(true)
-        .featureTopicsEnabled(true)
-        .featureGroupChatV2Enabled(true)
-        .featureToolsEnabled(true));
+    tenantDTO.setSettings(getSettings()
+        .topicsInRegistrationEnabled(topicsInRegistrationEnabled));
+    return this;
+  }
+
+  public TenantTestDataBuilder withSettingActiveLanguages(
+          List<String> activeLanguages) {
+    tenantDTO.setSettings(getSettings()
+            .topicsInRegistrationEnabled(true)
+            .activeLanguages(activeLanguages)
+    );
     return this;
   }
 
@@ -86,8 +90,15 @@ public class TenantTestDataBuilder {
 
   public TenantTestDataBuilder withSettings() {
     tenantDTO.setSettings(
-        new Settings()
-            .topicsInRegistrationEnabled(true)
+        getSettings()
+                .topicsInRegistrationEnabled(true)
+                .activeLanguages(Lists.newArrayList("de", "en"))
+    );
+    return this;
+  }
+
+  private static Settings getSettings() {
+    return new Settings()
             .featureTopicsEnabled(true)
             .featureDemographicsEnabled(true)
             .featureAppointmentsEnabled(true)
@@ -96,9 +107,7 @@ public class TenantTestDataBuilder {
             .featureGroupChatV2Enabled(true)
             .featureToolsEnabled(true)
             .featureToolsOICDToken("1234")
-            .featureAttachmentUploadDisabled(false)
-    );
-    return this;
+            .featureAttachmentUploadDisabled(false);
   }
 
   private Licensing licensing() {

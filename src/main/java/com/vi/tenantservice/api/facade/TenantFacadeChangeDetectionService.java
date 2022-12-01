@@ -1,14 +1,16 @@
 package com.vi.tenantservice.api.facade;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.util.JsonConverter;
-import java.util.List;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @Component
 public class TenantFacadeChangeDetectionService {
@@ -59,12 +61,25 @@ public class TenantFacadeChangeDetectionService {
         existingSettingsToCompare.isFeatureAttachmentUploadDisabled())) {
       resultList.add(TenantSetting.FEATURE_ATTACHMENT_UPLOAD_DISABLED);
     }
+    if (isChangedIgnoringOrder(inputSettings.getActiveLanguages(), existingSettingsToCompare.getActiveLanguages())) {
+      resultList.add(TenantSetting.FEATURE_ACTIVE_LANGUAGES);
+    }
     return resultList;
   }
 
   private boolean isChanged(Boolean inputSettings, boolean existingSettingsToCompare) {
     return nullAsFalse(inputSettings)
-        != existingSettingsToCompare;
+            != existingSettingsToCompare;
+  }
+  private boolean isChangedIgnoringOrder(List<String> updatedSettings, List<String> existingSettings) {
+    return !areEqualIgnoringOrder(updatedSettings, existingSettings);
+  }
+
+  private  boolean areEqualIgnoringOrder(List<String> updatedSettings, List<String> existingSettings) {
+    if (updatedSettings == null || existingSettings == null) {
+      return updatedSettings == existingSettings;
+    }
+    return Sets.newHashSet(updatedSettings).equals(Sets.newHashSet(existingSettings));
   }
 
   private TenantSettings getExistingTenantSettings(TenantEntity existingTenant) {

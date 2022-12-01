@@ -1,26 +1,10 @@
 package com.vi.tenantservice.api.controller;
 
 
-import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,6 +19,20 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.util.Optional;
+
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = TenantServiceApplication.class)
 @TestPropertySource(properties = "spring.profiles.active=testing")
@@ -133,12 +131,14 @@ class TenantControllerIT {
     mockMvc.perform(put(EXISTING_TENANT)
             .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
             .contentType(APPLICATION_JSON)
-            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain").withSettingTopicsInRegistrationEnabled(true)
+            .content(tenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
+                    .withSettingActiveLanguages(Lists.newArrayList("fr","pl"))
                 .withLicensing().jsonify())
             .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
-        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"));
+        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
+        .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")));
   }
 
 
@@ -198,7 +198,9 @@ class TenantControllerIT {
         .andExpect(jsonPath("settings.featureDemographicsEnabled", is(true)))
         .andExpect(jsonPath("settings.featureAppointmentsEnabled", is(true)))
         .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(true)))
-        .andExpect(jsonPath("settings.featureAttachmentUploadDisabled", is(false)));
+        .andExpect(jsonPath("settings.featureAttachmentUploadDisabled", is(false)))
+            .andExpect(jsonPath("settings.activeLanguages", is(Lists.newArrayList("de"))));
+
   }
 
   @Test

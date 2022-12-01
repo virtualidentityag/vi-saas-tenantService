@@ -1,15 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
-import static com.vi.tenantservice.api.model.TenantSetting.ENABLE_TOPICS_IN_REGISTRATION;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_APPOINTMENTS_ENABLED;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_ATTACHMENT_UPLOAD_DISABLED;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_DEMOGRAPHICS_ENABLED;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_GROUP_CHAT_V2_ENABLED;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_STATISTICS_ENABLED;
-import static com.vi.tenantservice.api.model.TenantSetting.FEATURE_TOPICS_ENABLED;
-import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-
+import com.google.common.collect.Sets;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -19,6 +10,10 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import static com.vi.tenantservice.api.model.TenantSetting.*;
+import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+
 @ExtendWith(MockitoExtension.class)
 class TenantFacadeChangeDetectionServiceTest {
 
@@ -27,6 +22,8 @@ class TenantFacadeChangeDetectionServiceTest {
 
   @Test
   void determineChangedSettings_Should_NotDetectAnyChanges_When_InputDTOIsNull() {
+    Object o = null;
+    assertThat(Sets.newHashSet(o)).isEqualTo(Sets.newHashSet(o));
     // given
     TenantDTO sanitizedTenantDTO = new TenantDTO();
     TenantEntity existingTenant = new TenantEntity();

@@ -353,3 +353,8 @@ components:
         featureToolsOICDToken:
           type: string
           example: "1234-1234-1234-1234"
+        activeLanguages:
+          type: array
+          items:
+            type: string
+          example: "[en, de, fr]"

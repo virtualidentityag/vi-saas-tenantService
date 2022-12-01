@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class TenantSettings {
 
-  boolean featureMultitenancyEnabled;
   boolean featureStatisticsEnabled;
   boolean featureTopicsEnabled;
   boolean topicsInRegistrationEnabled;
@@ -22,4 +23,5 @@ public class TenantSettings {
   boolean featureAttachmentUploadDisabled;
 
   String featureToolsOIDCToken;
+  List<String> activeLanguages;
 }

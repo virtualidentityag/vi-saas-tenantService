@@ -26,51 +26,53 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
  */
 @KeycloakConfiguration
 @EnableGlobalMethodSecurity(
-    prePostEnabled = true)
+        prePostEnabled = true)
 @EnableWebSecurity(debug = true)
 public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
-    http
-        .csrf().disable()
-        .authenticationProvider(keycloakAuthenticationProvider())
-        .addFilterBefore(keycloakAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
-        .sessionManagement()
-        .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
-        .and()
-        .authorizeRequests()
-        .requestMatchers(new AntPathRequestMatcher("/tenant")).authenticated()
-        .requestMatchers(new AntPathRequestMatcher("/tenant/*")).authenticated()
-        .requestMatchers(new AntPathRequestMatcher("/tenant/public/**")).permitAll()
-        .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
-        .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant")))
-        .permitAll()
-        .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**")))
-        .permitAll()
-        .and()
-        .headers()
-        .xssProtection()
-        .and()
-        .contentSecurityPolicy("script-src 'self'");
-  }
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+                .csrf().disable()
+                .authenticationProvider(keycloakAuthenticationProvider())
+                .addFilterBefore(keycloakAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
+                .sessionManagement()
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
+                .and()
+                .authorizeRequests()
+                .requestMatchers(new AntPathRequestMatcher("/tenant")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/tenant/*")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/tenantadmin")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/tenantadmin/*")).authenticated()
+                .requestMatchers(new AntPathRequestMatcher("/tenant/public/**")).permitAll()
+                .antMatchers(SpringFoxConfig.WHITE_LIST).permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant")))
+                .permitAll()
+                .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant/**")))
+                .permitAll()
+                .and()
+                .headers()
+                .xssProtection()
+                .and()
+                .contentSecurityPolicy("script-src 'self'");
+    }
 
-  @Override
-  protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-    return new NullAuthenticatedSessionStrategy();
-  }
+    @Override
+    protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+        return new NullAuthenticatedSessionStrategy();
+    }
 
-  @Bean
-  public KeycloakConfigResolver keycloakConfigResolver() {
-    return new KeycloakSpringBootConfigResolver();
-  }
+    @Bean
+    public KeycloakConfigResolver keycloakConfigResolver() {
+        return new KeycloakSpringBootConfigResolver();
+    }
 
-  @Autowired
-  public void configureGlobal(AuthenticationManagerBuilder auth) {
-    KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
-    keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
-    auth.authenticationProvider(keycloakAuthenticationProvider);
-  }
+    @Autowired
+    public void configureGlobal(AuthenticationManagerBuilder auth) {
+        KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
+        keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
+        auth.authenticationProvider(keycloakAuthenticationProvider);
+    }
 
 }

@@ -2,8 +2,8 @@ package com.vi.tenantservice.api.facade;
 
 import com.google.common.collect.Sets;
 import com.vi.tenantservice.api.model.Settings;
-import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.model.TenantSettings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -25,7 +25,7 @@ class TenantFacadeChangeDetectionServiceTest {
     Object o = null;
     assertThat(Sets.newHashSet(o)).isEqualTo(Sets.newHashSet(o));
     // given
-    TenantDTO sanitizedTenantDTO = new TenantDTO();
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO();
     TenantEntity existingTenant = new TenantEntity();
 
     // when, then
@@ -36,7 +36,7 @@ class TenantFacadeChangeDetectionServiceTest {
   @Test
   void determineChangedSettings_Should_NotDetectAnyChanges_When_InputDTOIsEmptyAndEntitySettingsAreNull() {
     // given
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(new Settings());
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(new Settings());
     TenantEntity existingTenant = new TenantEntity();
 
     // when, then
@@ -49,7 +49,7 @@ class TenantFacadeChangeDetectionServiceTest {
     // given
     Settings settings = new Settings().featureDemographicsEnabled(true).featureTopicsEnabled(true)
         .topicsInRegistrationEnabled(true).featureGroupChatV2Enabled(true);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
     TenantEntity existingTenant = new TenantEntity();
 
     // when, then
@@ -64,7 +64,7 @@ class TenantFacadeChangeDetectionServiceTest {
     // given
     Settings settings = new Settings().featureDemographicsEnabled(true).featureTopicsEnabled(true)
         .topicsInRegistrationEnabled(true).featureGroupChatV2Enabled(true);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureDemographicsEnabled(true).featureTopicsEnabled(true)
@@ -80,7 +80,7 @@ class TenantFacadeChangeDetectionServiceTest {
   void determineChangedSettings_Should_DetectStatisticsFeatureChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
     // given
     Settings settings = new Settings().featureStatisticsEnabled(false);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureStatisticsEnabled(true)
@@ -97,7 +97,7 @@ class TenantFacadeChangeDetectionServiceTest {
   void determineChangedSettings_Should_DetectAppointmentFeatureChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
     // given
     Settings settings = new Settings().featureAppointmentsEnabled(false);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureAppointmentsEnabled(true)
@@ -115,7 +115,7 @@ class TenantFacadeChangeDetectionServiceTest {
     // given
     Settings settings = new Settings().featureDemographicsEnabled(false).featureTopicsEnabled(false)
         .topicsInRegistrationEnabled(true);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureDemographicsEnabled(true)
@@ -133,7 +133,7 @@ class TenantFacadeChangeDetectionServiceTest {
     // given
     Settings settings = new Settings().featureDemographicsEnabled(true).featureTopicsEnabled(true)
         .topicsInRegistrationEnabled(false);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureDemographicsEnabled(true)
@@ -150,7 +150,7 @@ class TenantFacadeChangeDetectionServiceTest {
   void determineChangedSettings_Should_DetectGroupChatV2FeatureChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
     // given
     Settings settings = new Settings().featureGroupChatV2Enabled(false);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureGroupChatV2Enabled(true)
@@ -167,7 +167,7 @@ class TenantFacadeChangeDetectionServiceTest {
   void determineChangedSettings_Should_DetectFeatureAttachmentUploadDisabledChanges_When_InputDTOContainsDifferentSettingsAsEntity() {
     // given
     Settings settings = new Settings().featureAttachmentUploadDisabled(true);
-    TenantDTO sanitizedTenantDTO = new TenantDTO().settings(settings);
+    TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO().settings(settings);
 
     TenantSettings existingTenantSettings = TenantSettings.builder()
         .featureAttachmentUploadDisabled(false)

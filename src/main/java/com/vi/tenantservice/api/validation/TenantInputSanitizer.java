@@ -1,12 +1,15 @@
 package com.vi.tenantservice.api.validation;
 
-import com.vi.tenantservice.api.model.Content;
-import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.model.Theming;
+import com.vi.tenantservice.api.model.Translation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.List;
 
 @RequiredArgsConstructor
 @Component
@@ -15,9 +18,9 @@ public class TenantInputSanitizer {
 
   private final @NonNull InputSanitizer inputSanitizer;
 
-  public TenantDTO sanitize(TenantDTO input) {
+  public TenantMultilingualDTO sanitize(TenantMultilingualDTO input) {
     log.info("Sanitizing input DTO");
-    TenantDTO output = copyNotSanitizedAttributes(input);
+    TenantMultilingualDTO output = copyNotSanitizedAttributes(input);
     output.setName(inputSanitizer.sanitize(input.getName()));
     output.setSubdomain(inputSanitizer.sanitize(input.getSubdomain()));
     sanitizeTheming(input, output);
@@ -25,19 +28,19 @@ public class TenantInputSanitizer {
     return output;
   }
 
-  private TenantDTO copyNotSanitizedAttributes(TenantDTO input) {
-    TenantDTO output = new TenantDTO();
+  private TenantMultilingualDTO copyNotSanitizedAttributes(TenantMultilingualDTO input) {
+    TenantMultilingualDTO output = new TenantMultilingualDTO();
     output.setId(input.getId());
     output.setCreateDate(input.getCreateDate());
     output.setUpdateDate(input.getUpdateDate());
-    output.setContent(new Content());
+    output.setContent(new MultilingualContent());
     output.setTheming(new Theming());
     output.setLicensing(input.getLicensing());
     output.setSettings(input.getSettings());
     return output;
   }
 
-  private void sanitizeTheming(TenantDTO input, TenantDTO output) {
+  private void sanitizeTheming(TenantMultilingualDTO input, TenantMultilingualDTO output) {
     Theming theming = input.getTheming();
     if (theming != null) {
       output.getTheming().setLogo(inputSanitizer.sanitize(theming.getLogo()));
@@ -47,17 +50,33 @@ public class TenantInputSanitizer {
     }
   }
 
-  private void sanitizeContent(TenantDTO input, TenantDTO output) {
-    Content content = input.getContent();
+  private void sanitizeContent(TenantMultilingualDTO input, TenantMultilingualDTO output) {
+    var content = input.getContent();
     if (content != null) {
       output.getContent()
-          .setImpressum(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getImpressum()));
+              .setImpressum(sanitizeAllTranslations(content.getImpressum()));
       output.getContent()
-          .setClaim(inputSanitizer.sanitizeAllowingFormatting(content.getClaim()));
+              .setClaim(sanitizeAllTranslationsAllowingFormatting(content.getClaim()));
       output.getContent()
-          .setPrivacy(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getPrivacy()));
+              .setPrivacy(sanitizeAllTranslations(content.getPrivacy()));
       output.getContent()
-          .setTermsAndConditions(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getTermsAndConditions()));
+              .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions()));
     }
+  }
+
+  private List<Translation> sanitizeAllTranslationsAllowingFormatting(List<Translation> translations) {
+    if (translations != null) {
+      for (Translation translation : translations) {
+        translation.setValue(inputSanitizer.sanitizeAllowingFormatting(translation.getValue()));
+      }
+    }
+    return translations;
+  }
+
+  private List<Translation> sanitizeAllTranslations(List<Translation> translations) {
+    if (translations != null) {
+      translations.stream().forEach(translation -> translation.setValue(inputSanitizer.sanitizeAllowingFormattingAndLinks(translation.getValue())));
+    }
+    return translations;
   }
 }

@@ -1,22 +1,14 @@
 package com.vi.tenantservice.api.facade;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoInteractions;
-import static org.mockito.Mockito.when;
-
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.util.List;
-import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,12 +18,20 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.List;
+import java.util.Optional;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 @ExtendWith(MockitoExtension.class)
 class TenantServiceFacadeTest {
 
   private static final long ID = 1L;
+  private final TenantMultilingualDTO tenantMultilingualDTO = new TenantMultilingualDTO();
   private final TenantDTO tenantDTO = new TenantDTO();
-  private final TenantDTO sanitizedTenantDTO = new TenantDTO();
+  private final TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO();
   private final RestrictedTenantDTO restrictedTenantDTO = new RestrictedTenantDTO();
   private final TenantEntity tenantEntity = new TenantEntity();
 
@@ -56,11 +56,11 @@ class TenantServiceFacadeTest {
   @Test
   void createTenant_Should_createTenant() {
     // given
-    when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
-    when(converter.toEntity(tenantDTO)).thenReturn(tenantEntity);
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
+    when(converter.toEntity(tenantMultilingualDTO)).thenReturn(tenantEntity);
 
     // when
-    tenantServiceFacade.createTenant(tenantDTO);
+    tenantServiceFacade.createTenant(tenantMultilingualDTO);
 
     // then
     verify(converter).toEntity(sanitizedTenantDTO);
@@ -70,12 +70,12 @@ class TenantServiceFacadeTest {
   @Test
   void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsMultipleTenantAdmin() {
     // given
-    when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
 
     // when
-    tenantServiceFacade.updateTenant(ID, tenantDTO);
+    tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
 
     // then
     verify(tenantService).findTenantById(ID);
@@ -89,7 +89,7 @@ class TenantServiceFacadeTest {
     assertThrows(TenantNotFoundException.class, () -> {
 
       // when
-      tenantServiceFacade.updateTenant(ID, tenantDTO);
+      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
     });
     verify(tenantService).findTenantById(ID);
   }
@@ -97,12 +97,12 @@ class TenantServiceFacadeTest {
   @Test
   void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
     // given
-    when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
 
     // when
-    tenantServiceFacade.updateTenant(ID, tenantDTO);
+    tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
 
     // then
     verify(tenantService).findTenantById(ID);
@@ -118,7 +118,7 @@ class TenantServiceFacadeTest {
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
-      tenantServiceFacade.updateTenant(ID, tenantDTO);
+      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
     });
     verify(tenantService, Mockito.never()).findTenantById(ID);
   }
@@ -127,17 +127,17 @@ class TenantServiceFacadeTest {
   void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesAndTokenIdAttributeDoesNotMatch() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
-    when(tenantInputSanitizer.sanitize(tenantDTO)).thenReturn(sanitizedTenantDTO);
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
 
     Mockito.doThrow(AccessDeniedException.class)
         .when(tenantFacadeAuthorisationService)
-        .assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(TenantDTO.class),
+        .assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(TenantMultilingualDTO.class),
             Mockito.any(TenantEntity.class));
 
     // then
     assertThrows(AccessDeniedException.class, () -> {
       // when
-      tenantServiceFacade.updateTenant(ID, tenantDTO);
+      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
     });
   }
 

@@ -1,23 +1,24 @@
 package com.vi.tenantservice.api.facade;
 
-import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LICENSING;
-import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SUBDOMAIN;
-
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
-import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LICENSING;
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SUBDOMAIN;
 
 @Service
 @Slf4j
@@ -53,7 +54,7 @@ public class TenantFacadeAuthorisationService {
   }
 
   void assertUserHasSufficientPermissionsToChangeAttributes(
-      TenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+          TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     if (isSingleTenantAdmin()) {
       assertSingleTenantAdminHasPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
     }
@@ -77,7 +78,7 @@ public class TenantFacadeAuthorisationService {
     }
   }
 
-  private void assertSingleTenantAdminHasPermissionsToChangeAttributes(TenantDTO sanitizedTenantDTO,
+  private void assertSingleTenantAdminHasPermissionsToChangeAttributes(TenantMultilingualDTO sanitizedTenantDTO,
       TenantEntity existingTenant) {
 
     if (!Objects.equals(sanitizedTenantDTO.getSubdomain(), existingTenant.getSubdomain())) {
@@ -88,7 +89,7 @@ public class TenantFacadeAuthorisationService {
   }
 
   private void assertSingleTenantAdminDoesNotTryToChangeLicensingInformation(
-      TenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+          TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     if (isAttemptToDeleteExistingLicensingInformation(sanitizedTenantDTO, existingTenant)) {
       logAndThrowTenantAuthorisationException("Single tenant admin cannot delete licensing", NOT_ALLOWED_TO_CHANGE_LICENSING);
     }
@@ -98,12 +99,12 @@ public class TenantFacadeAuthorisationService {
     }
   }
 
-  private boolean licensingChanged(TenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+  private boolean licensingChanged(TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     return !Objects.equals(sanitizedTenantDTO.getLicensing().getAllowedNumberOfUsers(),
         existingTenant.getLicensingAllowedNumberOfUsers());
   }
 
-  private boolean isAttemptToDeleteExistingLicensingInformation(TenantDTO sanitizedTenantDTO,
+  private boolean isAttemptToDeleteExistingLicensingInformation(TenantMultilingualDTO sanitizedTenantDTO,
       TenantEntity existingTenant) {
     return sanitizedTenantDTO.getLicensing() == null
         && existingTenant.getLicensingAllowedNumberOfUsers() != null;

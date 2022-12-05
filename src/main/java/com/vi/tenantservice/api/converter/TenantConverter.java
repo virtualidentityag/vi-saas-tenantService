@@ -4,11 +4,13 @@ import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
+import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
+import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.util.JsonConverter;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.List;
 
+import static com.vi.tenantservice.api.util.JsonConverter.convertListFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
 @Component
@@ -26,7 +29,7 @@ public class TenantConverter {
 
     public static final String DE = "de";
 
-    public TenantEntity toEntity(TenantDTO tenantDTO) {
+    public TenantEntity toEntity(TenantMultilingualDTO tenantDTO) {
         var builder = TenantEntity
                 .builder()
                 .id(tenantDTO.getId())
@@ -39,7 +42,7 @@ public class TenantConverter {
         return builder.build();
     }
 
-    private void settingsToEntity(TenantDTO tenantDTO, TenantEntityBuilder builder) {
+    private void settingsToEntity(TenantMultilingualDTO tenantDTO, TenantEntityBuilder builder) {
         if (tenantDTO.getSettings() != null) {
             TenantSettings tenantSettings = toEntitySettings(tenantDTO.getSettings());
             builder.settings(convertToJson(tenantSettings)).build();
@@ -72,30 +75,30 @@ public class TenantConverter {
         return Boolean.TRUE.equals(topicsInRegistrationEnabled);
     }
 
-    public TenantEntity toEntity(TenantEntity targetEntity, TenantDTO tenantDTO) {
+    public TenantEntity toEntity(TenantEntity targetEntity, TenantMultilingualDTO tenantDTO) {
         var sourceEntity = toEntity(tenantDTO);
         BeanUtils.copyProperties(sourceEntity, targetEntity, "id", "createDate", "updateDate");
         return targetEntity;
     }
 
-    private void contentToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
+    private void contentToEntity(TenantMultilingualDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
         if (tenantDTO.getContent() != null) {
             builder
-                    .contentClaim(tenantDTO.getContent().getClaim())
-                    .contentImpressum(tenantDTO.getContent().getImpressum())
-                    .contentPrivacy(tenantDTO.getContent().getPrivacy())
-                    .contentTermsAndConditions(tenantDTO.getContent().getTermsAndConditions());
+                    .contentClaim(convertToJson(tenantDTO.getContent().getClaim()))
+                    .contentImpressum(convertToJson(tenantDTO.getContent().getImpressum()))
+                    .contentPrivacy(convertToJson(tenantDTO.getContent().getPrivacy()))
+                    .contentTermsAndConditions(convertToJson(tenantDTO.getContent().getTermsAndConditions()));
         }
     }
 
-    private void licensingToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
+    private void licensingToEntity(TenantMultilingualDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
         if (tenantDTO.getLicensing() != null) {
             builder
                     .licensingAllowedNumberOfUsers(tenantDTO.getLicensing().getAllowedNumberOfUsers());
         }
     }
 
-    private void themingToEntity(TenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
+    private void themingToEntity(TenantMultilingualDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
         if (tenantDTO.getTheming() != null) {
             builder
                     .themingFavicon(tenantDTO.getTheming().getFavicon())
@@ -103,6 +106,24 @@ public class TenantConverter {
                     .themingPrimaryColor(tenantDTO.getTheming().getPrimaryColor())
                     .themingSecondaryColor(tenantDTO.getTheming().getSecondaryColor());
         }
+    }
+
+    public TenantMultilingualDTO toMultilingualDTO(TenantEntity tenant) {
+        var tenantDTO = new TenantMultilingualDTO()
+                .id(tenant.getId())
+                .name(tenant.getName())
+                .subdomain(tenant.getSubdomain())
+                .content(toMultilingualContentDTO(tenant))
+                .theming(toThemingDTO(tenant))
+                .licensing(toLicensingDTO(tenant))
+                .settings(getSettings(tenant));
+        if (tenant.getCreateDate() != null) {
+            tenantDTO.setCreateDate(tenant.getCreateDate().toString());
+        }
+        if (tenant.getUpdateDate() != null) {
+            tenantDTO.setUpdateDate(tenant.getUpdateDate().toString());
+        }
+        return tenantDTO;
     }
 
     public TenantDTO toDTO(TenantEntity tenant) {
@@ -193,5 +214,13 @@ public class TenantConverter {
                 .impressum(tenant.getContentImpressum())
                 .privacy(tenant.getContentPrivacy())
                 .termsAndConditions(tenant.getContentTermsAndConditions());
+    }
+
+    private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {
+        return new MultilingualContent()
+                .claim(convertListFromJson(tenant.getContentClaim()))
+                .impressum(convertListFromJson(tenant.getContentImpressum()))
+                .privacy(convertListFromJson(tenant.getContentPrivacy()))
+                .termsAndConditions(convertListFromJson(tenant.getContentTermsAndConditions()));
     }
 }

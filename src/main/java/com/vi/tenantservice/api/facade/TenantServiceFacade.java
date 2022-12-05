@@ -7,18 +7,20 @@ import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import javax.ws.rs.BadRequestException;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * Facade to encapsulate services and logic needed to manage tenants
@@ -37,21 +39,21 @@ public class TenantServiceFacade {
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
 
-  public TenantDTO createTenant(TenantDTO tenantDTO) {
+  public TenantMultilingualDTO createTenant(TenantMultilingualDTO tenantDTO) {
     log.info("Creating new tenant");
-    TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+    TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     var entity = tenantConverter.toEntity(sanitizedTenantDTO);
-    return tenantConverter.toDTO(tenantService.create(entity));
+    return tenantConverter.toMultilingualDTO(tenantService.create(entity));
   }
 
-  public TenantDTO updateTenant(Long id, TenantDTO tenantDTO) {
+  public TenantMultilingualDTO updateTenant(Long id, TenantMultilingualDTO tenantDTO) {
     tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
-    TenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+    TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     log.info("Attempting to update tenant with id {}", id);
     return updateWithSanitizedInput(id, sanitizedTenantDTO);
   }
 
-  private TenantDTO updateWithSanitizedInput(Long id, TenantDTO sanitizedTenantDTO) {
+  private TenantMultilingualDTO updateWithSanitizedInput(Long id, TenantMultilingualDTO sanitizedTenantDTO) {
     var tenantById = tenantService.findTenantById(id);
     if (tenantById.isPresent()) {
       return updateExistingTenant(sanitizedTenantDTO, tenantById.get());
@@ -60,13 +62,13 @@ public class TenantServiceFacade {
     }
   }
 
-  private TenantDTO updateExistingTenant(TenantDTO sanitizedTenantDTO,
-      TenantEntity existingTenant) {
+  private TenantMultilingualDTO updateExistingTenant(TenantMultilingualDTO sanitizedTenantDTO,
+                                                     TenantEntity existingTenant) {
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
     var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
     log.info("Tenant with id {} updated", existingTenant.getId());
     updatedEntity = tenantService.update(updatedEntity);
-    return tenantConverter.toDTO(updatedEntity);
+    return tenantConverter.toMultilingualDTO(updatedEntity);
   }
 
   public Optional<TenantDTO> findTenantById(Long id) {

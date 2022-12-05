@@ -68,6 +68,12 @@ paths:
         - tenant-controller
       summary: 'Get all tenants'
       operationId: getAllTenants
+      parameters:
+        - in: cookie
+          name: lang
+          schema:
+            type: string
+            default: "de"
       responses:
         200:
           description: OK - successful operation
@@ -101,6 +107,11 @@ paths:
           schema:
             type: integer
             format: int64
+        - name: lang
+          in: cookie
+          schema:
+            type: string
+            default: "de"
       responses:
         200:
           description: Successful operation
@@ -137,6 +148,11 @@ paths:
           required: false
           schema:
             type: long
+        - name: lang
+          in: cookie
+          schema:
+            type: string
+            default: "de"
       responses:
         200:
           description: Successful operation
@@ -165,6 +181,11 @@ paths:
           required: true
           schema:
             type: long
+        - name: lang
+          in: cookie
+          schema:
+            type: string
+            default: "de"
       responses:
         200:
           description: Successful operation

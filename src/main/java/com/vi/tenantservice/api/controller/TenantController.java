@@ -16,6 +16,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.NativeWebRequest;
 
@@ -37,7 +38,7 @@ public class TenantController implements TenantApi, TenantadminApi {
 
   @Override
   @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
-  public ResponseEntity<TenantDTO> getTenantById(Long id) {
+  public ResponseEntity<TenantDTO> getTenantById(Long id,  @CookieValue(name = "lang", required = false, defaultValue = "de") String lang) {
 
     var tenantById = tenantServiceFacade.findTenantById(id);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
@@ -46,7 +47,7 @@ public class TenantController implements TenantApi, TenantadminApi {
 
   @Override
   @PreAuthorize("hasAuthority('tenant-admin')")
-  public ResponseEntity<List<BasicTenantLicensingDTO>> getAllTenants() {
+  public ResponseEntity<List<BasicTenantLicensingDTO>> getAllTenants(@CookieValue(name = "lang", required = false, defaultValue = "de") String lang) {
     var tenants = tenantServiceFacade.getAllTenants();
     return !CollectionUtils.isEmpty(tenants)
         ? new ResponseEntity<>(tenants, HttpStatus.OK)
@@ -70,14 +71,14 @@ public class TenantController implements TenantApi, TenantadminApi {
   }
 
   @Override
-  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataBySubdomain(String subdomain, Long tenantId) {
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataBySubdomain(String subdomain, Long tenantId, @CookieValue(name = "lang", required = false, defaultValue = "de") String lang) {
     var tenantById = tenantServiceFacade.findTenantBySubdomain(subdomain, tenantId);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
   }
 
   @Override
-  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataByTenantId(Long tenantId) {
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantDataByTenantId(Long tenantId, @CookieValue(name = "lang", required = false, defaultValue = "de") String lang) {
     var tenantById = tenantServiceFacade.findRestrictedTenantById(tenantId);
     return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
         : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);

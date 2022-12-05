@@ -29,7 +29,7 @@ class TenantConverterTest {
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // then
-    TenantDTO converted = tenantConverter.toDTO(entity);
+    TenantDTO converted = tenantConverter.toDTO(entity, "de");
     Assertions.assertThat(converted).usingComparatorForFields((x, y) -> 0, "content").isEqualTo(tenantDTO);
 
   }
@@ -42,7 +42,7 @@ class TenantConverterTest {
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity);
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
 
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
@@ -61,7 +61,7 @@ class TenantConverterTest {
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity);
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
 
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());

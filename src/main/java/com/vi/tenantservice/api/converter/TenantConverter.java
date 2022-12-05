@@ -126,12 +126,12 @@ public class TenantConverter {
         return tenantDTO;
     }
 
-    public TenantDTO toDTO(TenantEntity tenant) {
+    public TenantDTO toDTO(TenantEntity tenant, String lang) {
         var tenantDTO = new TenantDTO()
                 .id(tenant.getId())
                 .name(tenant.getName())
                 .subdomain(tenant.getSubdomain())
-                .content(toContentDTO(tenant))
+                .content(toContentDTO(tenant, lang))
                 .theming(toThemingDTO(tenant))
                 .licensing(toLicensingDTO(tenant))
                 .settings(getSettings(tenant));
@@ -168,11 +168,11 @@ public class TenantConverter {
 
     }
 
-    public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant) {
+    public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant, String lang) {
         return new RestrictedTenantDTO()
                 .id(tenant.getId())
                 .name(tenant.getName())
-                .content(toContentDTO(tenant))
+                .content(toContentDTO(tenant, lang))
                 .theming(toThemingDTO(tenant))
                 .subdomain(tenant.getSubdomain())
                 .settings(getSettings(tenant));
@@ -208,7 +208,8 @@ public class TenantConverter {
                 .secondaryColor(tenant.getThemingSecondaryColor());
     }
 
-    private Content toContentDTO(TenantEntity tenant) {
+    private Content toContentDTO(TenantEntity tenant, String lang) {
+        //TODO tkuzynow implement translation logic
         return new Content()
                 .claim(tenant.getContentClaim())
                 .impressum(tenant.getContentImpressum())

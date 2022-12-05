@@ -7,6 +7,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.service.TenantService;
+import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,7 @@ import static org.mockito.Mockito.*;
 class TenantServiceFacadeTest {
 
   private static final long ID = 1L;
+  public static final String DE = "de";
   private final TenantMultilingualDTO tenantMultilingualDTO = new TenantMultilingualDTO();
   private final TenantDTO tenantDTO = new TenantDTO();
   private final TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO();
@@ -49,6 +51,9 @@ class TenantServiceFacadeTest {
 
   @Mock
   private AuthorisationService authorisationService;
+
+  @Mock
+  private TranslationService translationService;
 
   @InjectMocks
   private TenantServiceFacade tenantServiceFacade;
@@ -154,7 +159,8 @@ class TenantServiceFacadeTest {
   void findTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
-    when(converter.toDTO(tenantEntity)).thenReturn(tenantDTO);
+    when(translationService.getCurrentLanguageContext()).thenReturn("de");
+    when(converter.toDTO(tenantEntity, "de")).thenReturn(tenantDTO);
     // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(ID);
     assertThat(tenantById).contains(tenantDTO);
@@ -172,14 +178,15 @@ class TenantServiceFacadeTest {
   void getSingleTenant_Should_findTenant_When_onlyOneTenantIsPresent() {
     // given
     when(tenantService.getAllTenants()).thenReturn(List.of(tenantEntity));
-    when(converter.toRestrictedTenantDTO(tenantEntity)).thenReturn(restrictedTenantDTO);
+    when(translationService.getCurrentLanguageContext()).thenReturn(DE);
+    when(converter.toRestrictedTenantDTO(tenantEntity, DE)).thenReturn(restrictedTenantDTO);
 
     // when
     tenantServiceFacade.getSingleTenant();
 
     // then
     verify(tenantService).getAllTenants();
-    verify(converter).toRestrictedTenantDTO(tenantEntity);
+    verify(converter).toRestrictedTenantDTO(tenantEntity, DE);
   }
 
   @Test

@@ -9,6 +9,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.service.TenantService;
+import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import lombok.NonNull;
@@ -30,97 +31,104 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TenantServiceFacade {
 
-  private final @NonNull TenantService tenantService;
-  private final @NonNull TenantConverter tenantConverter;
-  private final @NonNull TenantInputSanitizer tenantInputSanitizer;
-  private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
-  private final @NonNull AuthorisationService authorisationService;
+    private final @NonNull TenantService tenantService;
+    private final @NonNull TenantConverter tenantConverter;
+    private final @NonNull TenantInputSanitizer tenantInputSanitizer;
+    private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
+    private final @NonNull AuthorisationService authorisationService;
 
-  @Value("${feature.multitenancy.with.single.domain.enabled}")
-  private boolean multitenancyWithSingleDomain;
+    private final @NonNull TranslationService translationService;
 
-  public TenantMultilingualDTO createTenant(TenantMultilingualDTO tenantDTO) {
-    log.info("Creating new tenant");
-    TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
-    var entity = tenantConverter.toEntity(sanitizedTenantDTO);
-    return tenantConverter.toMultilingualDTO(tenantService.create(entity));
-  }
+    @Value("${feature.multitenancy.with.single.domain.enabled}")
+    private boolean multitenancyWithSingleDomain;
 
-  public TenantMultilingualDTO updateTenant(Long id, TenantMultilingualDTO tenantDTO) {
-    tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
-    TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
-    log.info("Attempting to update tenant with id {}", id);
-    return updateWithSanitizedInput(id, sanitizedTenantDTO);
-  }
-
-  private TenantMultilingualDTO updateWithSanitizedInput(Long id, TenantMultilingualDTO sanitizedTenantDTO) {
-    var tenantById = tenantService.findTenantById(id);
-    if (tenantById.isPresent()) {
-      return updateExistingTenant(sanitizedTenantDTO, tenantById.get());
-    } else {
-      throw new TenantNotFoundException("Tenant with given id could not be found : " + id);
-    }
-  }
-
-  private TenantMultilingualDTO updateExistingTenant(TenantMultilingualDTO sanitizedTenantDTO,
-                                                     TenantEntity existingTenant) {
-    tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
-    var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
-    log.info("Tenant with id {} updated", existingTenant.getId());
-    updatedEntity = tenantService.update(updatedEntity);
-    return tenantConverter.toMultilingualDTO(updatedEntity);
-  }
-
-  public Optional<TenantDTO> findTenantById(Long id) {
-    tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
-    var tenantById = tenantService.findTenantById(id);
-    return tenantById.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toDTO(tenantById.get()));
-  }
-
-  public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
-    var tenantById = tenantService.findTenantById(id);
-    return tenantById.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantById.get()));
-  }
-
-  public List<BasicTenantLicensingDTO> getAllTenants() {
-    var tenantEntities = tenantService.getAllTenants();
-    return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).collect(
-        Collectors.toList());
-  }
-
-  public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain, Long optionalTenantIdOverride) {
-    var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain);
-
-    Optional<Long> tenantIdFromRequestOrCookie = authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
-    if (multitenancyWithSingleDomain && tenantIdFromRequestOrCookie.isPresent()) {
-      return getSingleDomainSpecificTenantData(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
+    public TenantMultilingualDTO createTenant(TenantMultilingualDTO tenantDTO) {
+        log.info("Creating new tenant");
+        TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+        var entity = tenantConverter.toEntity(sanitizedTenantDTO);
+        return tenantConverter.toMultilingualDTO(tenantService.create(entity));
     }
 
-    return tenantBySubdomain.isEmpty() ? Optional.empty()
-        : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantBySubdomain.get()));
-  }
-
-  public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
-      Optional<TenantEntity> mainTenantForSingleDomainMultitenancy, Long resolvedTenantId) {
-
-    Optional<TenantEntity> resolvedTenant = tenantService.findTenantById(resolvedTenantId);
-    if (resolvedTenant.isEmpty()) {
-      throw new BadRequestException("Tenant not found for id " + resolvedTenantId);
+    public TenantMultilingualDTO updateTenant(Long id, TenantMultilingualDTO tenantDTO) {
+        tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
+        TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+        log.info("Attempting to update tenant with id {}", id);
+        return updateWithSanitizedInput(id, sanitizedTenantDTO);
     }
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(mainTenantForSingleDomainMultitenancy.get());
-    restrictedTenantDTO.getContent().setPrivacy(resolvedTenant.get().getContentPrivacy());
-    return Optional.of(restrictedTenantDTO);
-  }
 
-  public Optional<RestrictedTenantDTO> getSingleTenant() {
-    var tenantEntities = tenantService.getAllTenants();
-    if (tenantEntities != null && tenantEntities.size() == 1) {
-      var tenantEntity = tenantEntities.get(0);
-      return Optional.of(tenantConverter.toRestrictedTenantDTO(tenantEntity));
-    } else {
-      throw new IllegalStateException("Not exactly one tenant was found.");
+    private TenantMultilingualDTO updateWithSanitizedInput(Long id, TenantMultilingualDTO sanitizedTenantDTO) {
+        var tenantById = tenantService.findTenantById(id);
+        if (tenantById.isPresent()) {
+            return updateExistingTenant(sanitizedTenantDTO, tenantById.get());
+        } else {
+            throw new TenantNotFoundException("Tenant with given id could not be found : " + id);
+        }
     }
-  }
+
+    private TenantMultilingualDTO updateExistingTenant(TenantMultilingualDTO sanitizedTenantDTO,
+                                                       TenantEntity existingTenant) {
+        tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
+        var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
+        log.info("Tenant with id {} updated", existingTenant.getId());
+        updatedEntity = tenantService.update(updatedEntity);
+        return tenantConverter.toMultilingualDTO(updatedEntity);
+    }
+
+    public Optional<TenantDTO> findTenantById(Long id) {
+        tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
+        var tenantById = tenantService.findTenantById(id);
+        return tenantById.isEmpty() ? Optional.empty()
+                : Optional.of(tenantConverter.toDTO(tenantById.get(), translationService.getCurrentLanguageContext()));
+    }
+
+    public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
+        var tenantById = tenantService.findTenantById(id);
+
+        String lang = translationService.getCurrentLanguageContext();
+        return tenantById.isEmpty() ? Optional.empty()
+                : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantById.get(), lang));
+    }
+
+    public List<BasicTenantLicensingDTO> getAllTenants() {
+        var tenantEntities = tenantService.getAllTenants();
+        return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).collect(
+                Collectors.toList());
+    }
+
+    public Optional<RestrictedTenantDTO> findTenantBySubdomain(String subdomain, Long optionalTenantIdOverride) {
+        var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain);
+
+        Optional<Long> tenantIdFromRequestOrCookie = authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
+        if (multitenancyWithSingleDomain && tenantIdFromRequestOrCookie.isPresent()) {
+            return getSingleDomainSpecificTenantData(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
+        }
+
+        String lang = translationService.getCurrentLanguageContext();
+        return tenantBySubdomain.isEmpty() ? Optional.empty()
+                : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantBySubdomain.get(), lang));
+    }
+
+    public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
+            Optional<TenantEntity> mainTenantForSingleDomainMultitenancy, Long resolvedTenantId) {
+
+        Optional<TenantEntity> resolvedTenant = tenantService.findTenantById(resolvedTenantId);
+        if (resolvedTenant.isEmpty()) {
+            throw new BadRequestException("Tenant not found for id " + resolvedTenantId);
+        }
+        String lang = translationService.getCurrentLanguageContext();
+        RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(mainTenantForSingleDomainMultitenancy.get(), lang);
+        restrictedTenantDTO.getContent().setPrivacy(resolvedTenant.get().getContentPrivacy());
+        return Optional.of(restrictedTenantDTO);
+    }
+
+    public Optional<RestrictedTenantDTO> getSingleTenant() {
+        var tenantEntities = tenantService.getAllTenants();
+        if (tenantEntities != null && tenantEntities.size() == 1) {
+            var tenantEntity = tenantEntities.get(0);
+            String lang = translationService.getCurrentLanguageContext();
+            return Optional.of(tenantConverter.toRestrictedTenantDTO(tenantEntity, lang));
+        } else {
+            throw new IllegalStateException("Not exactly one tenant was found.");
+        }
+    }
 }

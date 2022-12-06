@@ -5,7 +5,7 @@ import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
@@ -31,9 +31,9 @@ class TenantServiceFacadeTest {
 
   private static final long ID = 1L;
   public static final String DE = "de";
-  private final TenantMultilingualDTO tenantMultilingualDTO = new TenantMultilingualDTO();
+  private final MultilingualTenantDTO tenantMultilingualDTO = new MultilingualTenantDTO();
   private final TenantDTO tenantDTO = new TenantDTO();
-  private final TenantMultilingualDTO sanitizedTenantDTO = new TenantMultilingualDTO();
+  private final MultilingualTenantDTO sanitizedTenantDTO = new MultilingualTenantDTO();
   private final RestrictedTenantDTO restrictedTenantDTO = new RestrictedTenantDTO();
   private final TenantEntity tenantEntity = new TenantEntity();
 
@@ -136,7 +136,7 @@ class TenantServiceFacadeTest {
 
     Mockito.doThrow(AccessDeniedException.class)
         .when(tenantFacadeAuthorisationService)
-        .assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(TenantMultilingualDTO.class),
+        .assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(MultilingualTenantDTO.class),
             Mockito.any(TenantEntity.class));
 
     // then

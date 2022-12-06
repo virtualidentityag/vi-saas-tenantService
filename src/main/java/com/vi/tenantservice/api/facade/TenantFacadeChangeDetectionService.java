@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.util.JsonConverter;
@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 public class TenantFacadeChangeDetectionService {
 
-  public List<TenantSetting> determineChangedSettings(TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+  public List<TenantSetting> determineChangedSettings(MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     Settings inputSettings = sanitizedTenantDTO.getSettings();
     if (inputSettings != null) {
       TenantSettings existingSettingsToCompare = getExistingTenantSettings(

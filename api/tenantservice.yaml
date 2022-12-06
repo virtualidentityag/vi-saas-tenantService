@@ -16,14 +16,14 @@ paths:
         content:
           'application/json':
             schema:
-              $ref: '#/components/schemas/TenantMultilingualDTO'
+              $ref: '#/components/schemas/MultilingualTenantDTO'
       responses:
         200:
           description: OK - successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TenantMultilingualDTO'
+                $ref: '#/components/schemas/MultilingualTenantDTO'
         400:
           description: BAD REQUEST - invalid/incomplete request or body object
         401:
@@ -48,18 +48,46 @@ paths:
         content:
           'application/json':
             schema:
-              $ref: '#/components/schemas/TenantMultilingualDTO'
+              $ref: '#/components/schemas/MultilingualTenantDTO'
       responses:
         200:
           description: Successful operation
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TenantMultilingualDTO'
+                $ref: '#/components/schemas/MultilingualTenantDTO'
         401:
           description: UNAUTHORIZED - no/invalid Keycloak token
         409:
           description: CONFLICT - unique constraint validation fails
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+    get:
+      tags:
+        - tenant-controller
+      summary: 'Gets a tenant by its id [Authorization: Role: tenant-admin or single-tenant-admin]'
+      operationId: getMultilingualTenantById
+      parameters:
+        - name: id
+          in: path
+          description: Tenant ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultilingualTenantDTO'
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        401:
+          description: UNAUTHORIZED - no/invalid Keycloak token
+        404:
+          description: Not found
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
   /tenant:
@@ -235,7 +263,7 @@ components:
           $ref:
             '#/components/schemas/Settings'
 
-    TenantMultilingualDTO:
+    MultilingualTenantDTO:
           type: object
           required:
             - id

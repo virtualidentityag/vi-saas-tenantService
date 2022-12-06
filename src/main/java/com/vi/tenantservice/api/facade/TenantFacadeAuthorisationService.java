@@ -4,7 +4,7 @@ import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import lombok.NonNull;
@@ -54,7 +54,7 @@ public class TenantFacadeAuthorisationService {
   }
 
   void assertUserHasSufficientPermissionsToChangeAttributes(
-          TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+          MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     if (isSingleTenantAdmin()) {
       assertSingleTenantAdminHasPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
     }
@@ -78,7 +78,7 @@ public class TenantFacadeAuthorisationService {
     }
   }
 
-  private void assertSingleTenantAdminHasPermissionsToChangeAttributes(TenantMultilingualDTO sanitizedTenantDTO,
+  private void assertSingleTenantAdminHasPermissionsToChangeAttributes(MultilingualTenantDTO sanitizedTenantDTO,
       TenantEntity existingTenant) {
 
     if (!Objects.equals(sanitizedTenantDTO.getSubdomain(), existingTenant.getSubdomain())) {
@@ -89,7 +89,7 @@ public class TenantFacadeAuthorisationService {
   }
 
   private void assertSingleTenantAdminDoesNotTryToChangeLicensingInformation(
-          TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+          MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     if (isAttemptToDeleteExistingLicensingInformation(sanitizedTenantDTO, existingTenant)) {
       logAndThrowTenantAuthorisationException("Single tenant admin cannot delete licensing", NOT_ALLOWED_TO_CHANGE_LICENSING);
     }
@@ -99,12 +99,12 @@ public class TenantFacadeAuthorisationService {
     }
   }
 
-  private boolean licensingChanged(TenantMultilingualDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+  private boolean licensingChanged(MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
     return !Objects.equals(sanitizedTenantDTO.getLicensing().getAllowedNumberOfUsers(),
         existingTenant.getLicensingAllowedNumberOfUsers());
   }
 
-  private boolean isAttemptToDeleteExistingLicensingInformation(TenantMultilingualDTO sanitizedTenantDTO,
+  private boolean isAttemptToDeleteExistingLicensingInformation(MultilingualTenantDTO sanitizedTenantDTO,
       TenantEntity existingTenant) {
     return sanitizedTenantDTO.getLicensing() == null
         && existingTenant.getLicensingAllowedNumberOfUsers() != null;

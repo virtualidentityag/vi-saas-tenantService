@@ -1,7 +1,7 @@
 package com.vi.tenantservice.api.validation;
 
 import com.google.common.collect.Lists;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Translation;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
@@ -33,14 +33,14 @@ class TenantInputSanitizerTest {
   void sanitize_Should_sanitizeTenantDTO() {
     // given
     EasyRandom generator = new EasyRandom();
-    TenantMultilingualDTO tenantDTO = generator.nextObject(TenantMultilingualDTO.class);
+    MultilingualTenantDTO tenantDTO = generator.nextObject(MultilingualTenantDTO.class);
     tenantDTO.getContent().setImpressum(getDefaultTranslations("impressum"));
     tenantDTO.getContent().setClaim(getDefaultTranslations("claim"));
     tenantDTO.getContent().setPrivacy(getDefaultTranslations("privacy"));
     tenantDTO.getContent().setTermsAndConditions(getDefaultTranslations("terms and conditions"));
 
     // when
-    TenantMultilingualDTO sanitized = tenantInputSanitizer.sanitize(tenantDTO);
+    MultilingualTenantDTO sanitized = tenantInputSanitizer.sanitize(tenantDTO);
 
     // then
     verifyNeededSanitizationsAreCalled(tenantDTO);
@@ -51,13 +51,13 @@ class TenantInputSanitizerTest {
   void sanitize_Should_sanitizeAndAllowLinksForContentInTenantDTO() {
     // given
     EasyRandom generator = new EasyRandom();
-    TenantMultilingualDTO tenantDTO = generator.nextObject(TenantMultilingualDTO.class);
+    MultilingualTenantDTO tenantDTO = generator.nextObject(MultilingualTenantDTO.class);
     tenantDTO.getContent().setTermsAndConditions(getDefaultTranslations(LINK_CONTENT));
     tenantDTO.getContent().setPrivacy(getDefaultTranslations(LINK_CONTENT));
     tenantDTO.getContent().setImpressum(getDefaultTranslations(LINK_CONTENT));
     TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
     // when
-    TenantMultilingualDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
+    MultilingualTenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
 
     // then
     assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslations(LINK_CONTENT));
@@ -73,13 +73,13 @@ class TenantInputSanitizerTest {
   void sanitize_Should_sanitizeAndAllowImageSrcForContentInTenantDTO() {
     // given
     EasyRandom generator = new EasyRandom();
-    TenantMultilingualDTO tenantDTO = generator.nextObject(TenantMultilingualDTO.class);
+    MultilingualTenantDTO tenantDTO = generator.nextObject(MultilingualTenantDTO.class);
     tenantDTO.getContent().setTermsAndConditions(getDefaultTranslations(IMAGE_CONTENT));
     tenantDTO.getContent().setPrivacy(getDefaultTranslations(IMAGE_CONTENT));
     tenantDTO.getContent().setImpressum(getDefaultTranslations(IMAGE_CONTENT));
     TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
     // when
-    TenantMultilingualDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
+    MultilingualTenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
 
     // then
     assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslations(IMAGE_CONTENT));
@@ -87,7 +87,7 @@ class TenantInputSanitizerTest {
     assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslations(IMAGE_CONTENT));
   }
 
-  private void verifyNeededSanitizationsAreCalled(TenantMultilingualDTO tenantDTO) {
+  private void verifyNeededSanitizationsAreCalled(MultilingualTenantDTO tenantDTO) {
     verify(inputSanitizer).sanitize(tenantDTO.getName());
     verify(inputSanitizer).sanitize(tenantDTO.getSubdomain());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getLogo());
@@ -99,7 +99,7 @@ class TenantInputSanitizerTest {
     verifyNoMoreInteractions(inputSanitizer);
   }
 
-  private void assertNonSanitizableFieldsHaveSameValues(TenantMultilingualDTO tenantDTO, TenantMultilingualDTO sanitized) {
+  private void assertNonSanitizableFieldsHaveSameValues(MultilingualTenantDTO tenantDTO, MultilingualTenantDTO sanitized) {
     assertThat(tenantDTO.getId()).isEqualTo(sanitized.getId());
     assertThat(tenantDTO.getCreateDate()).isEqualTo(sanitized.getCreateDate());
     assertThat(tenantDTO.getUpdateDate()).isEqualTo(sanitized.getUpdateDate());

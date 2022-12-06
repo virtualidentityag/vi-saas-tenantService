@@ -7,7 +7,7 @@ import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
@@ -42,21 +42,21 @@ public class TenantServiceFacade {
     @Value("${feature.multitenancy.with.single.domain.enabled}")
     private boolean multitenancyWithSingleDomain;
 
-    public TenantMultilingualDTO createTenant(TenantMultilingualDTO tenantDTO) {
+    public MultilingualTenantDTO createTenant(MultilingualTenantDTO tenantDTO) {
         log.info("Creating new tenant");
-        TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+        MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
         var entity = tenantConverter.toEntity(sanitizedTenantDTO);
         return tenantConverter.toMultilingualDTO(tenantService.create(entity));
     }
 
-    public TenantMultilingualDTO updateTenant(Long id, TenantMultilingualDTO tenantDTO) {
+    public MultilingualTenantDTO updateTenant(Long id, MultilingualTenantDTO tenantDTO) {
         tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
-        TenantMultilingualDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+        MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
         log.info("Attempting to update tenant with id {}", id);
         return updateWithSanitizedInput(id, sanitizedTenantDTO);
     }
 
-    private TenantMultilingualDTO updateWithSanitizedInput(Long id, TenantMultilingualDTO sanitizedTenantDTO) {
+    private MultilingualTenantDTO updateWithSanitizedInput(Long id, MultilingualTenantDTO sanitizedTenantDTO) {
         var tenantById = tenantService.findTenantById(id);
         if (tenantById.isPresent()) {
             return updateExistingTenant(sanitizedTenantDTO, tenantById.get());
@@ -65,7 +65,7 @@ public class TenantServiceFacade {
         }
     }
 
-    private TenantMultilingualDTO updateExistingTenant(TenantMultilingualDTO sanitizedTenantDTO,
+    private MultilingualTenantDTO updateExistingTenant(MultilingualTenantDTO sanitizedTenantDTO,
                                                        TenantEntity existingTenant) {
         tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
         var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
@@ -79,6 +79,13 @@ public class TenantServiceFacade {
         var tenantById = tenantService.findTenantById(id);
         return tenantById.isEmpty() ? Optional.empty()
                 : Optional.of(tenantConverter.toDTO(tenantById.get(), translationService.getCurrentLanguageContext()));
+    }
+
+    public Optional<MultilingualTenantDTO> findMultilingualTenantById(Long id) {
+        tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
+        var tenantById = tenantService.findTenantById(id);
+        return tenantById.isEmpty() ? Optional.empty()
+                : Optional.of(tenantConverter.toMultilingualDTO(tenantById.get()));
     }
 
     public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {

@@ -5,7 +5,7 @@ import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Translation;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,7 @@ class TenantConverterTest {
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {
     // given
-    TenantMultilingualDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
+    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
         .withContent().withTheming().withLicensing().withSettings().build();
 
     // when
@@ -41,7 +41,7 @@ class TenantConverterTest {
   @Test
   void toRestrictedTenantDTO_should_convertAttributesProperly() {
     // given
-    TenantMultilingualDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
+    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
         .withContent().withTheming().withLicensing().withSettings().build();
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
@@ -60,7 +60,7 @@ class TenantConverterTest {
   @Test
   void toRestrictedTenantDTO_should_convertDefaultValuesForSettingsInCaseOfNull() {
     // given
-    TenantMultilingualDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
+    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
         .withContent().withTheming().withLicensing().build();
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
@@ -76,7 +76,7 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getSettings()).isEqualTo(new Settings());
   }
 
-  private static void assertContentIsProperlyConverted(TenantMultilingualDTO tenantDTO, RestrictedTenantDTO restrictedTenantDTO) {
+  private static void assertContentIsProperlyConverted(MultilingualTenantDTO tenantDTO, RestrictedTenantDTO restrictedTenantDTO) {
     assertThat(restrictedTenantDTO.getContent().getClaim()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getClaim()));
     assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
     assertThat(restrictedTenantDTO.getContent().getTermsAndConditions()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getTermsAndConditions()));
@@ -90,7 +90,7 @@ class TenantConverterTest {
   @Test
   void toBasicLicensingTenantDTO_should_convertAttributesProperly() {
     // given
-    TenantMultilingualDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
+    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
         .withContent().withTheming().withLicensing().build();
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 

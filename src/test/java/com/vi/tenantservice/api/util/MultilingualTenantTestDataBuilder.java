@@ -4,7 +4,7 @@ import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.Settings;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.model.Translation;
 
@@ -25,10 +25,10 @@ public class MultilingualTenantTestDataBuilder {
   private static final String PRIVACY = "privacy";
   private static final String TERMS_AND_CONDITIONS = "termsandconditions";
 
-  TenantMultilingualDTO tenantMultilingualDTO = new TenantMultilingualDTO();
+  MultilingualTenantDTO tenantMultilingualDTO = new MultilingualTenantDTO();
 
   public MultilingualTenantTestDataBuilder tenantDTO() {
-    tenantMultilingualDTO = new TenantMultilingualDTO();
+    tenantMultilingualDTO = new MultilingualTenantDTO();
     tenantMultilingualDTO.setId(ID);
     tenantMultilingualDTO.setName(NAME);
     tenantMultilingualDTO.setSubdomain(SUBDOMAIN);
@@ -109,7 +109,7 @@ public class MultilingualTenantTestDataBuilder {
     return licensing;
   }
 
-  public TenantMultilingualDTO build() {
+  public MultilingualTenantDTO build() {
     return tenantMultilingualDTO;
   }
 
@@ -136,7 +136,7 @@ public class MultilingualTenantTestDataBuilder {
   }
 
   public String jsonify() {
-    TenantMultilingualDTO build = build();
+    MultilingualTenantDTO build = build();
     return JsonConverter.convertToJson(build);
   }
 

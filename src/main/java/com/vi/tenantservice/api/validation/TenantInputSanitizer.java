@@ -1,7 +1,7 @@
 package com.vi.tenantservice.api.validation;
 
 import com.vi.tenantservice.api.model.MultilingualContent;
-import com.vi.tenantservice.api.model.TenantMultilingualDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.model.Translation;
 import lombok.NonNull;
@@ -18,9 +18,9 @@ public class TenantInputSanitizer {
 
   private final @NonNull InputSanitizer inputSanitizer;
 
-  public TenantMultilingualDTO sanitize(TenantMultilingualDTO input) {
+  public MultilingualTenantDTO sanitize(MultilingualTenantDTO input) {
     log.info("Sanitizing input DTO");
-    TenantMultilingualDTO output = copyNotSanitizedAttributes(input);
+    MultilingualTenantDTO output = copyNotSanitizedAttributes(input);
     output.setName(inputSanitizer.sanitize(input.getName()));
     output.setSubdomain(inputSanitizer.sanitize(input.getSubdomain()));
     sanitizeTheming(input, output);
@@ -28,8 +28,8 @@ public class TenantInputSanitizer {
     return output;
   }
 
-  private TenantMultilingualDTO copyNotSanitizedAttributes(TenantMultilingualDTO input) {
-    TenantMultilingualDTO output = new TenantMultilingualDTO();
+  private MultilingualTenantDTO copyNotSanitizedAttributes(MultilingualTenantDTO input) {
+    MultilingualTenantDTO output = new MultilingualTenantDTO();
     output.setId(input.getId());
     output.setCreateDate(input.getCreateDate());
     output.setUpdateDate(input.getUpdateDate());
@@ -40,7 +40,7 @@ public class TenantInputSanitizer {
     return output;
   }
 
-  private void sanitizeTheming(TenantMultilingualDTO input, TenantMultilingualDTO output) {
+  private void sanitizeTheming(MultilingualTenantDTO input, MultilingualTenantDTO output) {
     Theming theming = input.getTheming();
     if (theming != null) {
       output.getTheming().setLogo(inputSanitizer.sanitize(theming.getLogo()));
@@ -50,7 +50,7 @@ public class TenantInputSanitizer {
     }
   }
 
-  private void sanitizeContent(TenantMultilingualDTO input, TenantMultilingualDTO output) {
+  private void sanitizeContent(MultilingualTenantDTO input, MultilingualTenantDTO output) {
     var content = input.getContent();
     if (content != null) {
       output.getContent()

@@ -1,5 +1,5 @@
 ALTER TABLE `tenant`
-MODIFY `content_claim` varchar(1024) COLLATE 'utf8_unicode_ci' NULL
+MODIFY `content_claim` varchar(1024) COLLATE 'utf8_unicode_ci' NULL;
 
 UPDATE `tenantservice`.`tenant` SET content_privacy = concat('[{"de": "', content_privacy, '"}]');
 UPDATE `tenantservice`.`tenant` SET content_termsandconditions = concat('[{"de": "', content_termsandconditions, '"}]');

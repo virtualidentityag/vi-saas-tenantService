@@ -13,12 +13,14 @@ import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.TenantMultilingualDTO;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
+import com.vi.tenantservice.api.model.Translation;
 import com.vi.tenantservice.api.util.JsonConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Optional;
 
 import static com.vi.tenantservice.api.util.JsonConverter.convertListFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
@@ -209,12 +211,34 @@ public class TenantConverter {
     }
 
     private Content toContentDTO(TenantEntity tenant, String lang) {
-        //TODO tkuzynow implement translation logic
         return new Content()
-                .claim(tenant.getContentClaim())
-                .impressum(tenant.getContentImpressum())
-                .privacy(tenant.getContentPrivacy())
-                .termsAndConditions(tenant.getContentTermsAndConditions());
+                .claim(getTranslatedString(tenant.getContentClaim(), lang))
+                .impressum(getTranslatedString(tenant.getContentImpressum(), lang))
+                .privacy(getTranslatedString(tenant.getContentPrivacy(), lang))
+                .termsAndConditions(getTranslatedString(tenant.getContentTermsAndConditions(), lang));
+    }
+
+    private static String getTranslatedString(String jsonValue, String lang) {
+        List<Translation> translations = convertListFromJson(jsonValue);
+        Optional<Translation> translated = getTranslationForLanguage(lang, translations);
+        if (translated.isEmpty()) {
+            Optional<Translation> defaultTranslation = getTranslationForLanguage(DE, translations);
+            if (defaultTranslation.isEmpty()) {
+                log.warn("Default translation for value not available");
+                return "";
+            } else {
+                return defaultTranslation.get().getValue();
+            }
+        } else {
+            return translated.get().getValue();
+        }
+    }
+
+    private static Optional<Translation> getTranslationForLanguage(String lang, List<Translation> translations) {
+        if (lang == null) {
+            return Optional.empty();
+        }
+        return translations.stream().filter(translation -> lang.equals(translation.getLang())).findFirst();
     }
 
     private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {

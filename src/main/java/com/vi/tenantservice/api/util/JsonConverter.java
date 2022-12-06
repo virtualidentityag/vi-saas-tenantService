@@ -32,11 +32,11 @@ public class JsonConverter {
   }
 
 
-  public static <T> List<T> convertListFromJson(String jsonString) {
+  public static  List<Translation> convertListFromJson(String jsonString) {
     if (jsonString == null) {
       return Lists.newArrayList();
     }
-    return deserializeFromJsonString(jsonString,  new TypeReference<List<T>>() { });
+    return deserializeFromJsonString(jsonString,  new TypeReference<List<Translation>>() { });
   }
 
   private static <T> T deserializeFromJsonString(String jsonString, Class<T> clazz) {

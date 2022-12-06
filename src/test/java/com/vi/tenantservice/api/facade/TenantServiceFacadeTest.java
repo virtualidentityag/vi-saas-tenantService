@@ -213,11 +213,11 @@ class TenantServiceFacadeTest {
     ReflectionTestUtils.setField(tenantServiceFacade,"tenantConverter",new TenantConverter());
 
     TenantEntity defaultTenantEntity = new TenantEntity();
-    defaultTenantEntity.setContentPrivacy("content1");
+    defaultTenantEntity.setContentPrivacy("[{\"de\":\"content1\"}]");
     Optional<TenantEntity> defaultTenant = Optional.of(defaultTenantEntity);
 
     TenantEntity accessTokenTenant = new TenantEntity();
-    accessTokenTenant.setContentPrivacy("content2");
+    accessTokenTenant.setContentPrivacy("[{\"de\":\"content2\"}]");
     Optional<TenantEntity> accessTokenTenantData = Optional.of(accessTokenTenant);
 
     when(tenantService.findTenantBySubdomain(subdomain)).thenReturn(defaultTenant);

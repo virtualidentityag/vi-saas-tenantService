@@ -6,11 +6,11 @@ import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantMultilingualDTO;
-import com.vi.tenantservice.api.util.JsonConverter;
+import com.vi.tenantservice.api.model.Translation;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
-import org.assertj.core.api.Assertions;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -19,7 +19,6 @@ class TenantConverterTest {
   TenantConverter tenantConverter = new TenantConverter();
 
   @Test
-  @Disabled("TODO tkuzynow implement")
   void toEntity_should_convertToEntityAndBackToDTO() {
     // given
     TenantMultilingualDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
@@ -30,8 +29,13 @@ class TenantConverterTest {
 
     // then
     TenantDTO converted = tenantConverter.toDTO(entity, "de");
-    Assertions.assertThat(converted).usingComparatorForFields((x, y) -> 0, "content").isEqualTo(tenantDTO);
-
+    assertThat(converted.getId()).isEqualTo(tenantDTO.getId());
+    assertThat(converted.getName()).isEqualTo(tenantDTO.getName());
+    assertThat(converted.getSubdomain()).isEqualTo(tenantDTO.getSubdomain());
+    assertThat(converted.getLicensing()).isEqualTo(tenantDTO.getLicensing());
+    assertThat(converted.getSettings()).isEqualTo(tenantDTO.getSettings());
+    assertThat(converted.getTheming()).isEqualTo(tenantDTO.getTheming());
+    //content comparision is skipped, due to i18n feature, so the structure is different
   }
 
   @Test
@@ -73,10 +77,14 @@ class TenantConverterTest {
   }
 
   private static void assertContentIsProperlyConverted(TenantMultilingualDTO tenantDTO, RestrictedTenantDTO restrictedTenantDTO) {
-    assertThat(restrictedTenantDTO.getContent().getClaim()).isEqualTo(JsonConverter.convertToJson(tenantDTO.getContent().getClaim()));
-    assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo(JsonConverter.convertToJson(tenantDTO.getContent().getPrivacy()));
-    assertThat(restrictedTenantDTO.getContent().getTermsAndConditions()).isEqualTo(JsonConverter.convertToJson(tenantDTO.getContent().getTermsAndConditions()));
-    assertThat(restrictedTenantDTO.getContent().getImpressum()).isEqualTo(JsonConverter.convertToJson(tenantDTO.getContent().getImpressum()));
+    assertThat(restrictedTenantDTO.getContent().getClaim()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getClaim()));
+    assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
+    assertThat(restrictedTenantDTO.getContent().getTermsAndConditions()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getTermsAndConditions()));
+    assertThat(restrictedTenantDTO.getContent().getImpressum()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getImpressum()));
+  }
+
+  private static String getGermanTranslation(List<Translation> translations) {
+    return translations.stream().filter(t->t.getLang().equals("de")).findFirst().get().getValue();
   }
 
   @Test

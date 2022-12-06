@@ -1,8 +1,5 @@
 package com.vi.tenantservice.api.facade;
 
-import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LICENSING;
-import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SUBDOMAIN;
-
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
@@ -10,14 +7,18 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LICENSING;
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SUBDOMAIN;
 
 @Service
 @Slf4j
@@ -31,6 +32,10 @@ public class TenantFacadeAuthorisationService {
     return authorisationService.hasAuthority(UserRole.SINGLE_TENANT_ADMIN.getValue());
   }
 
+  private boolean isRestrictedAgencyAdmin() {
+    return authorisationService.hasAuthority(UserRole.RESTRICTED_AGENCY_ADMIN.getValue());
+  }
+
   private boolean userHasAnyRoleOf(List<UserRole> roles) {
     return roles.stream().anyMatch(userRole -> authorisationService.hasAuthority(userRole.getValue()));
   }
@@ -41,8 +46,8 @@ public class TenantFacadeAuthorisationService {
 
   void assertUserIsAuthorizedToAccessTenant(Long tenantId) {
     log.info("Asserting user is authorized to update tenant with id " + tenantId);
-    if (isSingleTenantAdmin()) {
-      log.info("User is single tenant admin. Checking if he has authority to modify tenant with id "
+    if (isSingleTenantAdmin() || isRestrictedAgencyAdmin()) {
+      log.info("User has single tenant permission. Checking if he has authority to access tenant with id "
           + tenantId);
       var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
       if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
@@ -51,6 +56,7 @@ public class TenantFacadeAuthorisationService {
       }
     }
   }
+
 
   void assertUserHasSufficientPermissionsToChangeAttributes(
       TenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {

@@ -22,8 +22,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Optional;
 
-import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -291,6 +290,26 @@ class TenantControllerIT {
             .contentType(APPLICATION_JSON)
         ).andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1));
+  }
+
+  @Test
+  void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForSingleTenantAdminAuthority()
+          throws Exception {
+    mockMvc.perform(get(EXISTING_TENANT)
+                    .with(user("not important").authorities((GrantedAuthority) SINGLE_TENANT_ADMIN::getValue))
+                    .contentType(APPLICATION_JSON)
+            ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1));
+  }
+
+  @Test
+  void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedAgencyAdminAuthority()
+          throws Exception {
+    mockMvc.perform(get(EXISTING_TENANT)
+                    .with(user("not important").authorities((GrantedAuthority) RESTRICTED_AGENCY_ADMIN::getValue))
+                    .contentType(APPLICATION_JSON)
+            ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1));
   }
 
   @Test

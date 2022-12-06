@@ -7,8 +7,6 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
 import io.swagger.annotations.Api;
-import java.util.List;
-import javax.validation.Valid;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -17,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RestController;
+
+import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Controller for tenant API operations.
@@ -31,7 +32,7 @@ public class TenantController implements TenantApi {
   private final @NonNull AuthorisationService authorisationService;
 
   @Override
-  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin', 'restricted-agency-admin')")
   public ResponseEntity<TenantDTO> getTenantById(Long id) {
 
     var tenantById = tenantServiceFacade.findTenantById(id);

@@ -78,7 +78,8 @@ public class TenantConverter {
 
     public TenantEntity toEntity(TenantEntity targetEntity, MultilingualTenantDTO tenantDTO) {
         var sourceEntity = toEntity(tenantDTO);
-        BeanUtils.copyProperties(sourceEntity, targetEntity, "id", "createDate", "updateDate");
+        BeanUtils.copyProperties(sourceEntity, targetEntity, "id", "createDate",
+            "updateDate","contentPrivacyActivationDate","contentTermsAndConditionsActivationDate");
         return targetEntity;
     }
 
@@ -214,7 +215,9 @@ public class TenantConverter {
                 .claim(getTranslatedStringFromMap(tenant.getContentClaim(), lang))
                 .impressum(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
                 .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
-                .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang));
+                .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
+                .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
+                .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate());
     }
 
     private static String getTranslatedStringFromMap(String jsonValue, String lang) {

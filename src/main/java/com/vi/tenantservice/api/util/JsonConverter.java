@@ -5,15 +5,18 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Translation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
+import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
+@Slf4j
 public class JsonConverter {
 
   public static String convertToJson(Object object) {
@@ -32,11 +35,16 @@ public class JsonConverter {
   }
 
 
-  public static  List<Translation> convertListFromJson(String jsonString) {
+  public static Map<String, String> convertMapFromJson(String jsonString) {
     if (jsonString == null) {
-      return Lists.newArrayList();
+      return Maps.newHashMap();
     }
-    return deserializeFromJsonString(jsonString,  new TypeReference<List<Translation>>() { });
+    var result = deserializeMapFromJsonString(jsonString,  new TypeReference<Map<String, String>>() { });
+    if (result == null) {
+      log.warn("Could not deserialize map from json.");
+      return Maps.newHashMap();
+    }
+    return result;
   }
 
   private static <T> T deserializeFromJsonString(String jsonString, Class<T> clazz) {
@@ -48,7 +56,7 @@ public class JsonConverter {
     }
   }
 
-  private static <T> List<T> deserializeFromJsonString(String jsonString, TypeReference<List<T>> typeReference) {
+  private static <T, Y> Map<T, Y> deserializeMapFromJsonString(String jsonString, TypeReference<Map<T, Y>> typeReference) {
     try {
       var objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
       return objectMapper.readValue(jsonString, typeReference);

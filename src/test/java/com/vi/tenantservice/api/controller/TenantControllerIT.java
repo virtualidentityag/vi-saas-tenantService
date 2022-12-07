@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.controller;
 
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
@@ -21,12 +22,15 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Optional;
 
 import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
@@ -273,6 +277,12 @@ class TenantControllerIT {
     @Test
     void getRestrictedTenantDataByTenantId_Should_returnStatusOk_When_calledWithExistingTenantIdAndNoAuthentication()
             throws Exception {
+
+        Map<String, String> aMap = new HashMap<String, String>();
+        aMap.put("de", "de transl");
+        aMap.put("en", "en transl");
+
+        String s = new ObjectMapper().writeValueAsString(aMap);
         mockMvc.perform(get(EXISTING_PUBLIC_TENANT)
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
@@ -317,10 +327,8 @@ class TenantControllerIT {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name").value("name"))
                 .andExpect(jsonPath("$.subdomain").value("subdomain"))
-                .andExpect(jsonPath("$.content.impressum[0]['lang']").value("de"))
-                .andExpect(jsonPath("$.content.impressum[0]['value']").value("<b>impressum</b>"))
-                .andExpect(jsonPath("$.content.claim[0]['lang']").value("de"))
-                .andExpect(jsonPath("$.content.claim[0]['value']").value("<b>claim</b>"));
+                .andExpect(jsonPath("$.content.impressum['de']").value("<b>impressum</b>"))
+                .andExpect(jsonPath("$.content.claim['de']").value("<b>claim</b>"));
     }
 
     private String prepareRequestWithInvalidScriptContent() {

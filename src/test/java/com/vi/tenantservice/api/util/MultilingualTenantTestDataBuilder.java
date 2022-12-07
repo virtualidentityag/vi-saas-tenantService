@@ -3,12 +3,13 @@ package com.vi.tenantservice.api.util;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
-import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.Theming;
-import com.vi.tenantservice.api.model.Translation;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class MultilingualTenantTestDataBuilder {
 
@@ -131,8 +132,10 @@ public class MultilingualTenantTestDataBuilder {
     return content;
   }
 
-  private List<Translation> defaultTranslations(String content) {
-    return Lists.newArrayList(new Translation().lang("de").value(content), new Translation().lang("en").value("en_"+content));
+  private Map<String, String> defaultTranslations(String content) {
+    var map = new HashMap<String, String>();
+    map.put("de", content);
+    return map;
   }
 
   public String jsonify() {

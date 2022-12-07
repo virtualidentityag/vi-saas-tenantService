@@ -432,30 +432,18 @@ components:
         - impressum
       properties:
         impressum:
-          type: array
-          items:
-            $ref: '#/components/schemas/Translation'
+          type: object
+          additionalProperties:
+            type: string
         claim:
-          type: array
-          items:
-            $ref: '#/components/schemas/Translation'
+          type: object
+          additionalProperties:
+            type: string
         privacy:
-          type: array
-          items:
-            $ref: '#/components/schemas/Translation'
+          type: object
+          additionalProperties:
+            type: string
         termsAndConditions:
-          type: array
-          items:
-            $ref: '#/components/schemas/Translation'
-
-    Translation:
-      type: object
-      required:
-        - lang
-      properties:
-        lang:
-          type: string
-          example: "Llorem ipsum..."
-        value:
-          type: string
-          example: "Llorem ipsum..."
+          type: object
+          additionalProperties:
+            type: string

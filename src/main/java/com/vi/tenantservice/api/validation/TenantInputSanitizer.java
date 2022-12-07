@@ -3,13 +3,14 @@ package com.vi.tenantservice.api.validation;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Theming;
-import com.vi.tenantservice.api.model.Translation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
-import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -54,28 +55,23 @@ public class TenantInputSanitizer {
     var content = input.getContent();
     if (content != null) {
       output.getContent()
-              .setImpressum(sanitizeAllTranslations(content.getImpressum()));
+              .setImpressum(sanitizeAllTranslations(content.getImpressum(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
       output.getContent()
-              .setClaim(sanitizeAllTranslationsAllowingFormatting(content.getClaim()));
+              .setClaim(sanitizeAllTranslations(content.getClaim(), inputSanitizer::sanitizeAllowingFormatting));
       output.getContent()
-              .setPrivacy(sanitizeAllTranslations(content.getPrivacy()));
+              .setPrivacy(sanitizeAllTranslations(content.getPrivacy(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
       output.getContent()
-              .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions()));
+              .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
     }
   }
-
-  private List<Translation> sanitizeAllTranslationsAllowingFormatting(List<Translation> translations) {
+  private Map<String, String> sanitizeAllTranslations(Map<String, String> translations, Function<String, String> sanitizeFuntion) {
     if (translations != null) {
-      for (Translation translation : translations) {
-        translation.setValue(inputSanitizer.sanitizeAllowingFormatting(translation.getValue()));
-      }
-    }
-    return translations;
-  }
-
-  private List<Translation> sanitizeAllTranslations(List<Translation> translations) {
-    if (translations != null) {
-      translations.stream().forEach(translation -> translation.setValue(inputSanitizer.sanitizeAllowingFormattingAndLinks(translation.getValue())));
+      return translations.entrySet()
+              .stream()
+              .filter(entry -> entry.getKey() != null)
+              .collect(Collectors.toMap(
+                      Map.Entry::getKey,
+                      stringEntry -> sanitizeFuntion.apply(stringEntry.getValue())));
     }
     return translations;
   }

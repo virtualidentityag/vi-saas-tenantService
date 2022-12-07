@@ -5,24 +5,23 @@ import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
-import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
-import com.vi.tenantservice.api.model.Translation;
 import com.vi.tenantservice.api.util.JsonConverter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
-import static com.vi.tenantservice.api.util.JsonConverter.convertListFromJson;
+import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
 @Component
@@ -212,40 +211,31 @@ public class TenantConverter {
 
     private Content toContentDTO(TenantEntity tenant, String lang) {
         return new Content()
-                .claim(getTranslatedString(tenant.getContentClaim(), lang))
-                .impressum(getTranslatedString(tenant.getContentImpressum(), lang))
-                .privacy(getTranslatedString(tenant.getContentPrivacy(), lang))
-                .termsAndConditions(getTranslatedString(tenant.getContentTermsAndConditions(), lang));
+                .claim(getTranslatedStringFromMap(tenant.getContentClaim(), lang))
+                .impressum(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
+                .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
+                .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang));
     }
 
-    private static String getTranslatedString(String jsonValue, String lang) {
-        List<Translation> translations = convertListFromJson(jsonValue);
-        Optional<Translation> translated = getTranslationForLanguage(lang, translations);
-        if (translated.isEmpty()) {
-            Optional<Translation> defaultTranslation = getTranslationForLanguage(DE, translations);
-            if (defaultTranslation.isEmpty()) {
-                log.warn("Default translation for value not available");
-                return "";
+    private static String getTranslatedStringFromMap(String jsonValue, String lang) {
+        Map<String, String> translations = convertMapFromJson(jsonValue);
+        if (lang == null || !translations.containsKey(lang)) {
+            if (translations.containsKey(DE)) {
+                return translations.get(DE);
             } else {
-                return defaultTranslation.get().getValue();
+              log.warn("Default translation for value not available");
+              return "";
             }
         } else {
-            return translated.get().getValue();
+            return translations.get(lang);
         }
-    }
-
-    private static Optional<Translation> getTranslationForLanguage(String lang, List<Translation> translations) {
-        if (lang == null) {
-            return Optional.empty();
-        }
-        return translations.stream().filter(translation -> lang.equals(translation.getLang())).findFirst();
     }
 
     private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {
         return new MultilingualContent()
-                .claim(convertListFromJson(tenant.getContentClaim()))
-                .impressum(convertListFromJson(tenant.getContentImpressum()))
-                .privacy(convertListFromJson(tenant.getContentPrivacy()))
-                .termsAndConditions(convertListFromJson(tenant.getContentTermsAndConditions()));
+                .claim(convertMapFromJson(tenant.getContentClaim()))
+                .impressum(convertMapFromJson(tenant.getContentImpressum()))
+                .privacy(convertMapFromJson(tenant.getContentPrivacy()))
+                .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
     }
 }

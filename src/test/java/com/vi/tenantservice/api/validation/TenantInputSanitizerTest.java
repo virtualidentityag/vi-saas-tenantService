@@ -11,11 +11,12 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TenantInputSanitizerTest {
@@ -34,10 +35,13 @@ class TenantInputSanitizerTest {
     // given
     EasyRandom generator = new EasyRandom();
     MultilingualTenantDTO tenantDTO = generator.nextObject(MultilingualTenantDTO.class);
-    tenantDTO.getContent().setImpressum(getDefaultTranslations("impressum"));
-    tenantDTO.getContent().setClaim(getDefaultTranslations("claim"));
-    tenantDTO.getContent().setPrivacy(getDefaultTranslations("privacy"));
-    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslations("terms and conditions"));
+    tenantDTO.getContent().setImpressum(getDefaultTranslationsAsMap("impressum"));
+    tenantDTO.getContent().setClaim(getDefaultTranslationsAsMap("claim"));
+    tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap("privacy"));
+    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslationsAsMap("terms and conditions"));
+    when(inputSanitizer.sanitizeAllowingFormattingAndLinks(Mockito.anyString())).thenReturn("");
+    when(inputSanitizer.sanitizeAllowingFormatting(Mockito.anyString())).thenReturn("");
+
 
     // when
     MultilingualTenantDTO sanitized = tenantInputSanitizer.sanitize(tenantDTO);
@@ -52,21 +56,27 @@ class TenantInputSanitizerTest {
     // given
     EasyRandom generator = new EasyRandom();
     MultilingualTenantDTO tenantDTO = generator.nextObject(MultilingualTenantDTO.class);
-    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslations(LINK_CONTENT));
-    tenantDTO.getContent().setPrivacy(getDefaultTranslations(LINK_CONTENT));
-    tenantDTO.getContent().setImpressum(getDefaultTranslations(LINK_CONTENT));
+    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslationsAsMap(LINK_CONTENT));
+    tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap(LINK_CONTENT));
+    tenantDTO.getContent().setImpressum(getDefaultTranslationsAsMap(LINK_CONTENT));
     TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
     // when
     MultilingualTenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
 
     // then
-    assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslations(LINK_CONTENT));
-    assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslations(LINK_CONTENT));
-    assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslations(LINK_CONTENT));
+    assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
+    assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
+    assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
   }
 
   private List<Translation> getDefaultTranslations(String content) {
     return Lists.newArrayList(new Translation().lang("de").value(content));
+  }
+
+  private Map<String, String> getDefaultTranslationsAsMap(String content) {
+    var map = new HashMap<String, String>();
+    map.put("de", content);
+    return map;
   }
 
   @Test
@@ -74,17 +84,17 @@ class TenantInputSanitizerTest {
     // given
     EasyRandom generator = new EasyRandom();
     MultilingualTenantDTO tenantDTO = generator.nextObject(MultilingualTenantDTO.class);
-    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslations(IMAGE_CONTENT));
-    tenantDTO.getContent().setPrivacy(getDefaultTranslations(IMAGE_CONTENT));
-    tenantDTO.getContent().setImpressum(getDefaultTranslations(IMAGE_CONTENT));
+    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    tenantDTO.getContent().setImpressum(getDefaultTranslationsAsMap(IMAGE_CONTENT));
     TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
     // when
     MultilingualTenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
 
     // then
-    assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslations(IMAGE_CONTENT));
-    assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslations(IMAGE_CONTENT));
-    assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslations(IMAGE_CONTENT));
+    assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
   }
 
   private void verifyNeededSanitizationsAreCalled(MultilingualTenantDTO tenantDTO) {

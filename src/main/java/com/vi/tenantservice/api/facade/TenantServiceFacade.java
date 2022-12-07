@@ -82,6 +82,10 @@ public class TenantServiceFacade {
         MultilingualTenantDTO tenantDTO) {
       MultilingualContent content = tenantDTO.getContent();
 
+      if(content == null) {
+          return;
+      }
+
       if (content.getConfirmPrivacy() != null && content.getConfirmPrivacy()) {
         entity.setContentPrivacyActivationDate(LocalDateTime.now());
       }

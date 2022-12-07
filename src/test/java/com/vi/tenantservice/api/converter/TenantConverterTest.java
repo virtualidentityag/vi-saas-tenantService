@@ -6,11 +6,9 @@ import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.Translation;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -82,10 +80,6 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
     assertThat(restrictedTenantDTO.getContent().getTermsAndConditions()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getTermsAndConditions()));
     assertThat(restrictedTenantDTO.getContent().getImpressum()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getImpressum()));
-  }
-
-  private static String getGermanTranslation(List<Translation> translations) {
-    return translations.stream().filter(t->t.getLang().equals("de")).findFirst().get().getValue();
   }
 
   private static String getGermanTranslation(Map<String, String> translations) {

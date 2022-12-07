@@ -7,12 +7,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.RuntimeJsonMappingException;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.TenantSettings;
-import com.vi.tenantservice.api.model.Translation;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.List;
 import java.util.Map;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -23,17 +21,9 @@ public class JsonConverter {
     return serializeToJsonString(object);
   }
 
-  public static String convertToJson(List<Translation> translations) {
-    if (translations == null || translations.isEmpty()) {
-      return null;
-    }
-    return serializeToJsonString(translations);
-  }
-
   public static TenantSettings convertFromJson(String jsonString) {
     return deserializeFromJsonString(jsonString, TenantSettings.class);
   }
-
 
   public static Map<String, String> convertMapFromJson(String jsonString) {
     if (jsonString == null) {

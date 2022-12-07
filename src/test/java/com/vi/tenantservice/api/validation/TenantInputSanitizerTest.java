@@ -1,8 +1,6 @@
 package com.vi.tenantservice.api.validation;
 
-import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
-import com.vi.tenantservice.api.model.Translation;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,9 +8,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
@@ -67,10 +63,6 @@ class TenantInputSanitizerTest {
     assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
     assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
     assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
-  }
-
-  private List<Translation> getDefaultTranslations(String content) {
-    return Lists.newArrayList(new Translation().lang("de").value(content));
   }
 
   private Map<String, String> getDefaultTranslationsAsMap(String content) {

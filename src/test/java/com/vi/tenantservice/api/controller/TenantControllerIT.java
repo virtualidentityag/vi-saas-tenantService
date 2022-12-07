@@ -331,10 +331,31 @@ class TenantControllerIT {
                 .andExpect(jsonPath("$.content.claim['de']").value("<b>claim</b>"));
     }
 
+    @Test
+    void updateTenant_Should_throwValidationException_When_calledWithExistingTenantIdAndForTenantAdminAuthorityButInvalidLanguageCode()
+            throws Exception {
+        String jsonRequest = prepareRequestWithInvalidLanguageContent();
+
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
+                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .content(jsonRequest)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isBadRequest());
+    }
+
     private String prepareRequestWithInvalidScriptContent() {
         return multilingualTenantTestDataBuilder.withId(1L).withName(appendMalciousScript("name"))
                 .withSubdomain(appendMalciousScript("subdomain"))
                 .withContent(appendMalciousScript("<b>impressum</b>"), appendMalciousScript("<b>claim</b>"))
+                .jsonify();
+    }
+
+    private String prepareRequestWithInvalidLanguageContent() {
+        return multilingualTenantTestDataBuilder.withId(1L).withName(appendMalciousScript("name"))
+                .withSubdomain(appendMalciousScript("subdomain"))
+                .withTranslatedImpressum("abc", "impressum")
                 .jsonify();
     }
 

@@ -12,10 +12,13 @@ public class TenantValidationException extends RuntimeException {
     private final HttpHeaders customHttpHeaders;
     private final HttpStatus httpStatus;
 
+    private final HttpStatusExceptionReason statusExceptionReason;
+
     public TenantValidationException(HttpStatusExceptionReason exceptionReason) {
         super();
         this.customHttpHeaders = new CustomHttpHeader(exceptionReason)
             .buildHeader();
         this.httpStatus = HttpStatus.CONFLICT;
+        this.statusExceptionReason = exceptionReason;
     }
 }

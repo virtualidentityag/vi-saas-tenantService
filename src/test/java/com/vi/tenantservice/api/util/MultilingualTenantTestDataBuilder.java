@@ -150,4 +150,14 @@ public class MultilingualTenantTestDataBuilder {
     tenantMultilingualDTO.setContent(content);
     return this;
   }
+
+  public MultilingualTenantTestDataBuilder withTranslatedImpressum(String language, String impressum) {
+    MultilingualContent content = new MultilingualContent();
+    var translatedMap = new HashMap<String, String>();
+    translatedMap.put(language, impressum);
+    content.setImpressum(translatedMap);
+    content.setClaim(defaultTranslations(""));
+    tenantMultilingualDTO.setContent(content);
+    return this;
+  }
 }

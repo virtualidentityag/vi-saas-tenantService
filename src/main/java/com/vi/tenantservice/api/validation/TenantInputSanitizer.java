@@ -1,12 +1,16 @@
 package com.vi.tenantservice.api.validation;
 
-import com.vi.tenantservice.api.model.Content;
-import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Theming;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -15,9 +19,9 @@ public class TenantInputSanitizer {
 
   private final @NonNull InputSanitizer inputSanitizer;
 
-  public TenantDTO sanitize(TenantDTO input) {
+  public MultilingualTenantDTO sanitize(MultilingualTenantDTO input) {
     log.info("Sanitizing input DTO");
-    TenantDTO output = copyNotSanitizedAttributes(input);
+    MultilingualTenantDTO output = copyNotSanitizedAttributes(input);
     output.setName(inputSanitizer.sanitize(input.getName()));
     output.setSubdomain(inputSanitizer.sanitize(input.getSubdomain()));
     sanitizeTheming(input, output);
@@ -25,19 +29,19 @@ public class TenantInputSanitizer {
     return output;
   }
 
-  private TenantDTO copyNotSanitizedAttributes(TenantDTO input) {
-    TenantDTO output = new TenantDTO();
+  private MultilingualTenantDTO copyNotSanitizedAttributes(MultilingualTenantDTO input) {
+    MultilingualTenantDTO output = new MultilingualTenantDTO();
     output.setId(input.getId());
     output.setCreateDate(input.getCreateDate());
     output.setUpdateDate(input.getUpdateDate());
-    output.setContent(new Content());
+    output.setContent(new MultilingualContent());
     output.setTheming(new Theming());
     output.setLicensing(input.getLicensing());
     output.setSettings(input.getSettings());
     return output;
   }
 
-  private void sanitizeTheming(TenantDTO input, TenantDTO output) {
+  private void sanitizeTheming(MultilingualTenantDTO input, MultilingualTenantDTO output) {
     Theming theming = input.getTheming();
     if (theming != null) {
       output.getTheming().setLogo(inputSanitizer.sanitize(theming.getLogo()));
@@ -47,17 +51,28 @@ public class TenantInputSanitizer {
     }
   }
 
-  private void sanitizeContent(TenantDTO input, TenantDTO output) {
-    Content content = input.getContent();
+  private void sanitizeContent(MultilingualTenantDTO input, MultilingualTenantDTO output) {
+    var content = input.getContent();
     if (content != null) {
       output.getContent()
-          .setImpressum(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getImpressum()));
+              .setImpressum(sanitizeAllTranslations(content.getImpressum(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
       output.getContent()
-          .setClaim(inputSanitizer.sanitizeAllowingFormatting(content.getClaim()));
+              .setClaim(sanitizeAllTranslations(content.getClaim(), inputSanitizer::sanitizeAllowingFormatting));
       output.getContent()
-          .setPrivacy(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getPrivacy()));
+              .setPrivacy(sanitizeAllTranslations(content.getPrivacy(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
       output.getContent()
-          .setTermsAndConditions(inputSanitizer.sanitizeAllowingFormattingAndLinks(content.getTermsAndConditions()));
+              .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
     }
+  }
+  private Map<String, String> sanitizeAllTranslations(Map<String, String> translations, Function<String, String> sanitizeFuntion) {
+    if (translations != null) {
+      return translations.entrySet()
+              .stream()
+              .filter(entry -> entry.getKey() != null)
+              .collect(Collectors.toMap(
+                      Map.Entry::getKey,
+                      stringEntry -> sanitizeFuntion.apply(stringEntry.getValue())));
+    }
+    return translations;
   }
 }

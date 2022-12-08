@@ -32,6 +32,10 @@ public class TenantFacadeAuthorisationService {
     return authorisationService.hasAuthority(UserRole.SINGLE_TENANT_ADMIN.getValue());
   }
 
+  private boolean isRestrictedAgencyAdmin() {
+    return authorisationService.hasAuthority(UserRole.RESTRICTED_AGENCY_ADMIN.getValue());
+  }
+
   private boolean userHasAnyRoleOf(List<UserRole> roles) {
     return roles.stream().anyMatch(userRole -> authorisationService.hasAuthority(userRole.getValue()));
   }
@@ -42,8 +46,8 @@ public class TenantFacadeAuthorisationService {
 
   void assertUserIsAuthorizedToAccessTenant(Long tenantId) {
     log.info("Asserting user is authorized to update tenant with id " + tenantId);
-    if (isSingleTenantAdmin()) {
-      log.info("User is single tenant admin. Checking if he has authority to modify tenant with id "
+    if (isSingleTenantAdmin() || isRestrictedAgencyAdmin()) {
+      log.info("User has single tenant permission. Checking if he has authority to access tenant with id "
           + tenantId);
       var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
       if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
@@ -52,6 +56,7 @@ public class TenantFacadeAuthorisationService {
       }
     }
   }
+
 
   void assertUserHasSufficientPermissionsToChangeAttributes(
           MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {

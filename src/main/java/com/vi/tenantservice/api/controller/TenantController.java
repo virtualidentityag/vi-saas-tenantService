@@ -36,7 +36,7 @@ public class TenantController implements TenantApi, TenantadminApi {
   private final @NonNull AuthorisationService authorisationService;
 
   @Override
-  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin', 'restricted-agency-admin')")
   public ResponseEntity<TenantDTO> getTenantById(Long id) {
 
     var tenantById = tenantServiceFacade.findTenantById(id);

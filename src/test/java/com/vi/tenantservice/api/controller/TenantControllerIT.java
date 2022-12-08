@@ -26,8 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -313,6 +312,26 @@ class TenantControllerIT {
                 .andExpect(jsonPath("$.id").value(1));
     }
 
+  @Test
+  void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForSingleTenantAdminAuthority()
+          throws Exception {
+    mockMvc.perform(get(EXISTING_TENANT)
+                    .with(user("not important").authorities((GrantedAuthority) SINGLE_TENANT_ADMIN::getValue))
+                    .contentType(APPLICATION_JSON)
+            ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1));
+  }
+
+  @Test
+  void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedAgencyAdminAuthority()
+          throws Exception {
+    mockMvc.perform(get(EXISTING_TENANT)
+                    .with(user("not important").authorities((GrantedAuthority) RESTRICTED_AGENCY_ADMIN::getValue))
+                    .contentType(APPLICATION_JSON)
+            ).andExpect(status().isOk())
+            .andExpect(jsonPath("$.id").value(1));
+  }
+
     @Test
     void updateTenant_Should_sanitizeInput_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
             throws Exception {
@@ -393,9 +412,9 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnStatusForbidden_When_calledWithoutAnyAuthorization()
             throws Exception {
-        mockMvc.perform(get(EXISTING_TENANT)
-                        .contentType(APPLICATION_JSON))
-                .andExpect(status().isForbidden());
+      mockMvc.perform(get(EXISTING_TENANT)
+                      .contentType(APPLICATION_JSON))
+              .andExpect(status().isForbidden());
     }
 
     @Test

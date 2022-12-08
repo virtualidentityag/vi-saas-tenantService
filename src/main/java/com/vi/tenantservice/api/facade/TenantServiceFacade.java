@@ -8,6 +8,7 @@ import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -15,6 +16,7 @@ import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import java.time.LocalDateTime;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -53,6 +55,7 @@ public class TenantServiceFacade {
         MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
         validateTenantInput(tenantDTO);
         var entity = tenantConverter.toEntity(sanitizedTenantDTO);
+        setContentActivationDates(entity, tenantDTO);
         return tenantConverter.toMultilingualDTO(tenantService.create(entity));
     }
 
@@ -105,8 +108,27 @@ public class TenantServiceFacade {
         tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
         var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
         log.info("Tenant with id {} updated", existingTenant.getId());
+        setContentActivationDates(updatedEntity, sanitizedTenantDTO);
         updatedEntity = tenantService.update(updatedEntity);
         return tenantConverter.toMultilingualDTO(updatedEntity);
+    }
+
+    private void setContentActivationDates(TenantEntity entity,
+        MultilingualTenantDTO tenantDTO) {
+      MultilingualContent content = tenantDTO.getContent();
+
+      if(content == null) {
+          return;
+      }
+
+      if (content.getConfirmPrivacy() != null && content.getConfirmPrivacy()) {
+        entity.setContentPrivacyActivationDate(LocalDateTime.now());
+      }
+
+      if (content.getConfirmTermsAndConditions() != null && content.getConfirmTermsAndConditions()) {
+        entity.setContentTermsAndConditionsActivationDate(LocalDateTime.now());
+      }
+
     }
 
     public Optional<TenantDTO> findTenantById(Long id) {

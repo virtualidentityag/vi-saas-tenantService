@@ -62,6 +62,8 @@ public class TenantInputSanitizer {
               .setPrivacy(sanitizeAllTranslations(content.getPrivacy(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
       output.getContent()
               .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output.getContent().setConfirmPrivacy(content.getConfirmPrivacy());
+      output.getContent().setConfirmTermsAndConditions(content.getConfirmTermsAndConditions());
     }
   }
   private Map<String, String> sanitizeAllTranslations(Map<String, String> translations, Function<String, String> sanitizeFuntion) {

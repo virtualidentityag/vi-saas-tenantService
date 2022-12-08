@@ -3,7 +3,7 @@ MODIFY `content_claim` varchar(1024) COLLATE 'utf8_unicode_ci' NULL;
 
 
 UPDATE `tenantservice`.`tenant` SET content_privacy = REPLACE(content_privacy, '"','\'');
-UPDATE `tenantservice`.`tenant` SET content_termsandconditions = REPLACE(content_termsandconditions, '"','\'');
+--UPDATE `tenantservice`.`tenant` SET content_termsandconditions = REPLACE(content_termsandconditions, '"','\'');
 UPDATE `tenantservice`.`tenant` SET content_impressum = REPLACE(content_impressum, '"','\'');
 UPDATE `tenantservice`.`tenant` SET content_claim = REPLACE(content_claim, '"','\'');
 

@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.util;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.json.JsonReadFeature;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -39,7 +40,9 @@ public class JsonConverter {
 
   private static <T> T deserializeFromJsonString(String jsonString, Class<T> clazz) {
     try {
-      var objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      var objectMapper = new ObjectMapper()
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
       return objectMapper.readValue(jsonString, clazz);
     } catch (JsonProcessingException e) {
       throw new RuntimeJsonMappingException(e.getMessage());
@@ -48,7 +51,9 @@ public class JsonConverter {
 
   private static <T, Y> Map<T, Y> deserializeMapFromJsonString(String jsonString, TypeReference<Map<T, Y>> typeReference) {
     try {
-      var objectMapper = new ObjectMapper().configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+      var objectMapper = new ObjectMapper()
+          .configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false)
+          .configure(JsonReadFeature.ALLOW_UNESCAPED_CONTROL_CHARS.mappedFeature(), true);
       return objectMapper.readValue(jsonString, typeReference);
     } catch (JsonProcessingException e) {
       throw new RuntimeJsonMappingException(e.getMessage());

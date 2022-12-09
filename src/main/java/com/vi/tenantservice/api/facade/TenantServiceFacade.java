@@ -7,8 +7,8 @@ import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
-import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
@@ -16,7 +16,6 @@ import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.time.LocalDateTime;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +23,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.ws.rs.BadRequestException;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -68,16 +68,16 @@ public class TenantServiceFacade {
     }
 
     private void validateTenantInput(MultilingualTenantDTO tenantDTO) {
-        var isoCountries = Arrays.stream(Locale.getISOCountries()).collect(Collectors.toList());
+        var isoCountries = Arrays.stream(Locale.getISOLanguages()).collect(Collectors.toList());
         validateContent(tenantDTO, isoCountries);
     }
 
     private void validateContent(MultilingualTenantDTO tenantDTO, List<String> isoCountries) {
         if (tenantDTO.getContent() != null) {
-            validateTranslationKeys(isoCountries, getLanguageUppercaseKeys(tenantDTO.getContent().getImpressum()));
-            validateTranslationKeys(isoCountries, getLanguageUppercaseKeys(tenantDTO.getContent().getPrivacy()));
-            validateTranslationKeys(isoCountries, getLanguageUppercaseKeys(tenantDTO.getContent().getTermsAndConditions()));
-            validateTranslationKeys(isoCountries, getLanguageUppercaseKeys(tenantDTO.getContent().getClaim()));
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getImpressum()));
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getPrivacy()));
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getTermsAndConditions()));
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getClaim()));
         }
     }
 
@@ -87,11 +87,11 @@ public class TenantServiceFacade {
         }
     }
 
-    private static List<String> getLanguageUppercaseKeys(Map<String, String> translatedMap) {
+    private static List<String> getLanguageLowercaseKeys(Map<String, String> translatedMap) {
         if (translatedMap == null) {
            return Lists.newArrayList();
         }
-        return translatedMap.keySet().stream().map(s -> s.toUpperCase()).collect(Collectors.toList());
+        return translatedMap.keySet().stream().map(s -> s.toLowerCase()).collect(Collectors.toList());
     }
 
     private MultilingualTenantDTO updateWithSanitizedInput(Long id, MultilingualTenantDTO sanitizedTenantDTO) {

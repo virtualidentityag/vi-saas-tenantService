@@ -1,11 +1,14 @@
 package com.vi.tenantservice.api.facade;
 
+import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
+import com.vi.tenantservice.api.exception.TenantValidationException;
+import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
@@ -19,6 +22,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
 
@@ -88,6 +92,40 @@ class TenantServiceFacadeTest {
     verify(tenantService).update(tenantEntity);
   }
 
+  @Test
+  void updateTenant_Should_throwBadRequest_When_languageKeyIsNotValid() {
+    // given
+    HashMap<String, String> claim = Maps.newHashMap();
+    claim.put("en", "english claim");
+    claim.put("not existent", "not existing claim");
+    tenantMultilingualDTO.setContent(new MultilingualContent().claim(claim));
+
+    // when
+    assertThrows(TenantValidationException.class, () -> {
+      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+    });
+  }
+
+  @Test
+  void updateTenant_Should_passValidation_When_languageKeyIsValid() {
+    // given
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
+    when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
+    when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
+    HashMap<String, String> claim = Maps.newHashMap();
+    claim.put("en", "english claim");
+    claim.put("de", "german claim");
+    tenantMultilingualDTO.setContent(new MultilingualContent().claim(claim));
+
+    // when
+    tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+
+    // then
+    verify(tenantService).findTenantById(ID);
+    verify(converter).toEntity(tenantEntity, sanitizedTenantDTO);
+    verify(tenantService).update(tenantEntity);
+
+  }
   @Test
   void updateTenant_Should_ThrowTenantNotFoundException_When_IdNotFound() {
     // then

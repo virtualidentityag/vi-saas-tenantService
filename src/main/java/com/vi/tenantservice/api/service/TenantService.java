@@ -1,19 +1,20 @@
 package com.vi.tenantservice.api.service;
 
-import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.SUBDOMAIN_NOT_UNIQUE;
-
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.repository.TenantRepository;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
-import java.util.List;
-import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDateTime;
+import java.time.ZoneOffset;
+import java.util.List;
+import java.util.Optional;
+
+import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.SUBDOMAIN_NOT_UNIQUE;
 
 @Service
 @Slf4j
@@ -27,9 +28,7 @@ public class TenantService {
 
 
     public TenantEntity create(TenantEntity tenantEntity) {
-        if (!multitenancyWithSingleDomain) {
-            validateTenantSubdomainDoesNotExist(tenantEntity);
-        }
+        validateTenant(tenantEntity);
         setCreateAndUpdateDate(tenantEntity);
         return tenantRepository.save(tenantEntity);
     }
@@ -51,11 +50,15 @@ public class TenantService {
     }
 
     public TenantEntity update(TenantEntity tenantEntity) {
+        validateTenant(tenantEntity);
+        tenantEntity.setUpdateDate(LocalDateTime.now(ZoneOffset.UTC));
+        return tenantRepository.save(tenantEntity);
+    }
+
+    private void validateTenant(TenantEntity tenantEntity) {
         if (!multitenancyWithSingleDomain) {
             validateTenantSubdomainDoesNotExist(tenantEntity);
         }
-        tenantEntity.setUpdateDate(LocalDateTime.now(ZoneOffset.UTC));
-        return tenantRepository.save(tenantEntity);
     }
 
     public Optional<TenantEntity> findTenantById(Long id) {

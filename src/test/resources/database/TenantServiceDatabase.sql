@@ -15,6 +15,8 @@ CREATE TABLE TENANT
     create_date datetime NOT NULL,
     update_date datetime,
     settings VARCHAR(4000) default NULL,
+    privacy_activation_date datetime,
+    termsandconditions_activation_date datetime,
     PRIMARY KEY (ID)
 );
 

@@ -2,10 +2,12 @@ package com.vi.tenantservice.api.controller;
 
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
+import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
+import com.vi.tenantservice.generated.api.controller.TenantadminApi;
 import io.swagger.annotations.Api;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -15,9 +17,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.util.CollectionUtils;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.context.request.NativeWebRequest;
 
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Controller for tenant API operations.
@@ -26,7 +30,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @Api(tags = "tenant-controller")
 @Slf4j
-public class TenantController implements TenantApi {
+public class TenantController implements TenantApi, TenantadminApi {
 
   private final @NonNull TenantServiceFacade tenantServiceFacade;
   private final @NonNull AuthorisationService authorisationService;
@@ -50,16 +54,24 @@ public class TenantController implements TenantApi {
   }
 
   @Override
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
+  public ResponseEntity<MultilingualTenantDTO> getMultilingualTenantById(Long id) {
+    var tenantById = tenantServiceFacade.findMultilingualTenantById(id);
+    return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+            : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
+  }
+  @Override
   @PreAuthorize("hasAuthority('tenant-admin')")
-  public ResponseEntity<TenantDTO> createTenant(@Valid TenantDTO tenantDTO) {
+  public ResponseEntity<MultilingualTenantDTO> createTenant(@Valid MultilingualTenantDTO tenantMultilingualDTO) {
     log.info("Creating tenant with by user {} ", authorisationService.getUsername());
-    var tenant = tenantServiceFacade.createTenant(tenantDTO);
+    var tenant = tenantServiceFacade.createTenant(tenantMultilingualDTO);
     return new ResponseEntity<>(tenant, HttpStatus.OK);
   }
 
   @Override
   @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
-  public ResponseEntity<TenantDTO> updateTenant(Long id, @Valid TenantDTO tenantDTO) {
+  public ResponseEntity<MultilingualTenantDTO> updateTenant(Long id, @Valid MultilingualTenantDTO tenantDTO) {
+
     log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
     var updatedTenantDTO = tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);
@@ -85,5 +97,10 @@ public class TenantController implements TenantApi {
     return singleTenant.isEmpty() ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
         : new ResponseEntity<>(singleTenant.get(), HttpStatus.OK);
 
+  }
+
+  @Override
+  public Optional<NativeWebRequest> getRequest() {
+    return Optional.empty();
   }
 }

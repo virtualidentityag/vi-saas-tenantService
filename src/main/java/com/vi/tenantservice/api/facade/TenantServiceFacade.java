@@ -164,7 +164,7 @@ public class TenantServiceFacade {
 
         Optional<Long> tenantIdFromRequestOrCookie = authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
         if (multitenancyWithSingleDomain && tenantIdFromRequestOrCookie.isPresent()) {
-            return getSingleDomainSpecificTenantData(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
+            return getTenantDataWithOverridenPrivacy(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
         }
 
         String lang = translationService.getCurrentLanguageContext();
@@ -172,16 +172,20 @@ public class TenantServiceFacade {
                 : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantBySubdomain.get(), lang));
     }
 
-    public Optional<RestrictedTenantDTO> getSingleDomainSpecificTenantData(
+    public Optional<RestrictedTenantDTO> getTenantDataWithOverridenPrivacy(
             Optional<TenantEntity> mainTenantForSingleDomainMultitenancy, Long resolvedTenantId) {
 
-        Optional<TenantEntity> resolvedTenant = tenantService.findTenantById(resolvedTenantId);
-        if (resolvedTenant.isEmpty()) {
+        Optional<TenantEntity> tenantToOverridePrivacy = tenantService.findTenantById(resolvedTenantId);
+        if (tenantToOverridePrivacy.isEmpty()) {
             throw new BadRequestException("Tenant not found for id " + resolvedTenantId);
         }
         String lang = translationService.getCurrentLanguageContext();
         RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(mainTenantForSingleDomainMultitenancy.get(), lang);
-        restrictedTenantDTO.getContent().setPrivacy(resolvedTenant.get().getContentPrivacy());
+        RestrictedTenantDTO overridingRestrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(tenantToOverridePrivacy.get(), lang);
+
+        if (overridingRestrictedTenantDTO.getContent() != null) {
+            restrictedTenantDTO.getContent().setPrivacy(overridingRestrictedTenantDTO.getContent().getPrivacy());
+        }
         return Optional.of(restrictedTenantDTO);
     }
 

@@ -18,9 +18,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Map;
 
+import static com.vi.tenantservice.api.converter.TranslationResolver.DE;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
@@ -28,7 +29,7 @@ import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 @Slf4j
 public class TenantConverter {
 
-    public static final String DE = "de";
+
 
     public TenantEntity toEntity(MultilingualTenantDTO tenantDTO) {
         var builder = TenantEntity
@@ -84,12 +85,21 @@ public class TenantConverter {
     }
 
     private void contentToEntity(MultilingualTenantDTO tenantDTO, TenantEntity.TenantEntityBuilder builder) {
-        if (tenantDTO.getContent() != null) {
+        MultilingualContent content = tenantDTO.getContent();
+        if (content != null) {
             builder
-                    .contentClaim(convertToJson(tenantDTO.getContent().getClaim()))
-                    .contentImpressum(convertToJson(tenantDTO.getContent().getImpressum()))
-                    .contentPrivacy(convertToJson(tenantDTO.getContent().getPrivacy()))
-                    .contentTermsAndConditions(convertToJson(tenantDTO.getContent().getTermsAndConditions()));
+                    .contentClaim(convertToJson(content.getClaim()))
+                    .contentImpressum(convertToJson(content.getImpressum()))
+                    .contentPrivacy(convertToJson(content.getPrivacy()))
+                    .contentTermsAndConditions(convertToJson(content.getTermsAndConditions()));
+
+            if (content.getConfirmPrivacy() != null && content.getConfirmPrivacy()) {
+                builder.contentPrivacyActivationDate(LocalDateTime.now());
+            }
+
+            if (content.getConfirmTermsAndConditions() != null && content.getConfirmTermsAndConditions()) {
+                builder.contentTermsAndConditionsActivationDate(LocalDateTime.now());
+            }
         }
     }
 
@@ -212,27 +222,15 @@ public class TenantConverter {
 
     private Content toContentDTO(TenantEntity tenant, String lang) {
         return new Content()
-                .claim(getTranslatedStringFromMap(tenant.getContentClaim(), lang))
-                .impressum(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
-                .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
-                .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
+                .claim(TranslationResolver.getTranslatedStringFromMap(tenant.getContentClaim(), lang))
+                .impressum(TranslationResolver.getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
+                .privacy(TranslationResolver.getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
+                .termsAndConditions(TranslationResolver.getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
                 .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
                 .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate());
     }
 
-    private static String getTranslatedStringFromMap(String jsonValue, String lang) {
-        Map<String, String> translations = convertMapFromJson(jsonValue);
-        if (lang == null || !translations.containsKey(lang)) {
-            if (translations.containsKey(DE)) {
-                return translations.get(DE);
-            } else {
-              log.warn("Default translation for value not available");
-              return "";
-            }
-        } else {
-            return translations.get(lang);
-        }
-    }
+
 
     private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {
         return new MultilingualContent()

@@ -45,7 +45,7 @@ class TenantConverterTest {
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TranslationResolver.DE);
 
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
@@ -64,7 +64,7 @@ class TenantConverterTest {
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
+    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TranslationResolver.DE);
 
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());

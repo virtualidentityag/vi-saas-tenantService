@@ -90,6 +90,67 @@ paths:
           description: Not found
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
+  /tenantadmin/legal/{id}:
+    put:
+      tags:
+        - tenant-controller
+      summary: 'Updates a tenant [Authorization: Role: tenant-admin or single-tenant-admin]'
+      operationId: updateTenantLegalData
+      parameters:
+        - name: id
+          in: path
+          description: Tenant ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        content:
+          'application/json':
+            schema:
+              $ref: '#/components/schemas/LegalTenantDTO'
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LegalTenantDTO'
+        401:
+          description: UNAUTHORIZED - no/invalid Keycloak token
+        409:
+          description: CONFLICT - unique constraint validation fails
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+    get:
+      tags:
+        - tenant-controller
+      summary: 'Gets a tenant by its id [Authorization: Role: tenant-admin or single-tenant-admin]'
+      operationId: getTenantLegalDataById
+      parameters:
+        - name: id
+          in: path
+          description: Tenant ID
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MultilingualTenantDTO'
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        401:
+          description: UNAUTHORIZED - no/invalid Keycloak token
+        404:
+          description: Not found
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+
   /tenant:
     get:
       tags:
@@ -296,6 +357,21 @@ components:
             settings:
               $ref:
                 '#/components/schemas/Settings'
+    LegalTenantDTO:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: long
+          example: 12132
+        createDate:
+          type: string
+        updateDate:
+          type: string
+        content:
+          $ref:
+            '#/components/schemas/MultilingualLegalContent'
     BasicTenantLicensingDTO:
       type: object
       required:
@@ -434,16 +510,12 @@ components:
             type: string
           example: "[en, de, fr]"
 
-    MultilingualContent:
+    MultilingualLegalContent:
       type: object
       required:
         - impressum
       properties:
         impressum:
-          type: object
-          additionalProperties:
-            type: string
-        claim:
           type: object
           additionalProperties:
             type: string
@@ -459,3 +531,15 @@ components:
             type: string
         confirmTermsAndConditions:
           type: boolean
+
+    MultilingualContent:
+      allOf:
+        - $ref: '#/definitions/MultilingualLegalContent' # Dog has all properties of a Pet
+      properties:
+        claim:
+          type: object
+          additionalProperties:
+            type: string
+
+
+

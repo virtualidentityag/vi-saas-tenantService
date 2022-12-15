@@ -26,7 +26,6 @@ public class TenantService {
     private final @NonNull TenantRepository tenantRepository;
 
 
-
     public TenantEntity create(TenantEntity tenantEntity) {
         validateTenant(tenantEntity);
         setCreateAndUpdateDate(tenantEntity);
@@ -46,7 +45,7 @@ public class TenantService {
     }
 
     private boolean tenantWithSuchSubdomainAlreadyExists(TenantEntity tenantEntity, TenantEntity dbTenant) {
-        return dbTenant != null && !dbTenant.equals(tenantEntity);
+        return dbTenant != null && !dbTenant.getId().equals(tenantEntity.getId());
     }
 
     public TenantEntity update(TenantEntity tenantEntity) {

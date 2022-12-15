@@ -2,11 +2,13 @@ package com.vi.tenantservice.api.facade;
 
 
 import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.converter.LegalTenantConverter;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
+import com.vi.tenantservice.api.model.LegalTenantDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
@@ -41,6 +43,8 @@ public class TenantServiceFacade {
 
     private final @NonNull TenantService tenantService;
     private final @NonNull TenantConverter tenantConverter;
+
+    private final @NonNull LegalTenantConverter legalTenantConverter;
     private final @NonNull TenantInputSanitizer tenantInputSanitizer;
     private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
     private final @NonNull AuthorisationService authorisationService;
@@ -67,11 +71,32 @@ public class TenantServiceFacade {
         return updateWithSanitizedInput(id, sanitizedTenantDTO);
     }
 
+    public LegalTenantDTO updateTenantLegalData(Long id, LegalTenantDTO tenantDTO) {
+        tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
+        validateTenantInput(tenantDTO);
+        LegalTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+       log.info("Attempting to update legal tenant data with id {}", id);
+        return updateWithSanitizedInput(id, sanitizedTenantDTO);
+
+    }
+
     private void validateTenantInput(MultilingualTenantDTO tenantDTO) {
         var isoCountries = Arrays.stream(Locale.getISOLanguages()).collect(Collectors.toList());
         validateContent(tenantDTO, isoCountries);
     }
 
+    private void validateTenantInput(LegalTenantDTO tenantDTO) {
+        var isoCountries = Arrays.stream(Locale.getISOLanguages()).collect(Collectors.toList());
+        validateContent(tenantDTO, isoCountries);
+    }
+
+    private void validateContent(LegalTenantDTO tenantDTO, List<String> isoCountries) {
+        if (tenantDTO.getContent() != null) {
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getImpressum()));
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getPrivacy()));
+            validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getTermsAndConditions()));
+        }
+    }
     private void validateContent(MultilingualTenantDTO tenantDTO, List<String> isoCountries) {
         if (tenantDTO.getContent() != null) {
             validateTranslationKeys(isoCountries, getLanguageLowercaseKeys(tenantDTO.getContent().getImpressum()));
@@ -103,32 +128,47 @@ public class TenantServiceFacade {
         }
     }
 
+    private LegalTenantDTO updateWithSanitizedInput(Long id, LegalTenantDTO sanitizedTenantDTO) {
+        var tenantById = tenantService.findTenantById(id);
+        if (tenantById.isPresent()) {
+            return updateExistingTenant(sanitizedTenantDTO, tenantById.get());
+        } else {
+            throw new TenantNotFoundException("Tenant with given id could not be found : " + id);
+        }
+    }
+
+    private LegalTenantDTO updateExistingTenant(LegalTenantDTO sanitizedTenantDTO,
+                                                       TenantEntity existingTenant) {
+        var updatedEntity = legalTenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
+        log.info("Tenant with id {} updated", existingTenant.getId());
+        updatedEntity = tenantService.update(updatedEntity);
+        return legalTenantConverter.toLegalTenantDTO(updatedEntity);
+    }
+
     private MultilingualTenantDTO updateExistingTenant(MultilingualTenantDTO sanitizedTenantDTO,
                                                        TenantEntity existingTenant) {
         tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
         var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
         log.info("Tenant with id {} updated", existingTenant.getId());
-        setContentActivationDates(updatedEntity, sanitizedTenantDTO);
         updatedEntity = tenantService.update(updatedEntity);
         return tenantConverter.toMultilingualDTO(updatedEntity);
     }
 
     private void setContentActivationDates(TenantEntity entity,
         MultilingualTenantDTO tenantDTO) {
-      MultilingualContent content = tenantDTO.getContent();
+        MultilingualContent content = tenantDTO.getContent();
 
-      if(content == null) {
-          return;
-      }
+        if (content == null) {
+            return;
+        }
 
-      if (content.getConfirmPrivacy() != null && content.getConfirmPrivacy()) {
-        entity.setContentPrivacyActivationDate(LocalDateTime.now());
-      }
+        if (content.getConfirmPrivacy() != null && content.getConfirmPrivacy()) {
+            entity.setContentPrivacyActivationDate(LocalDateTime.now());
+        }
 
-      if (content.getConfirmTermsAndConditions() != null && content.getConfirmTermsAndConditions()) {
-        entity.setContentTermsAndConditionsActivationDate(LocalDateTime.now());
-      }
-
+        if (content.getConfirmTermsAndConditions() != null && content.getConfirmTermsAndConditions()) {
+            entity.setContentTermsAndConditionsActivationDate(LocalDateTime.now());
+        }
     }
 
     public Optional<TenantDTO> findTenantById(Long id) {

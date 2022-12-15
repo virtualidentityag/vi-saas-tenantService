@@ -182,7 +182,7 @@ class TenantControllerIT {
 
 
     @Test
-    void updateTenantLegalData_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndSingleTenantLegalAdminAuthority()
+    void updateTenantLegalData_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndLegalAdminAuthority()
             throws Exception {
         when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
@@ -198,6 +198,22 @@ class TenantControllerIT {
                 .andExpect(jsonPath("$.content.privacy.de").value("privacy"))
                 .andExpect(jsonPath("$.content.termsAndConditions.de").value("termsandconditions"));
 
+    }
+
+
+    @Test
+    void updateTenantLegalData_Should_returnForbidden_When_calledWithValidTenantCreateParamsAndAuthorityWithoutPermissions()
+            throws Exception {
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        mockMvc.perform(put(EXISTING_TENANT_LEGALRESOURCE_VIA_ADMIN)
+                        .with(authentication(builder.withAuthority(RESTRICTED_AGENCY_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .content(legalTenantTestDataBuilder.withId(1L)
+                                .withContent()
+                                .jsonify())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test

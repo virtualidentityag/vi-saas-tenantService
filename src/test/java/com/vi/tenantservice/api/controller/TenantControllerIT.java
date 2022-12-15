@@ -151,6 +151,7 @@ class TenantControllerIT {
                         .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
+                                .withContent()
                                 .withSettingActiveLanguages(Lists.newArrayList("fr", "pl"))
                                 .withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -171,6 +172,7 @@ class TenantControllerIT {
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant")
                                 .withSubdomain("changed subdomain")
+                                .withContent()
                                 .withSettingTopicsInRegistrationEnabled(true)
                                 .withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -195,8 +197,8 @@ class TenantControllerIT {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content.impressum.de").value("Impressum"))
-                .andExpect(jsonPath("$.content.privacy.de").value("privacy"))
-                .andExpect(jsonPath("$.content.termsAndConditions.de").value("termsandconditions"));
+                .andExpect(jsonPath("$.content.privacy.de").value("Privacy"))
+                .andExpect(jsonPath("$.content.termsAndConditions.de").value("TermsAndConditions"));
 
     }
 
@@ -228,6 +230,40 @@ class TenantControllerIT {
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isForbidden());
     }
+
+    @Test
+    @WithMockUser(authorities = {"single-tenant-legal-admin"})
+    void getTenant_Should_returnTenantLegalData() throws Exception {
+        resetLicensingContentToDefault();
+
+        mockMvc.perform(get(EXISTING_TENANT_LEGALRESOURCE_VIA_ADMIN).contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.impressum.de").value("Impressum"))
+                .andExpect(jsonPath("$.content.privacy.de").value("Privacy"))
+                .andExpect(jsonPath("$.content.termsAndConditions.de").value("TermsAndConditions"));
+    }
+
+
+    @Test
+    @WithMockUser(authorities = {"restricted-agency-admin"})
+    void getTenant_Should_ReturnForbiddenIfInvalidAuthority() throws Exception {
+        mockMvc.perform(get(EXISTING_TENANT_LEGALRESOURCE_VIA_ADMIN).contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    private void resetLicensingContentToDefault() throws Exception {
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        mockMvc.perform(put(EXISTING_TENANT_LEGALRESOURCE_VIA_ADMIN)
+                        .with(authentication(builder.withAuthority(SINGLE_TENANT_LEGAL_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .content(legalTenantTestDataBuilder.withId(1L)
+                                .withContent()
+                                .jsonify())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
 
     @Test
     void updateTenant_Should_returnStatusNotFound_When_UpdateAttemptForNonExistingTenant()

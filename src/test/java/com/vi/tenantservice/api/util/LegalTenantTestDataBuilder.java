@@ -10,8 +10,8 @@ public class LegalTenantTestDataBuilder {
 
   private static final long ID = 1L;
   private static final String IMPRESSUM = "Impressum";
-  private static final String PRIVACY = "privacy";
-  private static final String TERMS_AND_CONDITIONS = "termsandconditions";
+  private static final String PRIVACY = "Privacy";
+  private static final String TERMS_AND_CONDITIONS = "TermsAndConditions";
 
   LegalTenantDTO legalTenantDTO = new LegalTenantDTO();
 

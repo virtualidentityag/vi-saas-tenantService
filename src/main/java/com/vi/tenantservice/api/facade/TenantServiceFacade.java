@@ -185,6 +185,13 @@ public class TenantServiceFacade {
                 : Optional.of(tenantConverter.toMultilingualDTO(tenantById.get()));
     }
 
+    public Optional<LegalTenantDTO> findLegalTenantById(Long id) {
+        tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
+        var tenantById = tenantService.findTenantById(id);
+        return tenantById.isEmpty() ? Optional.empty()
+                : Optional.of(legalTenantConverter.toLegalTenantDTO(tenantById.get()));
+    }
+
     public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {
         var tenantById = tenantService.findTenantById(id);
 

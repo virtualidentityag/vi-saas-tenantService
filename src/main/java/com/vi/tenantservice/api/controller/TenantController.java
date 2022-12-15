@@ -72,7 +72,6 @@ public class TenantController implements TenantApi, TenantadminApi {
   @Override
   @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin')")
   public ResponseEntity<MultilingualTenantDTO> updateTenant(Long id, @Valid MultilingualTenantDTO tenantDTO) {
-
     log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
     var updatedTenantDTO = tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);
@@ -81,10 +80,17 @@ public class TenantController implements TenantApi, TenantadminApi {
   @Override
   @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin', 'single-tenant-legal-admin')")
   public ResponseEntity<LegalTenantDTO> updateTenantLegalData(Long id, @Valid LegalTenantDTO tenantDTO) {
-
     log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
     var updatedTenantDTO = tenantServiceFacade.updateTenantLegalData(id, tenantDTO);
     return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);
+  }
+
+  @Override
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin',  'single-tenant-legal-admin')")
+  public ResponseEntity<LegalTenantDTO> getLegalTenantDataById(Long id) {
+    var tenantById = tenantServiceFacade.findLegalTenantById(id);
+    return tenantById.isEmpty() ? new ResponseEntity<>(HttpStatus.NOT_FOUND)
+            : new ResponseEntity<>(tenantById.get(), HttpStatus.OK);
   }
 
   @Override

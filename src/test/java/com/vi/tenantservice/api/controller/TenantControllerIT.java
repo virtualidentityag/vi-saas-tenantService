@@ -4,8 +4,8 @@ package com.vi.tenantservice.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
+import com.vi.tenantservice.api.util.LegalTenantTestDataBuilder;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
-import com.vi.tenantservice.api.util.TenantTestDataBuilder;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -45,7 +45,11 @@ class TenantControllerIT {
     private static final String TENANT_RESOURCE = "/tenant";
 
     private static final String TENANTADMIN_RESOURCE = "/tenantadmin";
+
+    private static final String LEGAL_RESOURCE = "/legal";
     private static final String TENANT_RESOURCE_SLASH = TENANT_RESOURCE + "/";
+
+    private static final String LEGAL_RESOURCE_SLASH = LEGAL_RESOURCE + "/";
 
     private static final String TENANTADMIN_RESOURCE_SLASH = TENANTADMIN_RESOURCE + "/";
     private static final String PUBLIC_TENANT_RESOURCE = "/tenant/public/";
@@ -54,6 +58,8 @@ class TenantControllerIT {
     private static final String EXISTING_TENANT = TENANT_RESOURCE_SLASH + "1";
 
     private static final String EXISTING_TENANT_VIA_ADMIN = TENANTADMIN_RESOURCE_SLASH + "1";
+
+    private static final String EXISTING_TENANT_LEGALRESOURCE_VIA_ADMIN = TENANTADMIN_RESOURCE_SLASH + LEGAL_RESOURCE_SLASH + "1";
     private static final String EXISTING_PUBLIC_TENANT = PUBLIC_TENANT_RESOURCE_BY_ID + "1";
 
     private static final String NON_EXISTING_TENANT_VIA_ADMIN = TENANTADMIN_RESOURCE_SLASH + "3";
@@ -80,9 +86,9 @@ class TenantControllerIT {
                 .build();
     }
 
-    TenantTestDataBuilder tenantTestDataBuilder = new TenantTestDataBuilder();
-
     MultilingualTenantTestDataBuilder multilingualTenantTestDataBuilder = new MultilingualTenantTestDataBuilder();
+
+    LegalTenantTestDataBuilder legalTenantTestDataBuilder = new LegalTenantTestDataBuilder();
 
     @Test
     void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
@@ -172,6 +178,26 @@ class TenantControllerIT {
                 .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
                 .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
                 .andExpect(jsonPath("$.settings.featureToolsEnabled").value("true"));
+    }
+
+
+    @Test
+    void updateTenantLegalData_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndSingleTenantLegalAdminAuthority()
+            throws Exception {
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        mockMvc.perform(put(EXISTING_TENANT_LEGALRESOURCE_VIA_ADMIN)
+                        .with(authentication(builder.withAuthority(SINGLE_TENANT_LEGAL_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .content(legalTenantTestDataBuilder.withId(1L)
+                                .withContent()
+                                .jsonify())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content.impressum.de").value("Impressum"))
+                .andExpect(jsonPath("$.content.privacy.de").value("privacy"))
+                .andExpect(jsonPath("$.content.termsAndConditions.de").value("termsandconditions"));
+
     }
 
     @Test

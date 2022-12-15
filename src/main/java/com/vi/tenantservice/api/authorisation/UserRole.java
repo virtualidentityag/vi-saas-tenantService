@@ -13,7 +13,9 @@ public enum UserRole {
   TENANT_ADMIN("tenant-admin"),
   SINGLE_TENANT_ADMIN("single-tenant-admin"),
 
-  RESTRICTED_AGENCY_ADMIN("restricted-agency-admin");
+  RESTRICTED_AGENCY_ADMIN("restricted-agency-admin"),
+
+  SINGLE_TENANT_LEGAL_ADMIN("single-tenant-legal-admin");
 
   private final String value;
 

@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.controller;
 
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
+import com.vi.tenantservice.api.model.LegalTenantDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
@@ -74,6 +75,15 @@ public class TenantController implements TenantApi, TenantadminApi {
 
     log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
     var updatedTenantDTO = tenantServiceFacade.updateTenant(id, tenantDTO);
+    return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);
+  }
+
+  @Override
+  @PreAuthorize("hasAnyAuthority('tenant-admin', 'single-tenant-admin', 'single-tenant-legal-admin')")
+  public ResponseEntity<LegalTenantDTO> updateTenantLegalData(Long id, @Valid LegalTenantDTO tenantDTO) {
+
+    log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
+    var updatedTenantDTO = tenantServiceFacade.updateTenantLegalData(id, tenantDTO);
     return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);
   }
 

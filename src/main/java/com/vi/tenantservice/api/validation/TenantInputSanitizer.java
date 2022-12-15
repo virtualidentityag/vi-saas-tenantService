@@ -1,6 +1,8 @@
 package com.vi.tenantservice.api.validation;
 
+import com.vi.tenantservice.api.model.LegalTenantDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.MultilingualLegalContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Theming;
 import lombok.NonNull;
@@ -29,6 +31,13 @@ public class TenantInputSanitizer {
     return output;
   }
 
+  public LegalTenantDTO sanitize(LegalTenantDTO input) {
+    log.info("Sanitizing input DTO");
+    LegalTenantDTO output = copyNotSanitizedAttributes(input);
+    sanitizeContent(input, output);
+    return output;
+  }
+
   private MultilingualTenantDTO copyNotSanitizedAttributes(MultilingualTenantDTO input) {
     MultilingualTenantDTO output = new MultilingualTenantDTO();
     output.setId(input.getId());
@@ -38,6 +47,15 @@ public class TenantInputSanitizer {
     output.setTheming(new Theming());
     output.setLicensing(input.getLicensing());
     output.setSettings(input.getSettings());
+    return output;
+  }
+
+  private LegalTenantDTO copyNotSanitizedAttributes(LegalTenantDTO input) {
+    LegalTenantDTO output = new LegalTenantDTO();
+    output.setId(input.getId());
+    output.setCreateDate(input.getCreateDate());
+    output.setUpdateDate(input.getUpdateDate());
+    output.setContent(new MultilingualLegalContent());
     return output;
   }
 
@@ -66,6 +84,21 @@ public class TenantInputSanitizer {
       output.getContent().setConfirmTermsAndConditions(content.getConfirmTermsAndConditions());
     }
   }
+
+  private void sanitizeContent(LegalTenantDTO input, LegalTenantDTO output) {
+    var content = input.getContent();
+    if (content != null) {
+      output.getContent()
+              .setImpressum(sanitizeAllTranslations(content.getImpressum(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+       output.getContent()
+              .setPrivacy(sanitizeAllTranslations(content.getPrivacy(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output.getContent()
+              .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output.getContent().setConfirmPrivacy(content.getConfirmPrivacy());
+      output.getContent().setConfirmTermsAndConditions(content.getConfirmTermsAndConditions());
+    }
+  }
+
   private Map<String, String> sanitizeAllTranslations(Map<String, String> translations, Function<String, String> sanitizeFuntion) {
     if (translations != null) {
       return translations.entrySet()

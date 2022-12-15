@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.facade;
 
 import com.google.common.collect.Maps;
+import com.vi.tenantservice.api.converter.LegalTenantConverter;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
@@ -44,6 +45,10 @@ class TenantServiceFacadeTest {
 
   @Mock
   private TenantConverter converter;
+
+  @Mock
+  private LegalTenantConverter legalTenantConverter;
+
 
   @Mock
   private TenantService tenantService;

@@ -24,7 +24,6 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
@@ -80,9 +79,6 @@ class TenantControllerIT {
 
     @MockBean
     ApplicationSettingsApiControllerFactory applicationSettingsApiControllerFactory;
-
-    @MockBean
-    RestTemplate restTemplate;
 
     private MockMvc mockMvc;
 

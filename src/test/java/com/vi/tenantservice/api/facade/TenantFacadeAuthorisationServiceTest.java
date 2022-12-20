@@ -8,6 +8,7 @@ import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
+import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.util.JsonConverter;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import org.junit.jupiter.api.Test;
@@ -36,6 +37,9 @@ class TenantFacadeAuthorisationServiceTest {
 
   @Mock
   TenantFacadeChangeDetectionService tenantFacadeChangeDetectionService;
+
+  @Mock
+  ApplicationSettingsService applicationSettingsService;
 
   @Test
   void assertUserIsAuthorizedToAccessTenant_Should_AllowOperation_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {

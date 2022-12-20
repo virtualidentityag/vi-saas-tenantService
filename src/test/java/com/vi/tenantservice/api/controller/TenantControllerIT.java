@@ -4,8 +4,12 @@ package com.vi.tenantservice.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
+import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
+import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.api.util.TenantTestDataBuilder;
+import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
+import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +24,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.util.HashMap;
@@ -70,6 +75,15 @@ class TenantControllerIT {
     @MockBean
     AuthorisationService authorisationService;
 
+    @MockBean
+    ApplicationSettingsService applicationSettingsService;
+
+    @MockBean
+    ApplicationSettingsApiControllerFactory applicationSettingsApiControllerFactory;
+
+    @MockBean
+    RestTemplate restTemplate;
+
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -78,6 +92,7 @@ class TenantControllerIT {
                 .webAppContextSetup(context)
                 .apply(springSecurity())
                 .build();
+        givenSingleTenantAdminCanChangeLegalTexts(true);
     }
 
     TenantTestDataBuilder tenantTestDataBuilder = new TenantTestDataBuilder();
@@ -158,20 +173,53 @@ class TenantControllerIT {
     @Test
     void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndSingleTenantAdminAuthority()
             throws Exception {
+
         when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+        when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant")
-                                .withSubdomain("changed subdomain")
+                                .withLicensing(5)
+                                .withSubdomain("happylife")
                                 .withSettingTopicsInRegistrationEnabled(true)
-                                .withLicensing().jsonify())
+                                .withTranslatedImpressum("de", "new impressum")
+                                .jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
+                .andExpect(jsonPath("$.subdomain").value("happylife"))
                 .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
+                .andExpect(jsonPath("$.content.impressum['de']").value("new impressum"))
                 .andExpect(jsonPath("$.settings.featureToolsEnabled").value("true"));
+    }
+
+    @Test
+    void updateTenant_Should_returnStatusForbidden_When_attemptToChangeLegalTextBySingleTenantAdminIfItsDisallowed()
+            throws Exception {
+
+        givenSingleTenantAdminCanChangeLegalTexts(false);
+
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+        when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
+                        .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant")
+                                .withLicensing(5)
+                                .withSubdomain("happylife")
+                                .withSettingTopicsInRegistrationEnabled(true)
+                                .withTranslatedImpressum("de", "new impressum")
+                                .jsonify())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
+    }
+
+    private void givenSingleTenantAdminCanChangeLegalTexts(boolean value) {
+        ApplicationSettingsDTO settingsDTO = new ApplicationSettingsDTO();
+        settingsDTO.setLegalContentChangesBySingleTenantAdminsAllowed(new ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled().value(value));
+        when(applicationSettingsService.getApplicationSettings()).thenReturn(settingsDTO);
     }
 
     @Test
@@ -336,7 +384,7 @@ class TenantControllerIT {
     void updateTenant_Should_sanitizeInput_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
             throws Exception {
         String jsonRequest = prepareRequestWithInvalidScriptContent();
-
+        when(authorisationService.hasAuthority(TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))

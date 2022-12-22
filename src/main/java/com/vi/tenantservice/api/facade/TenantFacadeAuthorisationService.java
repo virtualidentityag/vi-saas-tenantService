@@ -3,9 +3,12 @@ package com.vi.tenantservice.api.facade;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
-import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.TenantContent;
+import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantSetting;
+import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
+import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +30,8 @@ public class TenantFacadeAuthorisationService {
 
   private final @NonNull AuthorisationService authorisationService;
   private final @NonNull TenantFacadeChangeDetectionService tenantFacadeChangeDetectionService;
+
+  private final @NonNull ApplicationSettingsService applicationSettingsService;
 
   private boolean isSingleTenantAdmin() {
     return authorisationService.hasAuthority(UserRole.SINGLE_TENANT_ADMIN.getValue());
@@ -63,20 +68,51 @@ public class TenantFacadeAuthorisationService {
     if (isSingleTenantAdmin()) {
       assertSingleTenantAdminHasPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
     }
-    List<TenantSetting> determineSettingsThatChanged = tenantFacadeChangeDetectionService.determineChangedSettings(
+    List<TenantSetting> changedSettingTypes = tenantFacadeChangeDetectionService.determineChangedSettings(
         sanitizedTenantDTO, existingTenant);
-    log.info("Detected the following changes in setting attributes: " + determineSettingsThatChanged);
-    assertUserHasPermissionsToChangeSettings(determineSettingsThatChanged);
+    log.info("Detected the following changes in setting attributes: " + changedSettingTypes);
+    assertUserHasPermissionsToChangeSettings(changedSettingTypes);
+    List<TenantContent> changedContentTypes = tenantFacadeChangeDetectionService.determineChangedContent(
+            sanitizedTenantDTO, existingTenant);
+    log.info("Detected the following changes in content attributes: " + changedContentTypes);
+    assertUserHasPermissionsToChangeContent(changedContentTypes);
+  }
+
+  private void assertUserHasPermissionsToChangeContent(List<TenantContent> changedContentTypes) {
+    if (!changedContentTypes.isEmpty()) {
+      changedContentTypes.forEach(this::assertUserHasPermissionsToChangeContent);
+    }
   }
 
 
   private void assertUserHasPermissionsToChangeSettings(List<TenantSetting> changedSettings) {
     if (!changedSettings.isEmpty()) {
-      changedSettings.forEach(this::assertUserHasPermissionsToChangeSetting);
+      changedSettings.forEach(this::assertUserHasPermissionsToChangeContent);
     }
   }
 
-  private void assertUserHasPermissionsToChangeSetting(TenantSetting tenantSetting) {
+  private void assertUserHasPermissionsToChangeContent(TenantContent tenantContent) {
+    if (!userHasAnyRoleOf(tenantContent.getRolesAuthorizedToChange(singleTenantAdminCanEditLegalTexts()))) {
+      String msg = "User does not have permissions to change content: " + tenantContent.name();
+      logAndThrowTenantAuthorisationException(msg, HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LEGAL_CONTENT);
+    }
+  }
+
+  private boolean singleTenantAdminCanEditLegalTexts() {
+    var applicationSettings = applicationSettingsService.getApplicationSettings();
+
+    ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled legalContentChangesBySingleTenantAdminsAllowed = applicationSettings.getLegalContentChangesBySingleTenantAdminsAllowed();
+
+    if (legalContentChangesBySingleTenantAdminsAllowed != null && legalContentChangesBySingleTenantAdminsAllowed.getValue() != null) {
+      return legalContentChangesBySingleTenantAdminsAllowed.getValue();
+    } else {
+      log.warn("No value for setting legalContentChangesBySingleTenantAdminsAllowed found. Setting it to false.");
+      return false;
+    }
+
+  }
+
+  private void assertUserHasPermissionsToChangeContent(TenantSetting tenantSetting) {
     if (!userHasAnyRoleOf(tenantSetting.getRolesAuthorisedToChange())) {
       String msg = "User does not have permissions to change setting: " + tenantSetting.name();
       logAndThrowTenantAuthorisationException(msg, HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_SETTING);

@@ -1,14 +1,20 @@
 package com.vi.tenantservice.api.facade;
 
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.vi.tenantservice.api.model.Settings;
-import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
+import com.vi.tenantservice.api.model.TenantContent;
+import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantSettings;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static com.vi.tenantservice.api.model.TenantSetting.*;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
@@ -180,4 +186,56 @@ class TenantFacadeChangeDetectionServiceTest {
         .containsOnly(FEATURE_ATTACHMENT_UPLOAD_DISABLED);
   }
 
+  @Test
+  void determineChangedContent_Should_DetectContentChanges_When_ContentChanged() {
+    // given
+    MultilingualTenantDTO sanitizedTenantDTO = new MultilingualTenantDTO();
+
+    sanitizedTenantDTO.setContent(new MultilingualContent()
+            .impressum(mapWithGermanValue("impressum"))
+            .privacy(mapWithGermanValue("privacy"))
+            .termsAndConditions(mapWithGermanValue("termsAndConditions"))
+    );
+
+    TenantEntity existingTenant = TenantEntity.builder()
+            .contentImpressum("{\"de\":\"impressum change\"}")
+            .contentPrivacy("{\"de\":\"privacy change\"}")
+            .contentTermsAndConditions("{\"de\":\"termsAndConditions change\"}")
+            .build();
+    // when, then
+    assertThat(tenantFacadeChangeDetectionService.determineChangedContent(sanitizedTenantDTO,
+            existingTenant))
+            .containsOnly(TenantContent.IMPRESSUM, TenantContent.PRIVACY, TenantContent.TERMS_AND_CONDITIONS);
+  }
+
+  @Test
+  void determineChangedContent_Should_NotDetectAnyContentChange_When_NoContentTextAttributeChanged() {
+    // given
+    MultilingualTenantDTO sanitizedTenantDTO = new MultilingualTenantDTO();
+
+    sanitizedTenantDTO.setContent(new MultilingualContent()
+            .impressum(mapWithGermanValue("impressum"))
+            .privacy(mapWithGermanValue("privacy"))
+            .termsAndConditions(mapWithGermanValue("termsAndConditions"))
+    );
+
+    TenantEntity existingTenant = TenantEntity.builder()
+            .contentImpressum("{\"de\":\"impressum\"}")
+            .contentPrivacy("{\"de\":\"privacy\"}")
+            .contentTermsAndConditions("{\"de\":\"termsAndConditions\"}")
+            .build();
+    // when, then
+    assertThat(tenantFacadeChangeDetectionService.determineChangedContent(sanitizedTenantDTO,
+            existingTenant))
+            .isEmpty();
+  }
+
+
+
+
+  private Map<String, String> mapWithGermanValue(String value) {
+    HashMap<String, String> result = Maps.newHashMap();
+    result.put("de", value);
+    return result;
+  }
 }

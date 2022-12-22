@@ -2,17 +2,22 @@ package com.vi.tenantservice.api.facade;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
+import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.Settings;
+import com.vi.tenantservice.api.model.TenantContent;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.TenantSetting;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.util.JsonConverter;
+import lombok.extern.slf4j.Slf4j;
+import org.codehaus.plexus.util.StringUtils;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 
 @Component
+@Slf4j
 public class TenantFacadeChangeDetectionService {
 
   public List<TenantSetting> determineChangedSettings(MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
@@ -23,6 +28,29 @@ public class TenantFacadeChangeDetectionService {
       return getChangedTenantSettings(inputSettings, existingSettingsToCompare);
     } else {
       return Lists.newArrayList();
+    }
+  }
+
+  public List<TenantContent> determineChangedContent(MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+    var content = sanitizedTenantDTO.getContent();
+    List<TenantContent> result = Lists.newArrayList();
+    if (content != null) {
+      determineChangedContent(existingTenant, content, result);
+      return result;
+    } else {
+      return Lists.newArrayList();
+    }
+  }
+
+  private void determineChangedContent(TenantEntity existingTenant, MultilingualContent content, List<TenantContent> result) {
+    if (isChanged(JsonConverter.convertToJson(content.getImpressum()), existingTenant.getContentImpressum())) {
+      result.add(TenantContent.IMPRESSUM);
+    }
+    if (isChanged(JsonConverter.convertToJson(content.getPrivacy()), existingTenant.getContentPrivacy())) {
+      result.add(TenantContent.PRIVACY);
+    }
+    if (isChanged(JsonConverter.convertToJson(content.getTermsAndConditions()), existingTenant.getContentTermsAndConditions())) {
+      result.add(TenantContent.TERMS_AND_CONDITIONS);
     }
   }
 
@@ -67,6 +95,9 @@ public class TenantFacadeChangeDetectionService {
     return resultList;
   }
 
+  private boolean isChanged(String newContent, String existingContent) {
+    return !StringUtils.equals(newContent, existingContent);
+  }
   private boolean isChanged(Boolean inputSettings, boolean existingSettingsToCompare) {
     return nullAsFalse(inputSettings)
             != existingSettingsToCompare;

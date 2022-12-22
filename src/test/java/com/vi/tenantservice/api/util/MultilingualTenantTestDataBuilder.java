@@ -22,7 +22,7 @@ public class MultilingualTenantTestDataBuilder {
   private static final String PRIMARY_COLOR = "primary color";
   private static final String FAVICON = "favicon";
   private static final String LOGO = "logo";
-  private static final int ALLOWED_NUMBER_OF_USERS = 2000;
+  private static final int ALLOWED_NUMBER_OF_CONSULTANTS = 2000;
   private static final String PRIVACY = "privacy";
   private static final String TERMS_AND_CONDITIONS = "termsandconditions";
 
@@ -78,7 +78,12 @@ public class MultilingualTenantTestDataBuilder {
   }
 
   public MultilingualTenantTestDataBuilder withLicensing() {
-    tenantMultilingualDTO.setLicensing(licensing());
+    tenantMultilingualDTO.setLicensing(licensing(ALLOWED_NUMBER_OF_CONSULTANTS));
+    return this;
+  }
+
+  public MultilingualTenantTestDataBuilder withLicensing(int numberOfConsultants) {
+    tenantMultilingualDTO.setLicensing(licensing(numberOfConsultants));
     return this;
   }
 
@@ -104,9 +109,9 @@ public class MultilingualTenantTestDataBuilder {
             .featureAttachmentUploadDisabled(false);
   }
 
-  private Licensing licensing() {
+  private Licensing licensing(int numberOfUsers) {
     Licensing licensing = new Licensing();
-    licensing.setAllowedNumberOfUsers(ALLOWED_NUMBER_OF_USERS);
+    licensing.setAllowedNumberOfUsers(numberOfUsers);
     return licensing;
   }
 

@@ -100,7 +100,7 @@ class TenantControllerIT {
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
                                 .jsonify())
@@ -113,7 +113,7 @@ class TenantControllerIT {
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
-                        .with(authentication(builder.withAuthority(AUTHORITY_WITHOUT_PERMISSIONS).build()))
+                        .with(authentication(builder.withUserRole(AUTHORITY_WITHOUT_PERMISSIONS).build()))
                         .with(user("not important")
                                 .authorities((GrantedAuthority) () -> AUTHORITY_WITHOUT_PERMISSIONS))
                         .contentType(APPLICATION_JSON)
@@ -130,7 +130,7 @@ class TenantControllerIT {
         // given
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
                         .contentType(APPLICATION_JSON)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .content(
                                 multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("sub").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
@@ -138,7 +138,7 @@ class TenantControllerIT {
         // when
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
                         .contentType(APPLICATION_JSON)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .content(
                                 multilingualTenantTestDataBuilder.withId(2L).withName("another tenant").withSubdomain("sub").withLicensing()
                                         .jsonify())
@@ -153,7 +153,7 @@ class TenantControllerIT {
         when(authorisationService.hasAuthority("tenant-admin")).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put("/tenantadmin/1")
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                                 .withSettingActiveLanguages(Lists.newArrayList("fr", "pl"))
@@ -174,7 +174,7 @@ class TenantControllerIT {
         when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
-                        .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant")
                                 .withLicensing(5)
@@ -200,7 +200,7 @@ class TenantControllerIT {
         when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
-                        .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant")
                                 .withLicensing(5)
@@ -223,7 +223,7 @@ class TenantControllerIT {
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
-                        .with(authentication(builder.withAuthority("not-a-valid-admin").build()))
+                        .with(authentication(builder.withUserRole("not-a-valid-admin").build()))
                         .contentType(APPLICATION_JSON)
                         .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                                 .withLicensing().jsonify())
@@ -236,7 +236,7 @@ class TenantControllerIT {
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(NON_EXISTING_TENANT_VIA_ADMIN)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .content(
                                 multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("changed subdomain")
                                         .withLicensing().jsonify())
@@ -247,7 +247,7 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnSettings() throws Exception {
         var builder = new AuthenticationMockBuilder();
-        mockMvc.perform(get(EXISTING_TENANT).with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build())).contentType(APPLICATION_JSON))
+        mockMvc.perform(get(EXISTING_TENANT).with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())).contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("settings.featureStatisticsEnabled", is(true)))
                 .andExpect(jsonPath("settings.featureTopicsEnabled", is(true)))
@@ -265,7 +265,7 @@ class TenantControllerIT {
             throws Exception {
         var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(EXISTING_TENANT)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -291,7 +291,7 @@ class TenantControllerIT {
             throws Exception {
         var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(TENANT_RESOURCE)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -353,7 +353,7 @@ class TenantControllerIT {
             throws Exception {
         var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(EXISTING_TENANT)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1));
@@ -364,7 +364,7 @@ class TenantControllerIT {
           throws Exception {
         var builder = new AuthenticationMockBuilder();
     mockMvc.perform(get(EXISTING_TENANT)
-                    .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
+                    .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
                     .contentType(APPLICATION_JSON)
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1));
@@ -375,7 +375,7 @@ class TenantControllerIT {
           throws Exception {
         var builder = new AuthenticationMockBuilder();
     mockMvc.perform(get(EXISTING_TENANT)
-                    .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                    .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                     .contentType(APPLICATION_JSON)
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1));
@@ -388,7 +388,7 @@ class TenantControllerIT {
         when(authorisationService.hasAuthority(TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(jsonRequest)
                         .contentType(APPLICATION_JSON))
@@ -406,7 +406,7 @@ class TenantControllerIT {
 
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                         .content(jsonRequest)
                         .contentType(APPLICATION_JSON))
@@ -454,7 +454,7 @@ class TenantControllerIT {
             throws Exception {
         var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(NON_EXISTING_TENANT)
-                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

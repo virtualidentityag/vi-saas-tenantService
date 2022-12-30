@@ -18,7 +18,6 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
@@ -30,7 +29,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 
-import static com.vi.tenantservice.api.authorisation.UserRole.*;
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
@@ -245,9 +245,9 @@ class TenantControllerIT {
     }
 
     @Test
-    @WithMockUser(authorities = {"tenant-admin"})
     void getTenant_Should_returnSettings() throws Exception {
-        mockMvc.perform(get(EXISTING_TENANT).contentType(APPLICATION_JSON))
+        var builder = new AuthenticationMockBuilder();
+        mockMvc.perform(get(EXISTING_TENANT).with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build())).contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("settings.featureStatisticsEnabled", is(true)))
                 .andExpect(jsonPath("settings.featureTopicsEnabled", is(true)))
@@ -263,8 +263,9 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
             throws Exception {
+        var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
+                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1))
@@ -288,8 +289,9 @@ class TenantControllerIT {
     @Test
     void getAllTenants_Should_returnStatusBasicTenantLicensingData_When_calledForAuthorityThatIsTenantAdmin()
             throws Exception {
+        var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(TENANT_RESOURCE)
-                        .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
+                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(2)))
@@ -349,8 +351,9 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
             throws Exception {
+        var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
+                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(1));
@@ -359,8 +362,9 @@ class TenantControllerIT {
   @Test
   void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForSingleTenantAdminAuthority()
           throws Exception {
+        var builder = new AuthenticationMockBuilder();
     mockMvc.perform(get(EXISTING_TENANT)
-                    .with(user("not important").authorities((GrantedAuthority) SINGLE_TENANT_ADMIN::getValue))
+                    .with(authentication(builder.withAuthority(SINGLE_TENANT_ADMIN.getValue()).build()))
                     .contentType(APPLICATION_JSON)
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1));
@@ -369,8 +373,9 @@ class TenantControllerIT {
   @Test
   void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedAgencyAdminAuthority()
           throws Exception {
+        var builder = new AuthenticationMockBuilder();
     mockMvc.perform(get(EXISTING_TENANT)
-                    .with(user("not important").authorities((GrantedAuthority) RESTRICTED_AGENCY_ADMIN::getValue))
+                    .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
                     .contentType(APPLICATION_JSON)
             ).andExpect(status().isOk())
             .andExpect(jsonPath("$.id").value(1));
@@ -447,8 +452,9 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnStatusNotFound_When_calledWithNotExistingTenantId()
             throws Exception {
+        var builder = new AuthenticationMockBuilder();
         mockMvc.perform(get(NON_EXISTING_TENANT)
-                        .with(user("not important").authorities((GrantedAuthority) TENANT_ADMIN::getValue))
+                        .with(authentication(builder.withAuthority(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isNotFound());
     }

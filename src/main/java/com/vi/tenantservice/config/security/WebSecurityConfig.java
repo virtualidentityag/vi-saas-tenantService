@@ -75,4 +75,10 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         auth.authenticationProvider(keycloakAuthenticationProvider);
     }
 
+    protected KeycloakAuthenticationProvider keycloakAuthenticationProvider() {
+        var provider = new KeycloakAuthenticationProvider();
+        provider.setGrantedAuthoritiesMapper(new RoleAuthorizationAuthorityMapper());
+        return provider;
+    }
+
 }

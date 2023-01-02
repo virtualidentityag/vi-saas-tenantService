@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
+import com.vi.tenantservice.api.authorisation.Authority;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.exception.TenantAuthorisationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
@@ -33,16 +34,8 @@ public class TenantFacadeAuthorisationService {
 
   private final @NonNull ApplicationSettingsService applicationSettingsService;
 
-  private boolean isSingleTenantAdmin() {
-    return authorisationService.hasAuthority(UserRole.SINGLE_TENANT_ADMIN.getValue());
-  }
-
-  private boolean isRestrictedAgencyAdmin() {
-    return authorisationService.hasAuthority(UserRole.RESTRICTED_AGENCY_ADMIN.getValue());
-  }
-
   private boolean userHasAnyRoleOf(List<UserRole> roles) {
-    return roles.stream().anyMatch(userRole -> authorisationService.hasAuthority(userRole.getValue()));
+    return roles.stream().anyMatch(userRole -> authorisationService.hasRole(userRole.getValue()));
   }
 
   private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {
@@ -51,7 +44,7 @@ public class TenantFacadeAuthorisationService {
 
   void assertUserIsAuthorizedToAccessTenant(Long tenantId) {
     log.info("Asserting user is authorized to update tenant with id " + tenantId);
-    if (isSingleTenantAdmin() || isRestrictedAgencyAdmin()) {
+    if (hasSingleTenantAccessAuthority()) {
       log.info("User has single tenant permission. Checking if he has authority to access tenant with id "
           + tenantId);
       var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
@@ -62,10 +55,13 @@ public class TenantFacadeAuthorisationService {
     }
   }
 
+  private boolean hasSingleTenantAccessAuthority() {
+    return !authorisationService.hasAuthority(Authority.AuthorityValue.GET_ALL_TENANTS);
+  }
 
   void assertUserHasSufficientPermissionsToChangeAttributes(
           MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
-    if (isSingleTenantAdmin()) {
+    if (hasSingleTenantAccessAuthority()) {
       assertSingleTenantAdminHasPermissionsToChangeAttributes(sanitizedTenantDTO, existingTenant);
     }
     List<TenantSetting> changedSettingTypes = tenantFacadeChangeDetectionService.determineChangedSettings(
@@ -92,10 +88,15 @@ public class TenantFacadeAuthorisationService {
   }
 
   private void assertUserHasPermissionsToChangeContent(TenantContent tenantContent) {
-    if (!userHasAnyRoleOf(tenantContent.getRolesAuthorizedToChange(singleTenantAdminCanEditLegalTexts()))) {
+    if (!isAllowedToEditLegalContent()) {
       String msg = "User does not have permissions to change content: " + tenantContent.name();
       logAndThrowTenantAuthorisationException(msg, HttpStatusExceptionReason.NOT_ALLOWED_TO_CHANGE_LEGAL_CONTENT);
     }
+  }
+
+  private boolean isAllowedToEditLegalContent() {
+    return (authorisationService.hasRole("single-tenant-admin") && singleTenantAdminCanEditLegalTexts())
+            || authorisationService.hasAuthority(Authority.AuthorityValue.CHANGE_LEGAL_CONTENT);
   }
 
   private boolean singleTenantAdminCanEditLegalTexts() {

@@ -4,15 +4,17 @@ package com.vi.tenantservice.api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
+import com.vi.tenantservice.api.authorisation.Authority;
+import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
-import com.vi.tenantservice.api.util.TenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -91,7 +93,11 @@ class TenantControllerIT {
         givenSingleTenantAdminCanChangeLegalTexts(true);
     }
 
-    TenantTestDataBuilder tenantTestDataBuilder = new TenantTestDataBuilder();
+    private void giveAuthorisationServiceReturnProperAuthoritiesForRole(UserRole userRole) {
+        when(authorisationService.hasAuthority(Mockito.any())).thenAnswer(
+                invocation -> Authority.getAuthoritiesByUserRole(userRole).contains(invocation.getArgument(0))
+        );
+    }
 
     MultilingualTenantTestDataBuilder multilingualTenantTestDataBuilder = new MultilingualTenantTestDataBuilder();
 
@@ -99,6 +105,7 @@ class TenantControllerIT {
     void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
@@ -127,6 +134,7 @@ class TenantControllerIT {
     void createTenant_Should_notCreateTenant_When_SubdomainIsNotUnique()
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         // given
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
                         .contentType(APPLICATION_JSON)
@@ -150,8 +158,9 @@ class TenantControllerIT {
     @Test
     void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndTenantAdminAuthority()
             throws Exception {
-        when(authorisationService.hasAuthority("tenant-admin")).thenReturn(true);
+        when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(put("/tenantadmin/1")
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
@@ -171,7 +180,7 @@ class TenantControllerIT {
             throws Exception {
 
         when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
-        when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
+        when(authorisationService.hasRole(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
@@ -197,7 +206,7 @@ class TenantControllerIT {
         givenSingleTenantAdminCanChangeLegalTexts(false);
 
         when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
-        when(authorisationService.hasAuthority(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
+        when(authorisationService.hasRole(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
@@ -235,6 +244,7 @@ class TenantControllerIT {
     void updateTenant_Should_returnStatusNotFound_When_UpdateAttemptForNonExistingTenant()
             throws Exception {
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(put(NON_EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .content(
@@ -247,6 +257,7 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnSettings() throws Exception {
         var builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(get(EXISTING_TENANT).with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())).contentType(APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("settings.featureStatisticsEnabled", is(true)))
@@ -264,6 +275,7 @@ class TenantControllerIT {
     void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
             throws Exception {
         var builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);;
         mockMvc.perform(get(EXISTING_TENANT)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
@@ -352,6 +364,7 @@ class TenantControllerIT {
     void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
             throws Exception {
         var builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(get(EXISTING_TENANT)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
@@ -363,6 +376,8 @@ class TenantControllerIT {
   void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForSingleTenantAdminAuthority()
           throws Exception {
         var builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(SINGLE_TENANT_ADMIN);
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
     mockMvc.perform(get(EXISTING_TENANT)
                     .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
                     .contentType(APPLICATION_JSON)
@@ -374,6 +389,7 @@ class TenantControllerIT {
   void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedAgencyAdminAuthority()
           throws Exception {
         var builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     mockMvc.perform(get(EXISTING_TENANT)
                     .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                     .contentType(APPLICATION_JSON)
@@ -385,7 +401,8 @@ class TenantControllerIT {
     void updateTenant_Should_sanitizeInput_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
             throws Exception {
         String jsonRequest = prepareRequestWithInvalidScriptContent();
-        when(authorisationService.hasAuthority(TENANT_ADMIN.getValue())).thenReturn(true);
+        when(authorisationService.hasRole(TENANT_ADMIN.getValue())).thenReturn(true);
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
@@ -405,6 +422,7 @@ class TenantControllerIT {
         String jsonRequest = prepareRequestWithInvalidLanguageContent();
 
         AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(put(EXISTING_TENANT_VIA_ADMIN)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
@@ -452,7 +470,10 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnStatusNotFound_When_calledWithNotExistingTenantId()
             throws Exception {
+
+
         var builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
         mockMvc.perform(get(NON_EXISTING_TENANT)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON))

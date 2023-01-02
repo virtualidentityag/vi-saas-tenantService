@@ -3,11 +3,6 @@ package com.vi.tenantservice.config.security;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import java.util.Base64;
-import java.util.Map;
-import java.util.Optional;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import org.keycloak.KeycloakPrincipal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
@@ -18,6 +13,13 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.WebUtils;
 
+import javax.servlet.http.Cookie;
+import javax.servlet.http.HttpServletRequest;
+import java.util.Base64;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+
 @Service
 public class AuthorisationService {
 
@@ -27,6 +29,11 @@ public class AuthorisationService {
   public boolean hasAuthority(String authorityName) {
     return getAuthentication().getAuthorities().stream()
         .anyMatch(role -> authorityName.equals(role.getAuthority()));
+  }
+
+  public boolean hasRole(String roleName) {
+    Set<String> roles = getPrincipal().getKeycloakSecurityContext().getToken().getRealmAccess().getRoles();
+    return roles!= null && roles.contains(roleName);
   }
 
   public Optional<Long> findTenantIdInAccessToken() {
@@ -47,7 +54,8 @@ public class AuthorisationService {
   }
 
   private KeycloakPrincipal getPrincipal() {
-    return (KeycloakPrincipal) getAuthentication().getPrincipal();
+    KeycloakPrincipal principal = (KeycloakPrincipal) getAuthentication().getPrincipal();
+    return principal;
   }
 
   public Optional<Long> resolveTenantFromRequest(Long tenantId) {

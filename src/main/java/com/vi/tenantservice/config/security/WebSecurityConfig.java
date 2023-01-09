@@ -1,6 +1,7 @@
 package com.vi.tenantservice.config.security;
 
 
+import com.vi.tenantservice.api.authorisation.RoleAuthorizationAuthorityMapper;
 import com.vi.tenantservice.api.config.SpringFoxConfig;
 import org.keycloak.adapters.KeycloakConfigResolver;
 import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
@@ -14,7 +15,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.authority.mapping.SimpleAuthorityMapper;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
@@ -69,10 +69,16 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     }
 
     @Autowired
-    public void configureGlobal(AuthenticationManagerBuilder auth) {
+    public void configureGlobal(AuthenticationManagerBuilder auth, RoleAuthorizationAuthorityMapper authorityMapper) {
         KeycloakAuthenticationProvider keycloakAuthenticationProvider = keycloakAuthenticationProvider();
-        keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(new SimpleAuthorityMapper());
+        keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(authorityMapper);
         auth.authenticationProvider(keycloakAuthenticationProvider);
+    }
+
+    protected KeycloakAuthenticationProvider keycloakAuthenticationProvider() {
+        var provider = new KeycloakAuthenticationProvider();
+        provider.setGrantedAuthoritiesMapper(new RoleAuthorizationAuthorityMapper());
+        return provider;
     }
 
 }

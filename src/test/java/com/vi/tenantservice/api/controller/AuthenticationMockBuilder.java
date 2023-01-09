@@ -1,25 +1,22 @@
 package com.vi.tenantservice.api.controller;
 
 import com.google.common.collect.Lists;
-import java.util.Collection;
+import com.vi.tenantservice.api.authorisation.RoleAuthorizationAuthorityMapper;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 
+import java.util.Collection;
+
 public class AuthenticationMockBuilder {
 
-  private String authority;
+  private String userRole;
   private String tenantId;
 
-  AuthenticationMockBuilder withAuthority(String authority) {
-    this.authority = authority;
-    return this;
-  }
-
-  AuthenticationMockBuilder withTenantIdAttribute(String tenantId) {
-    this.tenantId = tenantId;
+  AuthenticationMockBuilder withUserRole(String userRole) {
+    this.userRole = userRole;
     return this;
   }
 
@@ -27,7 +24,7 @@ public class AuthenticationMockBuilder {
     return new Authentication() {
       @Override
       public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Lists.newArrayList((GrantedAuthority) () -> authority);
+        return new RoleAuthorizationAuthorityMapper().mapAuthorities(Lists.newArrayList(() -> userRole));
       }
 
       @Override

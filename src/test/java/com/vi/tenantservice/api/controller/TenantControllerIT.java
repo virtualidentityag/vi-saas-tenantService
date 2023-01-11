@@ -1,17 +1,41 @@
 package com.vi.tenantservice.api.controller;
 
 
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
 import com.vi.tenantservice.api.authorisation.Authority;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
+import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
+import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
+import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -19,6 +43,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
@@ -26,22 +51,6 @@ import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-
-import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = TenantServiceApplication.class)
 @TestPropertySource(properties = "spring.profiles.active=testing")
@@ -82,6 +91,17 @@ class TenantControllerIT {
     @MockBean
     ApplicationSettingsApiControllerFactory applicationSettingsApiControllerFactory;
 
+    @MockBean
+    ConsultingTypeServiceApiControllerFactory consultingTypeServiceApiControllerFactory;
+
+    @MockBean
+    com.vi.tenantservice.consultingtypeservice.generated.web.ConsultingTypeControllerApi consultingTypeControllerApi;
+
+    @MockBean
+    SecurityHeaderSupplier securityHeaderSupplier;
+    @MockBean
+    TenantResolverService tenantResolverService;
+
     private MockMvc mockMvc;
 
     @BeforeEach
@@ -91,6 +111,10 @@ class TenantControllerIT {
                 .apply(springSecurity())
                 .build();
         givenSingleTenantAdminCanChangeLegalTexts(true);
+      when(consultingTypeServiceApiControllerFactory.createControllerApi()).thenReturn(consultingTypeControllerApi);
+      when(consultingTypeControllerApi.getApiClient()).thenReturn(mock(
+          com.vi.tenantservice.consultingtypeservice.generated.ApiClient.class));
+      when(securityHeaderSupplier.getCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
     }
 
     private void giveAuthorisationServiceReturnProperAuthoritiesForRole(UserRole userRole) {
@@ -109,7 +133,7 @@ class TenantControllerIT {
         mockMvc.perform(post(TENANTADMIN_RESOURCE)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
-                        .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
+                        .content(multilingualTenantTestDataBuilder.withName("tenant").withSubdomain("subdomain").withLicensing()
                                 .jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
@@ -140,7 +164,7 @@ class TenantControllerIT {
                         .contentType(APPLICATION_JSON)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .content(
-                                multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("sub").withLicensing().jsonify())
+                                multilingualTenantTestDataBuilder.withName("tenant").withSubdomain("sub").withLicensing().jsonify())
                         .contentType(APPLICATION_JSON))
                 .andExpect(status().isOk());
         // when
@@ -154,6 +178,20 @@ class TenantControllerIT {
                 .andExpect(status().isConflict())
                 .andExpect(header().exists("X-Reason"));
     }
+
+  @Test
+  void createTenant_Should_returnStatus_When_calledWithTenantDataAndTenantId()
+      throws Exception {
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    mockMvc.perform(post(TENANTADMIN_RESOURCE)
+            .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+            .contentType(APPLICATION_JSON)
+            .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
+                .jsonify())
+            .contentType(APPLICATION_JSON))
+        .andExpect(status().isConflict());
+  }
 
     @Test
     void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndTenantAdminAuthority()

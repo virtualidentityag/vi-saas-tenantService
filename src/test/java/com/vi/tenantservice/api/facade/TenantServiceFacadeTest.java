@@ -11,6 +11,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
+import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import org.junit.jupiter.api.Test;
@@ -60,6 +61,9 @@ class TenantServiceFacadeTest {
   @Mock
   private TranslationService translationService;
 
+  @Mock
+  private ConsultingTypeService consultingTypeService;
+
   @InjectMocks
   private TenantServiceFacade tenantServiceFacade;
 
@@ -68,6 +72,7 @@ class TenantServiceFacadeTest {
     // given
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(converter.toEntity(tenantMultilingualDTO)).thenReturn(tenantEntity);
+    when(tenantService.create(tenantEntity)).thenReturn(tenantEntity);
 
     // when
     tenantServiceFacade.createTenant(tenantMultilingualDTO);
@@ -75,6 +80,7 @@ class TenantServiceFacadeTest {
     // then
     verify(converter).toEntity(sanitizedTenantDTO);
     verify(tenantService).create(tenantEntity);
+    verify(consultingTypeService).createDefaultConsultingTypes(tenantEntity.getId());
   }
 
   @Test

@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.controller;
 
 
+import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
@@ -26,16 +27,13 @@ import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
+import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Optional;
-import lombok.NonNull;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -52,12 +50,17 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 @SpringBootTest(classes = TenantServiceApplication.class)
 @TestPropertySource(properties = "spring.profiles.active=testing")
 @AutoConfigureMockMvc(addFilters = false)
 class TenantControllerIT {
 
     private static final String TENANT_RESOURCE = "/tenant";
+    private static final String TENANT_ACCESS = TENANT_RESOURCE + "/access";
 
     private static final String TENANTADMIN_RESOURCE = "/tenantadmin";
     private static final String TENANT_RESOURCE_SLASH = TENANT_RESOURCE + "/";
@@ -71,9 +74,9 @@ class TenantControllerIT {
     private static final String EXISTING_TENANT_VIA_ADMIN = TENANTADMIN_RESOURCE_SLASH + "1";
     private static final String EXISTING_PUBLIC_TENANT = PUBLIC_TENANT_RESOURCE_BY_ID + "1";
 
-    private static final String NON_EXISTING_TENANT_VIA_ADMIN = TENANTADMIN_RESOURCE_SLASH + "3";
-    private static final String NON_EXISTING_TENANT = TENANT_RESOURCE_SLASH + "3";
-    private static final String NON_EXISTING_PUBLIC_TENANT = PUBLIC_TENANT_RESOURCE_BY_ID + "3";
+    private static final String NON_EXISTING_TENANT_VIA_ADMIN = TENANTADMIN_RESOURCE_SLASH + "4";
+    private static final String NON_EXISTING_TENANT = TENANT_RESOURCE_SLASH + "4";
+    private static final String NON_EXISTING_PUBLIC_TENANT = PUBLIC_TENANT_RESOURCE_BY_ID + "4";
     private static final String AUTHORITY_WITHOUT_PERMISSIONS = "technical";
     private static final String USERNAME = "not important";
     private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
@@ -101,6 +104,9 @@ class TenantControllerIT {
     SecurityHeaderSupplier securityHeaderSupplier;
     @MockBean
     TenantResolverService tenantResolverService;
+
+    @MockBean
+    SubdomainExtractor subdomainExtractor;
 
     private MockMvc mockMvc;
 
@@ -345,7 +351,7 @@ class TenantControllerIT {
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
                 ).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(2)))
+                .andExpect(jsonPath("$", hasSize(3)))
                 .andExpect(jsonPath("$[0].id").value(1))
                 .andExpect(jsonPath("$[0].name").exists())
                 .andExpect(jsonPath("$[0].subdomain").exists())
@@ -542,4 +548,37 @@ class TenantControllerIT {
         mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
                 .andExpect(status().isBadRequest());
     }
+
+  @Test
+  void canAccessTenant_Should_returnStatusOk_When_userIsSuperAdmin() throws Exception {
+    var builder = new AuthenticationMockBuilder();
+    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(0L));
+    when(authorisationService.hasRole(TENANT_ADMIN.getValue())).thenReturn(true);
+    when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("subdomain"));
+
+    mockMvc.perform(get(TENANT_ACCESS)
+            .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void canAccessTenant_Should_returnStatusOk_When_tokenHasTenantIdEqualToSubdomainTenantId() throws Exception {
+    var builder = new AuthenticationMockBuilder();
+    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(3L));
+    when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("localhost"));
+
+    mockMvc.perform(get(TENANT_ACCESS)
+            .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void canAccessTenant_Should_returnStatusUnauthorized_When_tokenHasTenantIdDifferentToSubdomainTenantId() throws Exception {
+    var builder = new AuthenticationMockBuilder();
+    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+
+    mockMvc.perform(get(TENANT_ACCESS)
+            .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
+        .andExpect(status().isUnauthorized());
+  }
 }

@@ -38,8 +38,8 @@ public class TenantFacadeAuthorisationService {
     return roles.stream().anyMatch(userRole -> authorisationService.hasRole(userRole.getValue()));
   }
 
-  private boolean tenantNotMatching(Long id, Optional<Long> tenantId) {
-    return tenantId.isEmpty() || !tenantId.get().equals(id);
+  private boolean tenantMatching(Long id, Optional<Long> tenantId) {
+    return tenantId.isPresent() && tenantId.get().equals(id);
   }
 
   void assertUserIsAuthorizedToAccessTenant(Long tenantId) {
@@ -48,7 +48,7 @@ public class TenantFacadeAuthorisationService {
       log.info("User has single tenant permission. Checking if he has authority to access tenant with id "
           + tenantId);
       var tenantIdFromAccessToken = authorisationService.findTenantIdInAccessToken();
-      if (tenantNotMatching(tenantId, tenantIdFromAccessToken)) {
+      if (!tenantMatching(tenantId, tenantIdFromAccessToken)) {
         throw new AccessDeniedException("User " + authorisationService.getUsername()
             + " not authorized to edit tenant with id: " + tenantId);
       }
@@ -155,5 +155,24 @@ public class TenantFacadeAuthorisationService {
   private void logAndThrowTenantAuthorisationException(String msg, HttpStatusExceptionReason reason) {
     log.warn(msg);
     throw new TenantAuthorisationException(msg, reason);
+  }
+
+  public boolean canAccessTenant(Optional<TenantEntity> tenant) {
+    if (isSuperAdmin()) {
+      return true;
+    }
+    if (tenant.isEmpty()) {
+      return false;
+    }
+    var tenantIdInAccessToken = authorisationService.findTenantIdInAccessToken();
+    return tenantMatching(tenant.get().getId(), tenantIdInAccessToken);
+  }
+
+  public boolean isSuperAdmin() {
+    var tenantId = authorisationService.findTenantIdInAccessToken();
+    if (tenantId.isEmpty() || !tenantId.get().equals(0L)) {
+      return false;
+    }
+    return authorisationService.hasRole("tenant-admin");
   }
 }

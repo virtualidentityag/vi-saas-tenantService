@@ -73,7 +73,6 @@ public class TenantController implements TenantApi, TenantadminApi {
   @Override
   @PreAuthorize("hasAuthority('AUTHORIZATION_UPDATE_TENANT')")
   public ResponseEntity<MultilingualTenantDTO> updateTenant(Long id, @Valid MultilingualTenantDTO tenantDTO) {
-
     log.info("Updating tenant with id {} by user {} ", id, authorisationService.getUsername());
     var updatedTenantDTO = tenantServiceFacade.updateTenant(id, tenantDTO);
     return new ResponseEntity<>(updatedTenantDTO, HttpStatus.OK);
@@ -104,5 +103,13 @@ public class TenantController implements TenantApi, TenantadminApi {
   @Override
   public Optional<NativeWebRequest> getRequest() {
     return Optional.empty();
+  }
+
+  @Override
+  public ResponseEntity<Void> canAccessTenant() {
+    boolean canAccessTenant = tenantServiceFacade.canAccessTenant();
+    if (canAccessTenant) {
+      return new ResponseEntity<>(HttpStatus.OK);
+    } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
   }
 }

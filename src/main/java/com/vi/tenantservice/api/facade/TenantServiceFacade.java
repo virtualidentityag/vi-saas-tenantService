@@ -17,6 +17,7 @@ import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
+import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import lombok.NonNull;
@@ -50,6 +51,7 @@ public class TenantServiceFacade {
     private final @NonNull AuthorisationService authorisationService;
     private final @NonNull TranslationService translationService;
     private final @NonNull ConsultingTypeService consultingTypeService;
+    private final @NonNull SubdomainExtractor subdomainExtractor;
 
     @Value("${feature.multitenancy.with.single.domain.enabled}")
     private boolean multitenancyWithSingleDomain;
@@ -215,5 +217,14 @@ public class TenantServiceFacade {
         } else {
             throw new IllegalStateException("Not exactly one tenant was found.");
         }
+    }
+
+    public boolean canAccessTenant() {
+        Optional<String> subdomain = subdomainExtractor.getCurrentSubdomain();
+        if(subdomain.isEmpty()) {
+            return false;
+        }
+        var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain.get());
+        return tenantFacadeAuthorisationService.canAccessTenant(tenantBySubdomain);
     }
 }

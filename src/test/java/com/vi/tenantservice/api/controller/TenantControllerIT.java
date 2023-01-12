@@ -115,6 +115,7 @@ class TenantControllerIT {
       when(consultingTypeControllerApi.getApiClient()).thenReturn(mock(
           com.vi.tenantservice.consultingtypeservice.generated.ApiClient.class));
       when(securityHeaderSupplier.getCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
+      when(securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
     }
 
     private void giveAuthorisationServiceReturnProperAuthoritiesForRole(UserRole userRole) {
@@ -180,7 +181,7 @@ class TenantControllerIT {
     }
 
   @Test
-  void createTenant_Should_returnStatus_When_calledWithTenantDataAndTenantId()
+  void createTenant_Should_notCreateTenant_When_calledWithTenantDataAndTenantId()
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);

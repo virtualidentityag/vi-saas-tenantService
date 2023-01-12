@@ -84,6 +84,19 @@ class TenantServiceFacadeTest {
   }
 
   @Test
+  void createTenant_Should_throwBadRequest_When_tenantIdIsProvided() {
+    // given
+    MultilingualTenantDTO tenantDTOWithId = mock(MultilingualTenantDTO.class);
+    when(tenantDTOWithId.getId()).thenReturn(1L);
+    when(tenantInputSanitizer.sanitize(tenantDTOWithId)).thenReturn(sanitizedTenantDTO);
+
+    // then
+    assertThrows(TenantValidationException.class, () -> {
+      tenantServiceFacade.createTenant(tenantDTOWithId);
+    });
+  }
+
+  @Test
   void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsMultipleTenantAdmin() {
     // given
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);

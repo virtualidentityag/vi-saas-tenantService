@@ -1,9 +1,13 @@
 package com.vi.tenantservice.api.service.httpheader;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.keycloak.KeycloakPrincipal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
 import java.util.UUID;
@@ -27,6 +31,21 @@ public class SecurityHeaderSupplier {
     var httpHeaders = new HttpHeaders();
 
     return this.addCsrfValues(httpHeaders);
+  }
+
+  public HttpHeaders getKeycloakAndCsrfHttpHeaders() {
+    var header = getCsrfHttpHeaders();
+    this.addKeycloakAuthorizationHeader(header, getPrincipal().getKeycloakSecurityContext().getTokenString());
+    return header;
+  }
+
+  private void addKeycloakAuthorizationHeader(HttpHeaders httpHeaders, String accessToken) {
+    httpHeaders.add("Authorization", "Bearer " + accessToken);
+  }
+
+  private KeycloakPrincipal getPrincipal() {
+    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+    return (KeycloakPrincipal) authentication.getPrincipal();
   }
 
   private HttpHeaders addCsrfValues(HttpHeaders httpHeaders) {

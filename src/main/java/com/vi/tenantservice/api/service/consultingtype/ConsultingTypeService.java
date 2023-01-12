@@ -71,7 +71,7 @@ public class ConsultingTypeService {
 
   private void addDefaultHeaders(
       com.vi.tenantservice.consultingtypeservice.generated.ApiClient apiClient) {
-    var headers = this.securityHeaderSupplier.getCsrfHttpHeaders();
+    var headers = this.securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders();
     HttpServletRequest request =
         ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
             .getRequest();

@@ -11,6 +11,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
+import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
@@ -66,6 +67,9 @@ class TenantServiceFacadeTest {
   private ConsultingTypeService consultingTypeService;
 
   @Mock
+  private ApplicationSettingsService applicationSettingsService;
+
+  @Mock
   private SubdomainExtractor subdomainExtractor;
 
   @InjectMocks
@@ -77,6 +81,7 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(converter.toEntity(tenantMultilingualDTO)).thenReturn(tenantEntity);
     when(tenantService.create(tenantEntity)).thenReturn(tenantEntity);
+    tenantEntity.setId(ID);
 
     // when
     tenantServiceFacade.createTenant(tenantMultilingualDTO);
@@ -85,6 +90,61 @@ class TenantServiceFacadeTest {
     verify(converter).toEntity(sanitizedTenantDTO);
     verify(tenantService).create(tenantEntity);
     verify(consultingTypeService).createDefaultConsultingTypes(tenantEntity.getId());
+    verify(applicationSettingsService, never()).saveMainTenantSubDomain(any());
+  }
+
+  @Test
+  void createTenant_Should_createTenantWithMainTenantSubDomain_When_multitenancyWithSingleDomainAndIsFirstNonTechnicalTenant() {
+    // given
+    TenantEntity entity = mock(TenantEntity.class);
+    when(entity.getSubdomain()).thenReturn("app1");
+    when(entity.getId()).thenReturn(1L);
+
+    TenantEntity technicalTenant = mock(TenantEntity.class);
+    when(technicalTenant.getId()).thenReturn(0L);
+
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
+    when(converter.toEntity(tenantMultilingualDTO)).thenReturn(entity);
+    when(tenantService.create(entity)).thenReturn(entity);
+    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
+    when(tenantService.getAllTenants()).thenReturn(List.of(technicalTenant));
+    when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("app1"));
+
+    // when
+    tenantServiceFacade.createTenant(tenantMultilingualDTO);
+
+    // then
+    verify(converter).toEntity(sanitizedTenantDTO);
+    verify(tenantService).create(entity);
+    verify(consultingTypeService).createDefaultConsultingTypes(entity.getId());
+    verify(applicationSettingsService).saveMainTenantSubDomain("app1");
+  }
+
+  @Test
+  void createTenant_Should_notSaveMainTenantSubDomain_When_subDomainInRequestDifferentFromSubdomainInUrl() {
+    // given
+    TenantEntity entity = mock(TenantEntity.class);
+    when(entity.getSubdomain()).thenReturn("app1");
+    when(entity.getId()).thenReturn(1L);
+
+    TenantEntity technicalTenant = mock(TenantEntity.class);
+    when(technicalTenant.getId()).thenReturn(0L);
+
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
+    when(converter.toEntity(tenantMultilingualDTO)).thenReturn(entity);
+    when(tenantService.create(entity)).thenReturn(entity);
+    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
+    when(tenantService.getAllTenants()).thenReturn(List.of(technicalTenant));
+    when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("app2"));
+
+    // when
+    assertThrows(TenantValidationException.class, () -> {
+      tenantServiceFacade.createTenant(tenantMultilingualDTO);
+    });
+
+    // then
+    verify(consultingTypeService).createDefaultConsultingTypes(entity.getId());
+    verify(applicationSettingsService, never()).saveMainTenantSubDomain(any());
   }
 
   @Test

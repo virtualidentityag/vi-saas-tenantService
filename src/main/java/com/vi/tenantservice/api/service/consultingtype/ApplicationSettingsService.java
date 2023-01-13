@@ -4,16 +4,20 @@ package com.vi.tenantservice.api.service.consultingtype;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
+import com.vi.tenantservice.applicationsettingsservice.generated.ApiClient;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.ApplicationsettingsControllerApi;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
+import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMainTenantSubdomainForSingleDomainMultitenancy;
+import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsPatchDTO;
+import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
 /**
  * Service class to communicate with the ConsultingTypeService.
  */
@@ -31,16 +35,33 @@ public class ApplicationSettingsService {
     return controllerApi.getApplicationSettings();
   }
 
-  private void addDefaultHeaders(com.vi.tenantservice.applicationsettingsservice.generated.ApiClient apiClient) {
+  public void saveMainTenantSubDomain(final String subdomain) {
+    ApplicationsettingsControllerApi controllerApi = applicationSettingsApiControllerFactory.createControllerApi();
+    addDefaultHeadersWithKeycloak(controllerApi.getApiClient());
+    ApplicationSettingsPatchDTO applicationSettingsPatchDTO = new ApplicationSettingsPatchDTO();
+    applicationSettingsPatchDTO.setMainTenantSubdomainForSingleDomainMultitenancy(
+        new ApplicationSettingsDTOMainTenantSubdomainForSingleDomainMultitenancy().value(subdomain));
+    controllerApi.patchApplicationSettings(applicationSettingsPatchDTO);
+  }
+
+  private void addDefaultHeadersWithKeycloak(ApiClient apiClient) {
+    var headers = this.securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders();
+    addHeaders(apiClient, headers);
+  }
+
+  private void addDefaultHeaders(ApiClient apiClient) {
     var headers = this.securityHeaderSupplier.getCsrfHttpHeaders();
+    addHeaders(apiClient, headers);
+  }
+
+  private void addHeaders(ApiClient apiClient, HttpHeaders headers) {
     HttpServletRequest request =
-            ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-                    .getRequest();
+        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+            .getRequest();
     Optional<Long> optionalTenant = tenantResolverService.tryResolve(request);
     if (optionalTenant.isPresent()) {
       headers.add("tenantId", optionalTenant.get().toString());
     }
     headers.forEach((key, value) -> apiClient.addDefaultHeader(key, value.iterator().next()));
   }
-
 }

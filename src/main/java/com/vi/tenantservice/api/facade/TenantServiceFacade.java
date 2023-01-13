@@ -16,6 +16,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
+import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
@@ -52,6 +53,7 @@ public class TenantServiceFacade {
     private final @NonNull TranslationService translationService;
     private final @NonNull ConsultingTypeService consultingTypeService;
     private final @NonNull SubdomainExtractor subdomainExtractor;
+    private final @NonNull ApplicationSettingsService applicationSettingsService;
 
     @Value("${feature.multitenancy.with.single.domain.enabled}")
     private boolean multitenancyWithSingleDomain;
@@ -63,8 +65,24 @@ public class TenantServiceFacade {
         var entity = tenantConverter.toEntity(sanitizedTenantDTO);
         setContentActivationDates(entity, tenantDTO);
         TenantEntity createdTenant = tenantService.create(entity);
-        consultingTypeService.createDefaultConsultingTypes(createdTenant.getId());
+        setDefaultSettings(createdTenant);
         return tenantConverter.toMultilingualDTO(createdTenant);
+    }
+
+    private void setDefaultSettings(TenantEntity createdTenant) {
+        consultingTypeService.createDefaultConsultingTypes(createdTenant.getId());
+        if(isAttemptToCreateFirstNonTechnicalTenant(createdTenant.getId())) {
+            validateSubDomain(createdTenant.getSubdomain());
+            applicationSettingsService.saveMainTenantSubDomain(createdTenant.getSubdomain());
+        }
+    }
+
+    private void validateSubDomain(String subdomain) {
+        Optional<String> subDomainFromUrl = subdomainExtractor.getCurrentSubdomain();
+        if (subDomainFromUrl.isPresent() && !subdomain.equals(subDomainFromUrl.get())) {
+            throw new TenantValidationException(
+                HttpStatusExceptionReason.SUBDOMAIN_IN_REQUEST_BODY_NOT_EQUAL_TO_SUBDOMAIN_IN_URL);
+        }
     }
 
     public MultilingualTenantDTO updateTenant(Long id, MultilingualTenantDTO tenantDTO) {
@@ -73,6 +91,16 @@ public class TenantServiceFacade {
         MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
         log.info("Attempting to update tenant with id {}", id);
         return updateWithSanitizedInput(id, sanitizedTenantDTO);
+    }
+
+    private boolean isAttemptToCreateFirstNonTechnicalTenant(Long tenantId) {
+        return tenantId != 0L && multitenancyWithSingleDomain && onlyTechnicalTenantExists();
+    }
+
+    private boolean onlyTechnicalTenantExists() {
+        List<TenantEntity> tenants = tenantService.getAllTenants();
+        return tenants.size() == 1
+            && tenants.get(0).getId().equals(0L);
     }
 
     private void validateTenantInput(MultilingualTenantDTO tenantDTO) {

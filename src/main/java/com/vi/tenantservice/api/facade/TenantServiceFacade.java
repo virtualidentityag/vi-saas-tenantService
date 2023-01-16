@@ -1,6 +1,8 @@
 package com.vi.tenantservice.api.facade;
 
 
+import static java.util.Objects.nonNull;
+
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
@@ -14,6 +16,7 @@ import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
+import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import lombok.NonNull;
@@ -39,13 +42,14 @@ import java.util.stream.Collectors;
 @Slf4j
 public class TenantServiceFacade {
 
+
     private final @NonNull TenantService tenantService;
     private final @NonNull TenantConverter tenantConverter;
     private final @NonNull TenantInputSanitizer tenantInputSanitizer;
     private final @NonNull TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
     private final @NonNull AuthorisationService authorisationService;
-
     private final @NonNull TranslationService translationService;
+    private final @NonNull ConsultingTypeService consultingTypeService;
 
     @Value("${feature.multitenancy.with.single.domain.enabled}")
     private boolean multitenancyWithSingleDomain;
@@ -53,10 +57,12 @@ public class TenantServiceFacade {
     public MultilingualTenantDTO createTenant(MultilingualTenantDTO tenantDTO) {
         log.info("Creating new tenant");
         MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
-        validateTenantInput(tenantDTO);
+        validateCreateTenantInput(tenantDTO);
         var entity = tenantConverter.toEntity(sanitizedTenantDTO);
         setContentActivationDates(entity, tenantDTO);
-        return tenantConverter.toMultilingualDTO(tenantService.create(entity));
+        TenantEntity createdTenant = tenantService.create(entity);
+        consultingTypeService.createDefaultConsultingTypes(createdTenant.getId());
+        return tenantConverter.toMultilingualDTO(createdTenant);
     }
 
     public MultilingualTenantDTO updateTenant(Long id, MultilingualTenantDTO tenantDTO) {
@@ -70,6 +76,17 @@ public class TenantServiceFacade {
     private void validateTenantInput(MultilingualTenantDTO tenantDTO) {
         var isoCountries = Arrays.stream(Locale.getISOLanguages()).collect(Collectors.toList());
         validateContent(tenantDTO, isoCountries);
+    }
+
+    private void validateCreateTenantInput(MultilingualTenantDTO tenantDTO) {
+        validateTenantInput(tenantDTO);
+        validateId(tenantDTO);
+    }
+
+    private void validateId(MultilingualTenantDTO tenantDTO) {
+        if (nonNull(tenantDTO.getId())) {
+            throw new TenantValidationException(HttpStatusExceptionReason.ID_MUST_BE_NULL_WHEN_CREATING_TENANT);
+        }
     }
 
     private void validateContent(MultilingualTenantDTO tenantDTO, List<String> isoCountries) {

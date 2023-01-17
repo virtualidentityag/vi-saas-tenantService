@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.controller;
 
 import com.vi.tenantservice.api.authorisation.Authority;
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
+import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
@@ -137,5 +138,15 @@ public class TenantController implements TenantApi, TenantadminApi {
         tenantDtoMapper.tenantsSearchResultOf(resultMap, query, page, perPage, field, order);
 
     return ResponseEntity.ok(result);
+  }
+
+  @Override
+  @PreAuthorize(
+      "hasAuthority('AUTHORIZATION_GET_ALL_TENANTS') AND hasAuthority('AUTHORIZATION_GET_TENANT_ADMIN_DATA')")
+  public ResponseEntity<List<AdminTenantDTO>> getAllTenantsWithAdminData() {
+    var tenants = tenantServiceFacade.getAllAdminTenants();
+    return !CollectionUtils.isEmpty(tenants)
+        ? new ResponseEntity<>(tenants, HttpStatus.OK)
+        : new ResponseEntity<>(HttpStatus.NO_CONTENT);
   }
 }

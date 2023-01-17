@@ -8,6 +8,7 @@ import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
+import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
@@ -33,6 +34,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
@@ -226,18 +228,19 @@ public class TenantServiceFacade {
 
   private void enrichWithAdminDataIfSuperadmin(MultilingualTenantDTO multilingualTenantDTO) {
     if (authorisationService.hasAuthority(AuthorityValue.GET_TENANT_ADMIN_DATA)) {
-      enrichWithAdminData(multilingualTenantDTO);
+      enrichWithAdminData(
+          multilingualTenantDTO.getId().intValue(), multilingualTenantDTO::setAdminEmails);
     }
   }
 
-  private void enrichWithAdminData(MultilingualTenantDTO multilingualTenantDTO) {
-    List<AdminResponseDTO> tenantAdmins =
-        userAdminService.getTenantAdmins(multilingualTenantDTO.getId().intValue());
+  private void enrichWithAdminData(
+      final Integer tenantId, final Consumer<List<String>> setAdminEmailsConsumer) {
+    List<AdminResponseDTO> tenantAdmins = userAdminService.getTenantAdmins(tenantId);
     if (tenantAdmins != null && !tenantAdmins.isEmpty()) {
       log.debug("Enriching tenant with admin email data");
-      multilingualTenantDTO.setAdminEmails(getAdminEmails(tenantAdmins));
+      setAdminEmailsConsumer.accept(getAdminEmails(tenantAdmins));
     } else {
-      log.debug("No tenant admins found for a given tenant {}", multilingualTenantDTO.getId());
+      log.debug("No tenant admins found for a given tenant {}", tenantId);
     }
   }
 
@@ -337,6 +340,17 @@ public class TenantServiceFacade {
     var tenantIds = tenantPage.stream().map(TenantBase::getId).collect(Collectors.toList());
     var fullTenants = tenantService.findAllByIds(tenantIds);
     return mapOf(tenantPage, fullTenants);
+  }
+
+  public List<AdminTenantDTO> getAllAdminTenants() {
+    var tenantEntities = tenantService.getAllTenants();
+    List<AdminTenantDTO> adminTenantDTOS =
+        tenantEntities.stream().map(tenantConverter::toAdminTenantDTO).collect(Collectors.toList());
+
+    adminTenantDTOS.forEach(
+        adminTenantDTO ->
+            enrichWithAdminData(adminTenantDTO.getId().intValue(), adminTenantDTO::setAdminEmails));
+    return adminTenantDTOS;
   }
 
   private Map<String, Object> mapOf(Page<TenantBase> tenantPage, List<TenantEntity> fullTenants) {

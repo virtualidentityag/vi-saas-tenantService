@@ -4,6 +4,7 @@ import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
 import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
@@ -247,5 +248,21 @@ public class TenantConverter {
         .impressum(convertMapFromJson(tenant.getContentImpressum()))
         .privacy(convertMapFromJson(tenant.getContentPrivacy()))
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
+  }
+
+  public AdminTenantDTO toAdminTenantDTO(TenantEntity tenant) {
+    var adminTenantDTO =
+        new AdminTenantDTO()
+            .id(tenant.getId())
+            .name(tenant.getName())
+            .subdomain(tenant.getSubdomain())
+            .beraterCount(tenant.getLicensingAllowedNumberOfUsers());
+    if (tenant.getCreateDate() != null) {
+      adminTenantDTO.setCreateDate(tenant.getCreateDate().toString());
+    }
+    if (tenant.getUpdateDate() != null) {
+      adminTenantDTO.setUpdateDate(tenant.getUpdateDate().toString());
+    }
+    return adminTenantDTO;
   }
 }

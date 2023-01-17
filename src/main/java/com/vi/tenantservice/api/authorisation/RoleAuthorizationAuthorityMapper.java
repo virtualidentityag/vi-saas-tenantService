@@ -1,14 +1,13 @@
 package com.vi.tenantservice.api.authorisation;
 
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
-import org.springframework.stereotype.Component;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.stereotype.Component;
 
 /** Own implementation of the Spring GrantedAuthoritiesMapper. */
 @Component

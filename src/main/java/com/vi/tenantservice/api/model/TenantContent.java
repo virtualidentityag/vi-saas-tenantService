@@ -1,6 +1,5 @@
 package com.vi.tenantservice.api.model;
 
-
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor

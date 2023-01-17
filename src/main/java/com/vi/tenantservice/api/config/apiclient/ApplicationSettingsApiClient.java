@@ -1,24 +1,21 @@
 package com.vi.tenantservice.api.config.apiclient;
 
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
-import org.springframework.web.client.RestTemplate;
+import static java.util.Objects.isNull;
+import static java.util.Objects.nonNull;
+import static org.apache.commons.lang3.StringUtils.isEmpty;
 
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.util.Arrays;
 import java.util.Collection;
+import org.springframework.util.LinkedMultiValueMap;
+import org.springframework.util.MultiValueMap;
+import org.springframework.web.client.RestTemplate;
 
-import static java.util.Objects.isNull;
-import static java.util.Objects.nonNull;
-import static org.apache.commons.lang3.StringUtils.isEmpty;
-
-/**
- * Extension of the generated UserService API client to adapt the handling of parameter values.
- */
-public class ApplicationSettingsApiClient extends
-        com.vi.tenantservice.applicationsettingsservice.generated.ApiClient {
+/** Extension of the generated UserService API client to adapt the handling of parameter values. */
+public class ApplicationSettingsApiClient
+    extends com.vi.tenantservice.applicationsettingsservice.generated.ApiClient {
 
   private static final String FILTER_NAME = "filter";
 
@@ -31,13 +28,13 @@ public class ApplicationSettingsApiClient extends
    * which are not {@link Collection} for filter query params.
    *
    * @param collectionFormat The format to convert to
-   * @param name             The name of the parameter
-   * @param value            The parameter's value
+   * @param name The name of the parameter
+   * @param value The parameter's value
    * @return a Map containing non-null String value(s) of the input parameter
    */
   @Override
   public MultiValueMap<String, String> parameterToMultiValueMap(
-          CollectionFormat collectionFormat, String name, Object value) {
+      CollectionFormat collectionFormat, String name, Object value) {
 
     if (noValidFilterParams(name, value)) {
       return super.parameterToMultiValueMap(collectionFormat, name, value);
@@ -54,8 +51,9 @@ public class ApplicationSettingsApiClient extends
     MultiValueMap<String, String> paramMap = new LinkedMultiValueMap<>();
 
     try {
-      Arrays.asList(Introspector.getBeanInfo(queryValue.getClass(), Object.class)
-          .getPropertyDescriptors())
+      Arrays.asList(
+              Introspector.getBeanInfo(queryValue.getClass(), Object.class)
+                  .getPropertyDescriptors())
           .stream()
           .filter(descriptor -> nonNull(descriptor.getReadMethod()))
           .forEach(descriptor -> setMethodKeyValuePairs(queryValue, paramMap, descriptor));
@@ -68,8 +66,8 @@ public class ApplicationSettingsApiClient extends
     }
   }
 
-  private void setMethodKeyValuePairs(Object queryValue, MultiValueMap<String, String> map,
-      PropertyDescriptor descriptor) {
+  private void setMethodKeyValuePairs(
+      Object queryValue, MultiValueMap<String, String> map, PropertyDescriptor descriptor) {
     try {
       Object value = descriptor.getReadMethod().invoke(queryValue);
       if (nonNull(value)) {

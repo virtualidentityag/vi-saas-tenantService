@@ -1,22 +1,30 @@
 package com.vi.tenantservice.api.authorisation;
 
-import com.google.common.collect.Lists;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
+import static java.util.Collections.emptyList;
+import static java.util.Collections.singletonList;
 
+import com.google.common.collect.Lists;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
-
-import static java.util.Collections.emptyList;
-import static java.util.Collections.singletonList;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
 
 /** Definition of all authorities and of the role-authority-mapping. */
 @AllArgsConstructor
 @Getter
 public enum Authority {
-  TENANT_ADMIN(UserRole.TENANT_ADMIN, Lists.newArrayList(AuthorityValue.CREATE_TENANT, AuthorityValue.UPDATE_TENANT, AuthorityValue.GET_ALL_TENANTS, AuthorityValue.GET_TENANT, AuthorityValue.CHANGE_LEGAL_CONTENT)),
-  SINGLE_TENANT_ADMIN(UserRole.SINGLE_TENANT_ADMIN, Lists.newArrayList(AuthorityValue.UPDATE_TENANT, AuthorityValue.GET_TENANT )),
+  TENANT_ADMIN(
+      UserRole.TENANT_ADMIN,
+      Lists.newArrayList(
+          AuthorityValue.CREATE_TENANT,
+          AuthorityValue.UPDATE_TENANT,
+          AuthorityValue.GET_ALL_TENANTS,
+          AuthorityValue.GET_TENANT,
+          AuthorityValue.CHANGE_LEGAL_CONTENT)),
+  SINGLE_TENANT_ADMIN(
+      UserRole.SINGLE_TENANT_ADMIN,
+      Lists.newArrayList(AuthorityValue.UPDATE_TENANT, AuthorityValue.GET_TENANT)),
   SINGLE_TENANT_READ(UserRole.RESTRICTED_AGENCY_ADMIN, singletonList(AuthorityValue.GET_TENANT));
 
   private final UserRole userRole;
@@ -34,7 +42,6 @@ public enum Authority {
   public static class AuthorityValue {
 
     private AuthorityValue() {}
-
 
     public static final String PREFIX = "AUTHORIZATION_";
     public static final String CREATE_TENANT = PREFIX + "CREATE_TENANT";

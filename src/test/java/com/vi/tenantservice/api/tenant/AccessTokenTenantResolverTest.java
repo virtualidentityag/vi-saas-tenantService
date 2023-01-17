@@ -1,6 +1,12 @@
 package com.vi.tenantservice.api.tenant;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
+
 import com.google.common.collect.Maps;
+import java.util.HashMap;
+import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -9,23 +15,14 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.HashMap;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class AccessTokenTenantResolverTest {
-  @Mock
-  HttpServletRequest authenticatedRequest;
+  @Mock HttpServletRequest authenticatedRequest;
 
   @Mock(answer = Answers.RETURNS_DEEP_STUBS)
   KeycloakAuthenticationToken token;
 
-  @InjectMocks
-  AccessTokenTenantResolver accessTokenTenantResolver;
+  @InjectMocks AccessTokenTenantResolver accessTokenTenantResolver;
 
   @Test
   void resolve_Should_ResolveTenantId_When_TenantIdInAccessTokenClaim() {

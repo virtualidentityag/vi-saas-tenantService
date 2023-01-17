@@ -1,6 +1,5 @@
 package com.vi.tenantservice.api.service.consultingtype;
 
-
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
@@ -18,29 +17,31 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
-/**
- * Service class to communicate with the ConsultingTypeService.
- */
+/** Service class to communicate with the ConsultingTypeService. */
 @Component
 @RequiredArgsConstructor
 public class ApplicationSettingsService {
 
   private final @NonNull TenantResolverService tenantResolverService;
-  private final @NonNull ApplicationSettingsApiControllerFactory applicationSettingsApiControllerFactory;
+  private final @NonNull ApplicationSettingsApiControllerFactory
+      applicationSettingsApiControllerFactory;
   private final @NonNull SecurityHeaderSupplier securityHeaderSupplier;
 
   public ApplicationSettingsDTO getApplicationSettings() {
-    ApplicationsettingsControllerApi controllerApi = applicationSettingsApiControllerFactory.createControllerApi();
+    ApplicationsettingsControllerApi controllerApi =
+        applicationSettingsApiControllerFactory.createControllerApi();
     addDefaultHeaders(controllerApi.getApiClient());
     return controllerApi.getApplicationSettings();
   }
 
   public void saveMainTenantSubDomain(final String subdomain) {
-    ApplicationsettingsControllerApi controllerApi = applicationSettingsApiControllerFactory.createControllerApi();
+    ApplicationsettingsControllerApi controllerApi =
+        applicationSettingsApiControllerFactory.createControllerApi();
     addDefaultHeadersWithKeycloak(controllerApi.getApiClient());
     ApplicationSettingsPatchDTO applicationSettingsPatchDTO = new ApplicationSettingsPatchDTO();
     applicationSettingsPatchDTO.setMainTenantSubdomainForSingleDomainMultitenancy(
-        new ApplicationSettingsDTOMainTenantSubdomainForSingleDomainMultitenancy().value(subdomain));
+        new ApplicationSettingsDTOMainTenantSubdomainForSingleDomainMultitenancy()
+            .value(subdomain));
     controllerApi.patchApplicationSettings(applicationSettingsPatchDTO);
   }
 
@@ -56,8 +57,7 @@ public class ApplicationSettingsService {
 
   private void addHeaders(ApiClient apiClient, HttpHeaders headers) {
     HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-            .getRequest();
+        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
     Optional<Long> optionalTenant = tenantResolverService.tryResolve(request);
     if (optionalTenant.isPresent()) {
       headers.add("tenantId", optionalTenant.get().toString());

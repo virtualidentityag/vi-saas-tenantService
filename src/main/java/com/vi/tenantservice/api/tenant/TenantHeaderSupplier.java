@@ -1,13 +1,12 @@
 package com.vi.tenantservice.api.tenant;
 
+import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.Optional;
 
 @Component
 @RequiredArgsConstructor
@@ -16,8 +15,7 @@ public class TenantHeaderSupplier {
 
   public Optional<Long> getTenantFromHeader() {
     HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-            .getRequest();
+        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
     try {
       return Optional.of(Long.parseLong(request.getHeader("tenantId")));
     } catch (NumberFormatException exception) {

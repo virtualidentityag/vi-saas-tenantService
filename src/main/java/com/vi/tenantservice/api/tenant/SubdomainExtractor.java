@@ -1,17 +1,16 @@
 package com.vi.tenantservice.api.tenant;
 
+import static java.util.Optional.empty;
+import static java.util.Optional.of;
+import static org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes;
+
 import com.google.common.net.InternetDomainName;
+import java.util.Optional;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.web.context.request.ServletRequestAttributes;
-
-import java.util.Optional;
-
-import static java.util.Optional.empty;
-import static java.util.Optional.of;
-import static org.springframework.web.context.request.RequestContextHolder.currentRequestAttributes;
 
 @Component
 @Setter
@@ -34,8 +33,5 @@ public class SubdomainExtractor {
       return Optional.empty();
     }
     return of(domain.parts().get(0));
-
   }
-
 }
-

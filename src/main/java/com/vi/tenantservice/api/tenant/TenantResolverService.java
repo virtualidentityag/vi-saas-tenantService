@@ -13,11 +13,9 @@ import java.util.Optional;
 @Component
 public class TenantResolverService {
 
-  @NonNull
-  AccessTokenTenantResolver accessTokenTenantResolver;
+  @NonNull AccessTokenTenantResolver accessTokenTenantResolver;
 
   public Optional<Long> tryResolve(HttpServletRequest request) {
-      return accessTokenTenantResolver.resolve(request);
+    return accessTokenTenantResolver.resolve(request);
   }
-
 }

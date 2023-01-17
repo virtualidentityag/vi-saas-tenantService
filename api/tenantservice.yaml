@@ -236,7 +236,7 @@ paths:
       summary: 'Validate if user can access tenant [Authorization: no-auth]'
       operationId: canAccessTenant
       responses:
-        200:
+        204:
           description: Successful operation
         401:
           description: UNAUTHORIZED - no/invalid permission for current tenant

@@ -1,8 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
 
-import static java.util.Objects.nonNull;
-
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
@@ -12,6 +10,7 @@ import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
@@ -35,6 +34,8 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
+
+import static java.util.Objects.nonNull;
 
 /**
  * Facade to encapsulate services and logic needed to manage tenants
@@ -106,6 +107,21 @@ public class TenantServiceFacade {
     private void validateTenantInput(MultilingualTenantDTO tenantDTO) {
         var isoCountries = Arrays.stream(Locale.getISOLanguages()).collect(Collectors.toList());
         validateContent(tenantDTO, isoCountries);
+        validateSettings(tenantDTO.getSettings());
+    }
+
+    private void validateSettings(Settings settings) {
+        if (settings != null && settings.getActiveLanguages() != null) {
+            validateEachLanguageHasCorrectFormat(settings.getActiveLanguages());
+        }
+    }
+
+    private void validateEachLanguageHasCorrectFormat(List<String> activeLanguages) {
+        List<String> invalidLanguages = activeLanguages.stream().filter(language -> language == null || language.length() != 2).collect(Collectors.toList());
+        if (!invalidLanguages.isEmpty()) {
+            throw new TenantValidationException(HttpStatusExceptionReason.ID_MUST_BE_NULL_WHEN_CREATING_TENANT);
+        }
+
     }
 
     private void validateCreateTenantInput(MultilingualTenantDTO tenantDTO) {

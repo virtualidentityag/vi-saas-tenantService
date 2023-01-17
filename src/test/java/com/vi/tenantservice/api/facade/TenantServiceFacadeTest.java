@@ -15,9 +15,12 @@ import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
+import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminDTO;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -73,6 +76,9 @@ class TenantServiceFacadeTest {
 
   @Mock
   private SubdomainExtractor subdomainExtractor;
+
+  @Mock
+  private UserAdminService userAdminService;
 
   @InjectMocks
   private TenantServiceFacade tenantServiceFacade;
@@ -299,6 +305,19 @@ class TenantServiceFacadeTest {
     // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(ID);
     assertThat(tenantById).contains(tenantDTO);
+  }
+
+  @Test
+  void findMultilingualTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
+    // given
+    when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
+    tenantMultilingualDTO.setId(1L);
+    when(converter.toMultilingualDTO(tenantEntity)).thenReturn(tenantMultilingualDTO);
+    when(userAdminService.getTenantAdmins(1)).thenReturn(Lists.newArrayList(new AdminResponseDTO().embedded(new AdminDTO().email("admin@admin.com"))));
+    // when
+    Optional<MultilingualTenantDTO> tenantById = tenantServiceFacade.findMultilingualTenantById(ID);
+    assertThat(tenantById).contains(tenantMultilingualDTO);
+    assertThat(tenantById.get().getAdminEmails()).containsOnly("admin@admin.com");
   }
 
   @Test

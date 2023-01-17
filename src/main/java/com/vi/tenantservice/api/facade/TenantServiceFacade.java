@@ -17,9 +17,11 @@ import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
+import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,6 +57,8 @@ public class TenantServiceFacade {
     private final @NonNull ConsultingTypeService consultingTypeService;
     private final @NonNull SubdomainExtractor subdomainExtractor;
     private final @NonNull ApplicationSettingsService applicationSettingsService;
+
+    private final @NonNull UserAdminService userAdminService;
 
     @Value("${feature.multitenancy.with.single.domain.enabled}")
     private boolean multitenancyWithSingleDomain;
@@ -201,11 +205,31 @@ public class TenantServiceFacade {
                 : Optional.of(tenantConverter.toDTO(tenantById.get(), translationService.getCurrentLanguageContext()));
     }
 
+    private MultilingualTenantDTO getConvertedAndEnrichedTenant(Optional<TenantEntity> tenantById) {
+        var multilingualTenantDTO = tenantConverter.toMultilingualDTO(tenantById.get());
+        enrichWithAdminData(multilingualTenantDTO);
+        return multilingualTenantDTO;
+    }
+
+    private void enrichWithAdminData(MultilingualTenantDTO multilingualTenantDTO) {
+        List<AdminResponseDTO> tenantAdmins = userAdminService.getTenantAdmins(multilingualTenantDTO.getId().intValue());
+        if (tenantAdmins != null && !tenantAdmins.isEmpty()) {
+            log.debug("Enriching tenant with admin email data");
+            multilingualTenantDTO.setAdminEmails(getAdminEmails(tenantAdmins));
+        } else {
+            log.debug("No tenant admins found for a given tenant ", multilingualTenantDTO.getId());
+        }
+    }
+
+    private List<String> getAdminEmails(List<AdminResponseDTO> tenantAdmins) {
+        return tenantAdmins.stream().map(admin -> admin.getEmbedded() != null ? admin.getEmbedded().getEmail() : "").collect(Collectors.toList());
+    }
+
     public Optional<MultilingualTenantDTO> findMultilingualTenantById(Long id) {
         tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
         var tenantById = tenantService.findTenantById(id);
         return tenantById.isEmpty() ? Optional.empty()
-                : Optional.of(tenantConverter.toMultilingualDTO(tenantById.get()));
+                : Optional.of(getConvertedAndEnrichedTenant(tenantById));
     }
 
     public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {

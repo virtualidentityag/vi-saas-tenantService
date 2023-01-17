@@ -1,24 +1,6 @@
 package com.vi.tenantservice.api.controller;
 
 
-import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
@@ -27,13 +9,16 @@ import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
-import com.vi.tenantservice.api.tenant.SubdomainExtractor;
+import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
+import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminDTO;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -53,6 +38,17 @@ import org.springframework.web.context.WebApplicationContext;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+
+import static com.vi.tenantservice.api.authorisation.UserRole.*;
+import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
+import static org.hamcrest.Matchers.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest(classes = TenantServiceApplication.class)
 @TestPropertySource(properties = "spring.profiles.active=testing")
@@ -106,6 +102,9 @@ class TenantControllerIT {
     TenantResolverService tenantResolverService;
 
     @MockBean
+    UserAdminService userAdminService;
+
+    @MockBean
     SubdomainExtractor subdomainExtractor;
 
     private MockMvc mockMvc;
@@ -117,11 +116,11 @@ class TenantControllerIT {
                 .apply(springSecurity())
                 .build();
         givenSingleTenantAdminCanChangeLegalTexts(true);
-      when(consultingTypeServiceApiControllerFactory.createControllerApi()).thenReturn(consultingTypeControllerApi);
-      when(consultingTypeControllerApi.getApiClient()).thenReturn(mock(
-          com.vi.tenantservice.consultingtypeservice.generated.ApiClient.class));
-      when(securityHeaderSupplier.getCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
-      when(securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
+        when(consultingTypeServiceApiControllerFactory.createControllerApi()).thenReturn(consultingTypeControllerApi);
+        when(consultingTypeControllerApi.getApiClient()).thenReturn(mock(
+                com.vi.tenantservice.consultingtypeservice.generated.ApiClient.class));
+        when(securityHeaderSupplier.getCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
+        when(securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
     }
 
     private void giveAuthorisationServiceReturnProperAuthoritiesForRole(UserRole userRole) {
@@ -186,19 +185,38 @@ class TenantControllerIT {
                 .andExpect(header().exists("X-Reason"));
     }
 
-  @Test
-  void createTenant_Should_notCreateTenant_When_calledWithTenantDataAndTenantId()
-      throws Exception {
-    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
-    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
-    mockMvc.perform(post(TENANTADMIN_RESOURCE)
-            .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
-            .contentType(APPLICATION_JSON)
-            .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
-                .jsonify())
-            .contentType(APPLICATION_JSON))
-        .andExpect(status().isConflict());
-  }
+    @Test
+    void createTenant_Should_notCreateTenant_When_calledWithTenantDataAndTenantId()
+            throws Exception {
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+        mockMvc.perform(post(TENANTADMIN_RESOURCE)
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .content(multilingualTenantTestDataBuilder.withId(1L).withName("tenant").withSubdomain("subdomain").withLicensing()
+                                .jsonify())
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isConflict());
+    }
+
+    @Test
+    void getTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
+            throws Exception {
+        AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+        Mockito.when(userAdminService.getTenantAdmins(1)).thenReturn(Lists.newArrayList(
+                adminResponseWithMail("admin@admin.com"), adminResponseWithMail("admin1@admin.com")));
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+        mockMvc.perform(get(TENANTADMIN_RESOURCE + "/1")
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("adminEmails", contains("admin@admin.com", "admin1@admin.com")));
+    }
+
+    private AdminResponseDTO adminResponseWithMail(String mail) {
+        return new AdminResponseDTO().embedded(new AdminDTO().email(mail));
+    }
 
     @Test
     void updateTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndTenantAdminAuthority()
@@ -320,7 +338,8 @@ class TenantControllerIT {
     void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
             throws Exception {
         var builder = new AuthenticationMockBuilder();
-        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);;
+        giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+        ;
         mockMvc.perform(get(EXISTING_TENANT)
                         .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                         .contentType(APPLICATION_JSON)
@@ -417,30 +436,30 @@ class TenantControllerIT {
                 .andExpect(jsonPath("$.id").value(1));
     }
 
-  @Test
-  void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForSingleTenantAdminAuthority()
-          throws Exception {
+    @Test
+    void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForSingleTenantAdminAuthority()
+            throws Exception {
         var builder = new AuthenticationMockBuilder();
         giveAuthorisationServiceReturnProperAuthoritiesForRole(SINGLE_TENANT_ADMIN);
         when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
-    mockMvc.perform(get(EXISTING_TENANT)
-                    .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
-                    .contentType(APPLICATION_JSON)
-            ).andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(1));
-  }
+        mockMvc.perform(get(EXISTING_TENANT)
+                        .with(authentication(builder.withUserRole(SINGLE_TENANT_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
 
-  @Test
-  void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedAgencyAdminAuthority()
-          throws Exception {
+    @Test
+    void getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedAgencyAdminAuthority()
+            throws Exception {
         var builder = new AuthenticationMockBuilder();
         giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
-    mockMvc.perform(get(EXISTING_TENANT)
-                    .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
-                    .contentType(APPLICATION_JSON)
-            ).andExpect(status().isOk())
-            .andExpect(jsonPath("$.id").value(1));
-  }
+        mockMvc.perform(get(EXISTING_TENANT)
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                        .contentType(APPLICATION_JSON)
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(1));
+    }
 
     @Test
     void updateTenant_Should_sanitizeInput_When_calledWithExistingTenantIdAndForTenantAdminAuthority()
@@ -528,9 +547,9 @@ class TenantControllerIT {
     @Test
     void getTenant_Should_returnStatusForbidden_When_calledWithoutAnyAuthorization()
             throws Exception {
-      mockMvc.perform(get(EXISTING_TENANT)
-                      .contentType(APPLICATION_JSON))
-              .andExpect(status().isForbidden());
+        mockMvc.perform(get(EXISTING_TENANT)
+                        .contentType(APPLICATION_JSON))
+                .andExpect(status().isForbidden());
     }
 
     @Test
@@ -549,36 +568,36 @@ class TenantControllerIT {
                 .andExpect(status().isBadRequest());
     }
 
-  @Test
-  void canAccessTenant_Should_returnStatusOk_When_userIsSuperAdmin() throws Exception {
-    var builder = new AuthenticationMockBuilder();
-    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(0L));
-    when(authorisationService.hasRole(TENANT_ADMIN.getValue())).thenReturn(true);
-    when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("subdomain"));
+    @Test
+    void canAccessTenant_Should_returnStatusOk_When_userIsSuperAdmin() throws Exception {
+        var builder = new AuthenticationMockBuilder();
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(0L));
+        when(authorisationService.hasRole(TENANT_ADMIN.getValue())).thenReturn(true);
+        when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("subdomain"));
 
-    mockMvc.perform(get(TENANT_ACCESS)
-            .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
-        .andExpect(status().isOk());
-  }
+        mockMvc.perform(get(TENANT_ACCESS)
+                        .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+                .andExpect(status().isOk());
+    }
 
-  @Test
-  void canAccessTenant_Should_returnStatusOk_When_tokenHasTenantIdEqualToSubdomainTenantId() throws Exception {
-    var builder = new AuthenticationMockBuilder();
-    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(3L));
-    when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("localhost"));
+    @Test
+    void canAccessTenant_Should_returnStatusOk_When_tokenHasTenantIdEqualToSubdomainTenantId() throws Exception {
+        var builder = new AuthenticationMockBuilder();
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(3L));
+        when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("localhost"));
 
-    mockMvc.perform(get(TENANT_ACCESS)
-            .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
-        .andExpect(status().isOk());
-  }
+        mockMvc.perform(get(TENANT_ACCESS)
+                        .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
+                .andExpect(status().isOk());
+    }
 
-  @Test
-  void canAccessTenant_Should_returnStatusUnauthorized_When_tokenHasTenantIdDifferentToSubdomainTenantId() throws Exception {
-    var builder = new AuthenticationMockBuilder();
-    when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
+    @Test
+    void canAccessTenant_Should_returnStatusUnauthorized_When_tokenHasTenantIdDifferentToSubdomainTenantId() throws Exception {
+        var builder = new AuthenticationMockBuilder();
+        when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
 
-    mockMvc.perform(get(TENANT_ACCESS)
-            .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
-        .andExpect(status().isUnauthorized());
-  }
+        mockMvc.perform(get(TENANT_ACCESS)
+                        .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
+                .andExpect(status().isUnauthorized());
+    }
 }

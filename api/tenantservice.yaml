@@ -300,6 +300,11 @@ components:
               type: string
               example: "companyname"
               maxLength: 100
+            adminEmails:
+              type: array
+              items:
+                type: string
+              example: "[admin1@ob.de, admin2@ob.de]"
             createDate:
               type: string
             updateDate:

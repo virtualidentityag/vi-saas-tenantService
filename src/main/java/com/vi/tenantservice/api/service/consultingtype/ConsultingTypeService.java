@@ -54,14 +54,17 @@ public class ConsultingTypeService {
       var fileUrl = Paths.get(defaultConsultingTypesFilePath).toUri().toURL();
       return new File(fileUrl.toURI());
     } catch (URISyntaxException | MalformedURLException | InvalidPathException exception) {
-      log.error("Could not load default consulting types configuration file {}",
-          defaultConsultingTypesFilePath, exception);
+      log.error(
+          "Could not load default consulting types configuration file {}",
+          defaultConsultingTypesFilePath,
+          exception);
       throw new InternalServerErrorException();
     }
   }
 
   private void createConsultingType(
-      com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTO consultingTypeDTO)
+      com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTO
+          consultingTypeDTO)
       throws RestClientException {
     var consultingTypeControllerApi =
         consultingTypeServiceApiControllerFactory.createControllerApi();
@@ -73,8 +76,7 @@ public class ConsultingTypeService {
       com.vi.tenantservice.consultingtypeservice.generated.ApiClient apiClient) {
     var headers = this.securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders();
     HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
-            .getRequest();
+        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
     Optional<Long> optionalTenant = tenantResolverService.tryResolve(request);
     optionalTenant.ifPresent(aLong -> headers.add("tenantId", aLong.toString()));
     headers.forEach((key, value) -> apiClient.addDefaultHeader(key, value.iterator().next()));

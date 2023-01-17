@@ -3,14 +3,13 @@ package com.vi.tenantservice.api.validation;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Theming;
+import java.util.Map;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
-
-import java.util.Map;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Component
@@ -54,26 +53,40 @@ public class TenantInputSanitizer {
   private void sanitizeContent(MultilingualTenantDTO input, MultilingualTenantDTO output) {
     var content = input.getContent();
     if (content != null) {
-      output.getContent()
-              .setImpressum(sanitizeAllTranslations(content.getImpressum(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
-      output.getContent()
-              .setClaim(sanitizeAllTranslations(content.getClaim(), inputSanitizer::sanitizeAllowingFormatting));
-      output.getContent()
-              .setPrivacy(sanitizeAllTranslations(content.getPrivacy(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
-      output.getContent()
-              .setTermsAndConditions(sanitizeAllTranslations(content.getTermsAndConditions(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output
+          .getContent()
+          .setImpressum(
+              sanitizeAllTranslations(
+                  content.getImpressum(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output
+          .getContent()
+          .setClaim(
+              sanitizeAllTranslations(
+                  content.getClaim(), inputSanitizer::sanitizeAllowingFormatting));
+      output
+          .getContent()
+          .setPrivacy(
+              sanitizeAllTranslations(
+                  content.getPrivacy(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output
+          .getContent()
+          .setTermsAndConditions(
+              sanitizeAllTranslations(
+                  content.getTermsAndConditions(),
+                  inputSanitizer::sanitizeAllowingFormattingAndLinks));
       output.getContent().setConfirmPrivacy(content.getConfirmPrivacy());
       output.getContent().setConfirmTermsAndConditions(content.getConfirmTermsAndConditions());
     }
   }
-  private Map<String, String> sanitizeAllTranslations(Map<String, String> translations, Function<String, String> sanitizeFuntion) {
+
+  private Map<String, String> sanitizeAllTranslations(
+      Map<String, String> translations, Function<String, String> sanitizeFuntion) {
     if (translations != null) {
-      return translations.entrySet()
-              .stream()
-              .filter(entry -> entry.getKey() != null)
-              .collect(Collectors.toMap(
-                      Map.Entry::getKey,
-                      stringEntry -> sanitizeFuntion.apply(stringEntry.getValue())));
+      return translations.entrySet().stream()
+          .filter(entry -> entry.getKey() != null)
+          .collect(
+              Collectors.toMap(
+                  Map.Entry::getKey, stringEntry -> sanitizeFuntion.apply(stringEntry.getValue())));
     }
     return translations;
   }

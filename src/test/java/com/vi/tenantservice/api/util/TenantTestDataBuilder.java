@@ -6,7 +6,6 @@ import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.Theming;
-
 import java.util.List;
 
 public class TenantTestDataBuilder {
@@ -51,17 +50,13 @@ public class TenantTestDataBuilder {
 
   public TenantTestDataBuilder withSettingTopicsInRegistrationEnabled(
       boolean topicsInRegistrationEnabled) {
-    tenantDTO.setSettings(getSettings()
-        .topicsInRegistrationEnabled(topicsInRegistrationEnabled));
+    tenantDTO.setSettings(getSettings().topicsInRegistrationEnabled(topicsInRegistrationEnabled));
     return this;
   }
 
-  public TenantTestDataBuilder withSettingActiveLanguages(
-          List<String> activeLanguages) {
-    tenantDTO.setSettings(getSettings()
-            .topicsInRegistrationEnabled(true)
-            .activeLanguages(activeLanguages)
-    );
+  public TenantTestDataBuilder withSettingActiveLanguages(List<String> activeLanguages) {
+    tenantDTO.setSettings(
+        getSettings().topicsInRegistrationEnabled(true).activeLanguages(activeLanguages));
     return this;
   }
 
@@ -91,23 +86,22 @@ public class TenantTestDataBuilder {
   public TenantTestDataBuilder withSettings() {
     tenantDTO.setSettings(
         getSettings()
-                .topicsInRegistrationEnabled(true)
-                .activeLanguages(Lists.newArrayList("de", "en"))
-    );
+            .topicsInRegistrationEnabled(true)
+            .activeLanguages(Lists.newArrayList("de", "en")));
     return this;
   }
 
   private static Settings getSettings() {
     return new Settings()
-            .featureTopicsEnabled(true)
-            .featureDemographicsEnabled(true)
-            .featureAppointmentsEnabled(true)
-            .featureStatisticsEnabled(true)
-            .featureTopicsEnabled(true)
-            .featureGroupChatV2Enabled(true)
-            .featureToolsEnabled(true)
-            .featureToolsOICDToken("1234")
-            .featureAttachmentUploadDisabled(false);
+        .featureTopicsEnabled(true)
+        .featureDemographicsEnabled(true)
+        .featureAppointmentsEnabled(true)
+        .featureStatisticsEnabled(true)
+        .featureTopicsEnabled(true)
+        .featureGroupChatV2Enabled(true)
+        .featureToolsEnabled(true)
+        .featureToolsOICDToken("1234")
+        .featureAttachmentUploadDisabled(false);
   }
 
   private Licensing licensing() {

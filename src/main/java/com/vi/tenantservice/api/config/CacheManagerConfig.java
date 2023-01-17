@@ -14,7 +14,6 @@ public class CacheManagerConfig {
 
   public static final String APPLICATION_SETTINGS_CACHE = "applicationSettingsCache";
 
-
   @Value("${cache.applicationsettings.configuration.maxEntriesLocalHeap}")
   private long applicationSettingsMaxEntriesLocalHeap;
 
@@ -48,5 +47,4 @@ public class CacheManagerConfig {
     topicCacheConfiguration.setTimeToLiveSeconds(applicationSettingsTimeToLiveSeconds);
     return topicCacheConfiguration;
   }
-
 }

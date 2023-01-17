@@ -1,5 +1,9 @@
 package com.vi.tenantservice.api.facade;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.Mockito.*;
+
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.converter.TenantConverter;
@@ -15,9 +19,15 @@ import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
+import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminDTO;
+import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Optional;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -26,14 +36,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.test.util.ReflectionTestUtils;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class TenantServiceFacadeTest {
@@ -47,35 +49,27 @@ class TenantServiceFacadeTest {
   private final RestrictedTenantDTO restrictedTenantDTO = new RestrictedTenantDTO();
   private final TenantEntity tenantEntity = new TenantEntity();
 
-  @Mock
-  private TenantConverter converter;
+  @Mock private TenantConverter converter;
 
-  @Mock
-  private TenantService tenantService;
+  @Mock private TenantService tenantService;
 
-  @Mock
-  private TenantInputSanitizer tenantInputSanitizer;
+  @Mock private TenantInputSanitizer tenantInputSanitizer;
 
-  @Mock
-  private TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
+  @Mock private TenantFacadeAuthorisationService tenantFacadeAuthorisationService;
 
-  @Mock
-  private AuthorisationService authorisationService;
+  @Mock private AuthorisationService authorisationService;
 
-  @Mock
-  private TranslationService translationService;
+  @Mock private TranslationService translationService;
 
-  @Mock
-  private ConsultingTypeService consultingTypeService;
+  @Mock private ConsultingTypeService consultingTypeService;
 
-  @Mock
-  private ApplicationSettingsService applicationSettingsService;
+  @Mock private ApplicationSettingsService applicationSettingsService;
 
-  @Mock
-  private SubdomainExtractor subdomainExtractor;
+  @Mock private SubdomainExtractor subdomainExtractor;
 
-  @InjectMocks
-  private TenantServiceFacade tenantServiceFacade;
+  @Mock private UserAdminService userAdminService;
+
+  @InjectMocks private TenantServiceFacade tenantServiceFacade;
 
   @Test
   void createTenant_Should_createTenant() {
@@ -96,7 +90,8 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  void createTenant_Should_createTenantWithMainTenantSubDomain_When_multitenancyWithSingleDomainAndIsFirstNonTechnicalTenant() {
+  void
+      createTenant_Should_createTenantWithMainTenantSubDomain_When_multitenancyWithSingleDomainAndIsFirstNonTechnicalTenant() {
     // given
     TenantEntity entity = mock(TenantEntity.class);
     when(entity.getSubdomain()).thenReturn("app1");
@@ -108,7 +103,7 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(converter.toEntity(tenantMultilingualDTO)).thenReturn(entity);
     when(tenantService.create(entity)).thenReturn(entity);
-    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
+    ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
     when(tenantService.getAllTenants()).thenReturn(List.of(technicalTenant));
     when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("app1"));
 
@@ -123,7 +118,8 @@ class TenantServiceFacadeTest {
   }
 
   @Test
-  void createTenant_Should_notSaveMainTenantSubDomain_When_subDomainInRequestDifferentFromSubdomainInUrl() {
+  void
+      createTenant_Should_notSaveMainTenantSubDomain_When_subDomainInRequestDifferentFromSubdomainInUrl() {
     // given
     TenantEntity entity = mock(TenantEntity.class);
     when(entity.getSubdomain()).thenReturn("app1");
@@ -135,14 +131,16 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(converter.toEntity(tenantMultilingualDTO)).thenReturn(entity);
     when(tenantService.create(entity)).thenReturn(entity);
-    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
+    ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
     when(tenantService.getAllTenants()).thenReturn(List.of(technicalTenant));
     when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("app2"));
 
     // when
-    assertThrows(TenantValidationException.class, () -> {
-      tenantServiceFacade.createTenant(tenantMultilingualDTO);
-    });
+    assertThrows(
+        TenantValidationException.class,
+        () -> {
+          tenantServiceFacade.createTenant(tenantMultilingualDTO);
+        });
 
     // then
     verify(consultingTypeService).createDefaultConsultingTypes(entity.getId());
@@ -152,12 +150,14 @@ class TenantServiceFacadeTest {
   @Test
   void createTenant_Should_notSaveMainTenantSubDomain_When_activeLanguageHasIncorrectContent() {
     // given
-     tenantMultilingualDTO.settings(new Settings().activeLanguages(Lists.newArrayList(null, "de")));
+    tenantMultilingualDTO.settings(new Settings().activeLanguages(Lists.newArrayList(null, "de")));
 
     // when
-    assertThrows(TenantValidationException.class, () -> {
-      tenantServiceFacade.createTenant(tenantMultilingualDTO);
-    });
+    assertThrows(
+        TenantValidationException.class,
+        () -> {
+          tenantServiceFacade.createTenant(tenantMultilingualDTO);
+        });
   }
 
   @Test
@@ -168,9 +168,11 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantDTOWithId)).thenReturn(sanitizedTenantDTO);
 
     // then
-    assertThrows(TenantValidationException.class, () -> {
-      tenantServiceFacade.createTenant(tenantDTOWithId);
-    });
+    assertThrows(
+        TenantValidationException.class,
+        () -> {
+          tenantServiceFacade.createTenant(tenantDTOWithId);
+        });
   }
 
   @Test
@@ -198,9 +200,11 @@ class TenantServiceFacadeTest {
     tenantMultilingualDTO.setContent(new MultilingualContent().claim(claim));
 
     // when
-    assertThrows(TenantValidationException.class, () -> {
-      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
-    });
+    assertThrows(
+        TenantValidationException.class,
+        () -> {
+          tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+        });
   }
 
   @Test
@@ -221,21 +225,24 @@ class TenantServiceFacadeTest {
     verify(tenantService).findTenantById(ID);
     verify(converter).toEntity(tenantEntity, sanitizedTenantDTO);
     verify(tenantService).update(tenantEntity);
-
   }
+
   @Test
   void updateTenant_Should_ThrowTenantNotFoundException_When_IdNotFound() {
     // then
-    assertThrows(TenantNotFoundException.class, () -> {
+    assertThrows(
+        TenantNotFoundException.class,
+        () -> {
 
-      // when
-      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
-    });
+          // when
+          tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+        });
     verify(tenantService).findTenantById(ID);
   }
 
   @Test
-  void updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
+  void
+      updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
     // given
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
@@ -253,32 +260,38 @@ class TenantServiceFacadeTest {
   @Test
   void updateTenant_Should_ThrowAccessDeniedException_When_UserNotAuthorizedToPerformOperation() {
     // given
-    doThrow(AccessDeniedException.class).when(tenantFacadeAuthorisationService)
+    doThrow(AccessDeniedException.class)
+        .when(tenantFacadeAuthorisationService)
         .assertUserIsAuthorizedToAccessTenant(ID);
     // then
-    assertThrows(AccessDeniedException.class, () -> {
-      // when
-      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
-    });
+    assertThrows(
+        AccessDeniedException.class,
+        () -> {
+          // when
+          tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+        });
     verify(tenantService, Mockito.never()).findTenantById(ID);
   }
 
   @Test
-  void updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesAndTokenIdAttributeDoesNotMatch() {
+  void
+      updateTenant_Should_ThrowAccessDeniedException_When_UserIsSingleTenantAdminAndDoesAndTokenIdAttributeDoesNotMatch() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
 
     Mockito.doThrow(AccessDeniedException.class)
         .when(tenantFacadeAuthorisationService)
-        .assertUserHasSufficientPermissionsToChangeAttributes(Mockito.any(MultilingualTenantDTO.class),
-            Mockito.any(TenantEntity.class));
+        .assertUserHasSufficientPermissionsToChangeAttributes(
+            Mockito.any(MultilingualTenantDTO.class), Mockito.any(TenantEntity.class));
 
     // then
-    assertThrows(AccessDeniedException.class, () -> {
-      // when
-      tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
-    });
+    assertThrows(
+        AccessDeniedException.class,
+        () -> {
+          // when
+          tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+        });
   }
 
   @Test
@@ -299,6 +312,22 @@ class TenantServiceFacadeTest {
     // when
     Optional<TenantDTO> tenantById = tenantServiceFacade.findTenantById(ID);
     assertThat(tenantById).contains(tenantDTO);
+  }
+
+  @Test
+  void findMultilingualTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
+    // given
+    when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
+    tenantMultilingualDTO.setId(1L);
+    when(converter.toMultilingualDTO(tenantEntity)).thenReturn(tenantMultilingualDTO);
+    when(userAdminService.getTenantAdmins(1))
+        .thenReturn(
+            Lists.newArrayList(
+                new AdminResponseDTO().embedded(new AdminDTO().email("admin@admin.com"))));
+    // when
+    Optional<MultilingualTenantDTO> tenantById = tenantServiceFacade.findMultilingualTenantById(ID);
+    assertThat(tenantById).contains(tenantMultilingualDTO);
+    assertThat(tenantById.get().getAdminEmails()).containsOnly("admin@admin.com");
   }
 
   @Test
@@ -332,31 +361,36 @@ class TenantServiceFacadeTest {
     when(tenantService.getAllTenants()).thenReturn(List.of(tenantEntity, secondTenantEntity));
 
     // then
-    assertThrows(IllegalStateException.class, () -> {
-      // when
-      tenantServiceFacade.getSingleTenant();
-    });
+    assertThrows(
+        IllegalStateException.class,
+        () -> {
+          // when
+          tenantServiceFacade.getSingleTenant();
+        });
 
     verify(tenantService).getAllTenants();
     verifyNoInteractions(converter);
   }
 
   @Test
-  void findTenantBySubdomain_Should_overridePrivacyDataFromDifferentTenant_When_TenantIdProvidedInRequest(){
+  void
+      findTenantBySubdomain_Should_overridePrivacyDataFromDifferentTenant_When_TenantIdProvidedInRequest() {
     // given
 
-    ReflectionTestUtils.setField(tenantServiceFacade,"multitenancyWithSingleDomain",true);
-    ReflectionTestUtils.setField(tenantServiceFacade,"tenantConverter",new TenantConverter());
+    ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
+    ReflectionTestUtils.setField(tenantServiceFacade, "tenantConverter", new TenantConverter());
 
     Optional<TenantEntity> defaultTenant = getTenantWithPrivacy("{\"de\":\"content1\"}");
     Optional<TenantEntity> accessTokenTenantData = getTenantWithPrivacy("{\"de\":\"content2\"}");
 
-    when(tenantService.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME)).thenReturn(defaultTenant);
+    when(tenantService.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME))
+        .thenReturn(defaultTenant);
     when(authorisationService.resolveTenantFromRequest(null)).thenReturn(Optional.of(2L));
     when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
 
     // when
-    Optional<RestrictedTenantDTO> tenantDTO = tenantServiceFacade.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME, null);
+    Optional<RestrictedTenantDTO> tenantDTO =
+        tenantServiceFacade.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME, null);
 
     // then
     assertThat(tenantDTO.get().getContent().getPrivacy()).contains("content2");

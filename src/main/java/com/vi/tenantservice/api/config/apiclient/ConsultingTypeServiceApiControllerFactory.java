@@ -13,8 +13,7 @@ public class ConsultingTypeServiceApiControllerFactory {
   @Value("${consulting.type.service.api.url}")
   private String consultingTypeServiceApiUrl;
 
-  @Autowired
-  private RestTemplate restTemplate;
+  @Autowired private RestTemplate restTemplate;
 
   public ConsultingTypeControllerApi createControllerApi() {
     var apiClient = new ApiClient(restTemplate).setBasePath(this.consultingTypeServiceApiUrl);

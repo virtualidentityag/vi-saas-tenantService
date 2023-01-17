@@ -2,13 +2,12 @@ package com.vi.tenantservice.api.controller;
 
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.authorisation.RoleAuthorizationAuthorityMapper;
+import java.util.Collection;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.representations.AccessToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Collection;
 
 public class AuthenticationMockBuilder {
 
@@ -24,7 +23,8 @@ public class AuthenticationMockBuilder {
     return new Authentication() {
       @Override
       public Collection<? extends GrantedAuthority> getAuthorities() {
-        return new RoleAuthorizationAuthorityMapper().mapAuthorities(Lists.newArrayList(() -> userRole));
+        return new RoleAuthorizationAuthorityMapper()
+            .mapAuthorities(Lists.newArrayList(() -> userRole));
       }
 
       @Override
@@ -41,8 +41,8 @@ public class AuthenticationMockBuilder {
       public Object getPrincipal() {
         AccessToken token = new AccessToken();
         token.setOtherClaims("tenantId", tenantId);
-        KeycloakSecurityContext keycloakSecurityContext = new KeycloakSecurityContext("", token,
-            null, null);
+        KeycloakSecurityContext keycloakSecurityContext =
+            new KeycloakSecurityContext("", token, null, null);
         return new KeycloakPrincipal<>("name", keycloakSecurityContext);
       }
 
@@ -52,9 +52,7 @@ public class AuthenticationMockBuilder {
       }
 
       @Override
-      public void setAuthenticated(boolean b) throws IllegalArgumentException {
-
-      }
+      public void setAuthenticated(boolean b) throws IllegalArgumentException {}
 
       @Override
       public String getName() {

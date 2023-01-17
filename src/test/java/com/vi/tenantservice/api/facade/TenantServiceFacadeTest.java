@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
@@ -7,6 +8,7 @@ import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
+import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.TenantService;
@@ -145,6 +147,17 @@ class TenantServiceFacadeTest {
     // then
     verify(consultingTypeService).createDefaultConsultingTypes(entity.getId());
     verify(applicationSettingsService, never()).saveMainTenantSubDomain(any());
+  }
+
+  @Test
+  void createTenant_Should_notSaveMainTenantSubDomain_When_activeLanguageHasIncorrectContent() {
+    // given
+     tenantMultilingualDTO.settings(new Settings().activeLanguages(Lists.newArrayList(null, "de")));
+
+    // when
+    assertThrows(TenantValidationException.class, () -> {
+      tenantServiceFacade.createTenant(tenantMultilingualDTO);
+    });
   }
 
   @Test

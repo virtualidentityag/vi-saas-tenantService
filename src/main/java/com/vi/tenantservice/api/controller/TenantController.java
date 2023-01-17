@@ -109,7 +109,7 @@ public class TenantController implements TenantApi, TenantadminApi {
   public ResponseEntity<Void> canAccessTenant() {
     boolean canAccessTenant = tenantServiceFacade.canAccessTenant();
     if (canAccessTenant) {
-      return new ResponseEntity<>(HttpStatus.OK);
+      return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
   }
 }

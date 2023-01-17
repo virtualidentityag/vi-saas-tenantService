@@ -550,7 +550,7 @@ class TenantControllerIT {
     }
 
   @Test
-  void canAccessTenant_Should_returnStatusOk_When_userIsSuperAdmin() throws Exception {
+  void canAccessTenant_Should_returnStatusNoContent_When_userIsSuperAdmin() throws Exception {
     var builder = new AuthenticationMockBuilder();
     when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(0L));
     when(authorisationService.hasRole(TENANT_ADMIN.getValue())).thenReturn(true);
@@ -558,7 +558,7 @@ class TenantControllerIT {
 
     mockMvc.perform(get(TENANT_ACCESS)
             .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
-        .andExpect(status().isOk());
+        .andExpect(status().isNoContent());
   }
 
   @Test
@@ -569,7 +569,7 @@ class TenantControllerIT {
 
     mockMvc.perform(get(TENANT_ACCESS)
             .with(authentication(builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
-        .andExpect(status().isOk());
+        .andExpect(status().isNoContent());
   }
 
   @Test

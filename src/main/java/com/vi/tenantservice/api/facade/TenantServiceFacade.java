@@ -3,6 +3,7 @@ package com.vi.tenantservice.api.facade;
 import static java.util.Objects.nonNull;
 
 import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
@@ -219,8 +220,14 @@ public class TenantServiceFacade {
 
   private MultilingualTenantDTO getConvertedAndEnrichedTenant(Optional<TenantEntity> tenantById) {
     var multilingualTenantDTO = tenantConverter.toMultilingualDTO(tenantById.get());
-    enrichWithAdminData(multilingualTenantDTO);
+    enrichWithAdminDataIfSuperadmin(multilingualTenantDTO);
     return multilingualTenantDTO;
+  }
+
+  private void enrichWithAdminDataIfSuperadmin(MultilingualTenantDTO multilingualTenantDTO) {
+    if (authorisationService.hasAuthority(AuthorityValue.GET_TENANT_ADMIN_DATA)) {
+      enrichWithAdminData(multilingualTenantDTO);
+    }
   }
 
   private void enrichWithAdminData(MultilingualTenantDTO multilingualTenantDTO) {

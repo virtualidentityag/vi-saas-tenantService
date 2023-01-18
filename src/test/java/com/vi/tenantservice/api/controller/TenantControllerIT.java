@@ -792,4 +792,37 @@ class TenantControllerIT {
         .andExpect(jsonPath("_embedded[0].subdomain").value("localhost"))
         .andExpect(jsonPath("_embedded[0].beraterCount").value(12));
   }
+
+  @Test
+  void getAllTenantsWithAdminData_Should_returnForbidden_When_calledWithWrongAuthority()
+      throws Exception {
+
+    mockMvc
+        .perform(
+            get(TENANTADMIN_RESOURCE)
+                .with(
+                    user("not important")
+                        .authorities((GrantedAuthority) SINGLE_TENANT_ADMIN::getValue))
+                .contentType(APPLICATION_JSON))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void
+      getAllTenantsWithAdminData_Should_returnAdminTenantDTOs_When_calledForAuthorityThatIsTenantAdmin()
+          throws Exception {
+    var builder = new AuthenticationMockBuilder();
+    mockMvc
+        .perform(
+            get(TENANTADMIN_RESOURCE)
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$[0].id").value(1))
+        .andExpect(jsonPath("$[0].name").exists())
+        .andExpect(jsonPath("$[0].subdomain").exists())
+        .andExpect(jsonPath("$[0].beraterCount").exists())
+        .andExpect(jsonPath("$[0].adminEmails").doesNotExist());
+  }
 }

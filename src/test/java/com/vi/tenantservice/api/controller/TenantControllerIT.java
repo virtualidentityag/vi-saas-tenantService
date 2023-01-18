@@ -1,15 +1,23 @@
 package com.vi.tenantservice.api.controller;
 
-import static com.vi.tenantservice.api.authorisation.UserRole.*;
+import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -56,7 +64,7 @@ class TenantControllerIT {
 
   private static final String TENANTADMIN_RESOURCE = "/tenantadmin";
   private static final String TENANT_RESOURCE_SLASH = TENANT_RESOURCE + "/";
-
+  private static final String TENANTADMIN_SEARCH = TENANTADMIN_RESOURCE + "/search";
   private static final String TENANTADMIN_RESOURCE_SLASH = TENANTADMIN_RESOURCE + "/";
   private static final String PUBLIC_TENANT_RESOURCE = "/tenant/public/";
   private static final String PUBLIC_TENANT_RESOURCE_BY_ID = "/tenant/public/id/";
@@ -73,6 +81,7 @@ class TenantControllerIT {
   private static final String USERNAME = "not important";
   private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
   private static final String SCRIPT_CONTENT = "<script>error</script>";
+  private static final int PAGE_SIZE = 3;
 
   @Autowired private WebApplicationContext context;
 
@@ -716,5 +725,71 @@ class TenantControllerIT {
                     authentication(
                         builder.withUserRole(RESTRICTED_AGENCY_ADMIN.getValue()).build())))
         .andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void searchTenants_Should_returnOk_When_attemptedToGetTenantWithTenantAdminAuthority()
+      throws Exception {
+    // given
+    when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+
+    // when, then
+    this.mockMvc
+        .perform(
+            get(TENANTADMIN_SEARCH + "?query=*&page=1&perPage=10&field=NAME&order=ASC")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("_embedded", hasSize(PAGE_SIZE)));
+  }
+
+  @Test
+  void searchTenants_Should_returnForbidden_When_attemptedToGetTenantWithoutTenantAuthority()
+      throws Exception {
+    // when, then
+    this.mockMvc
+        .perform(get(TENANTADMIN_SEARCH + "?query=*&page=1&perPage=10&field=NAME&order=ASC"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void searchTenants_Should_returnCorrectTenant_When_idIsProvidedInQuery() throws Exception {
+    // given
+    final String tenantId = "1";
+    when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    // when, then
+    this.mockMvc
+        .perform(
+            get(TENANTADMIN_SEARCH + "?query=" + tenantId + "&page=1&perPage=10&order=ASC")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("_embedded", hasSize(1)))
+        .andExpect(jsonPath("_embedded[0].id").value(tenantId))
+        .andExpect(jsonPath("_embedded[0].name").value("Happylife Gmbh"))
+        .andExpect(jsonPath("_embedded[0].subdomain").value("happylife"))
+        .andExpect(jsonPath("_embedded[0].beraterCount").value(5));
+  }
+
+  @Test
+  void searchTenants_Should_returnCorrectTenant_When_nameIsProvidedInQuery() throws Exception {
+    // given
+    final String name = "host";
+    when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    // when, then
+    this.mockMvc
+        .perform(
+            get(TENANTADMIN_SEARCH + "?query=" + name + "&page=1&perPage=10&order=ASC")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("_embedded", hasSize(1)))
+        .andExpect(jsonPath("_embedded[0].id").value(3))
+        .andExpect(jsonPath("_embedded[0].name").value("localhost tenant"))
+        .andExpect(jsonPath("_embedded[0].subdomain").value("localhost"))
+        .andExpect(jsonPath("_embedded[0].beraterCount").value(12));
   }
 }

@@ -4,6 +4,7 @@ import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptio
 
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantEntity.TenantBase;
 import com.vi.tenantservice.api.repository.TenantRepository;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
@@ -13,12 +14,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
 @RequiredArgsConstructor
 public class TenantService {
+
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
 
@@ -70,5 +74,13 @@ public class TenantService {
 
   public List<TenantEntity> getAllTenants() {
     return tenantRepository.findAll();
+  }
+
+  public Page<TenantBase> findAllByInfix(String infix, PageRequest pageRequest) {
+    return tenantRepository.findAllByInfix(infix, pageRequest);
+  }
+
+  public List<TenantEntity> findAllByIds(List<Long> tenantIds) {
+    return tenantRepository.findAllByIdIn(tenantIds);
   }
 }

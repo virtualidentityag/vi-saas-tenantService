@@ -2,10 +2,17 @@ package com.vi.tenantservice.api.facade;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
@@ -324,6 +331,7 @@ class TenantServiceFacadeTest {
         .thenReturn(
             Lists.newArrayList(
                 new AdminResponseDTO().embedded(new AdminDTO().email("admin@admin.com"))));
+    when(authorisationService.hasAuthority(AuthorityValue.GET_TENANT_ADMIN_DATA)).thenReturn(true);
     // when
     Optional<MultilingualTenantDTO> tenantById = tenantServiceFacade.findMultilingualTenantById(ID);
     assertThat(tenantById).contains(tenantMultilingualDTO);

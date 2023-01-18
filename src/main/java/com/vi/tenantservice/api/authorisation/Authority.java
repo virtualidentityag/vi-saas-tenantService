@@ -21,7 +21,9 @@ public enum Authority {
           AuthorityValue.UPDATE_TENANT,
           AuthorityValue.GET_ALL_TENANTS,
           AuthorityValue.GET_TENANT,
-          AuthorityValue.CHANGE_LEGAL_CONTENT)),
+          AuthorityValue.CHANGE_LEGAL_CONTENT,
+          AuthorityValue.GET_TENANT_ADMIN_DATA)),
+
   SINGLE_TENANT_ADMIN(
       UserRole.SINGLE_TENANT_ADMIN,
       Lists.newArrayList(AuthorityValue.UPDATE_TENANT, AuthorityValue.GET_TENANT)),
@@ -49,5 +51,6 @@ public enum Authority {
     public static final String GET_ALL_TENANTS = PREFIX + "GET_ALL_TENANTS";
     public static final String GET_TENANT = PREFIX + "GET_TENANT";
     public static final String CHANGE_LEGAL_CONTENT = PREFIX + "CHANGE_LEGAL_CONTENT";
+    public static final String GET_TENANT_ADMIN_DATA = PREFIX + "GET_TENANT_ADMIN_DATA";
   }
 }

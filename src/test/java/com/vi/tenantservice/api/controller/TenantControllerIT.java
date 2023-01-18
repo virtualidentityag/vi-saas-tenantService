@@ -228,6 +228,7 @@ class TenantControllerIT {
             Lists.newArrayList(
                 adminResponseWithMail("admin@admin.com"),
                 adminResponseWithMail("admin1@admin.com")));
+
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     mockMvc
         .perform(

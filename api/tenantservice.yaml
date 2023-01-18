@@ -30,6 +30,67 @@ paths:
           description: UNAUTHORIZED - no/invalid Keycloak token
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
+
+  /tenantadmin/search:
+    get:
+      tags:
+        - tenant-controller
+      summary: 'Get tenants matching the given query [Auth: tenant-admin]'
+      operationId: searchTenants
+      parameters:
+        - name: query
+          in: query
+          description: URL-encoded infix to search for name or id.
+            A non-encoded star symbol searches for all.
+          required: true
+          schema:
+            type: string
+            minLength: 1
+        - name: page
+          in: query
+          description: Page number (first page = 1)
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: perPage
+          in: query
+          description: Number of items returned per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+        - name: field
+          in: query
+          description: field to sort by
+          schema:
+            type: string
+            enum: [ NAME, ID ]
+            default: NAME
+            pattern: '^(NAME|ID)$'
+        - name: order
+          in: query
+          description: sort order
+          schema:
+            type: string
+            enum: [ ASC, DESC ]
+            default: ASC
+            pattern: '^(ASC|DESC)$'
+      responses:
+        200:
+          description: OK - successful operation
+          content:
+            'application/hal+json':
+              schema:
+                $ref: '#/components/schemas/TenantsSearchResultDTO'
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        401:
+          description: UNAUTHORIZED - no/invalid role/authorization
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+      security:
+        - Bearer: [ ]
   /tenantadmin/{id}:
     put:
       tags:
@@ -482,4 +543,72 @@ components:
           additionalProperties:
             type: string
         confirmTermsAndConditions:
+          type: boolean
+
+    AdminTenantDTO:
+      type: object
+      required:
+        - id
+        - name
+        - subdomain
+      properties:
+        id:
+          type: long
+          example: 12132
+        name:
+          type: string
+          example: "Company name AG"
+          maxLength: 40
+        subdomain:
+          type: string
+          example: "companyname"
+          maxLength: 100
+        beraterCount:
+          type: integer
+          example: 10
+        adminEmails:
+          type: array
+          items:
+            type: string
+          example: "[admin1@ob.de, admin2@ob.de]"
+        createDate:
+          type: string
+        updateDate:
+          type: string
+
+    TenantsSearchResultDTO:
+      type: object
+      properties:
+        _embedded:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminTenantDTO'
+        _links:
+          $ref: '#/components/schemas/PaginationLinks'
+        total:
+          type: integer
+
+    PaginationLinks:
+      type: object
+      required:
+        - self
+      properties:
+        self:
+          $ref: '#/components/schemas/HalLink'
+        next:
+          $ref: '#/components/schemas/HalLink'
+        previous:
+          $ref: '#/components/schemas/HalLink'
+
+    HalLink:
+      type: object
+      required:
+        - href
+      properties:
+        href:
+          type: string
+        method:
+          type: string
+          enum: [ GET, POST, DELETE, PUT ]
+        templated:
           type: boolean

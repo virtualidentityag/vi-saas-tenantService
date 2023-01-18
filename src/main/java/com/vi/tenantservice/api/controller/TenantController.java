@@ -6,10 +6,13 @@ import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.TenantDTO;
+import com.vi.tenantservice.api.model.TenantsSearchResultDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
 import com.vi.tenantservice.generated.api.controller.TenantadminApi;
 import io.swagger.annotations.Api;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Optional;
 import javax.validation.Valid;
@@ -32,6 +35,7 @@ public class TenantController implements TenantApi, TenantadminApi {
 
   private final @NonNull TenantServiceFacade tenantServiceFacade;
   private final @NonNull AuthorisationService authorisationService;
+  private final @NonNull TenantDtoMapper tenantDtoMapper;
 
   @Override
   @PreAuthorize("hasAuthority('AUTHORIZATION_GET_TENANT')")
@@ -116,5 +120,22 @@ public class TenantController implements TenantApi, TenantadminApi {
     if (canAccessTenant) {
       return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     } else return new ResponseEntity<>(HttpStatus.UNAUTHORIZED);
+  }
+
+  @Override
+  @PreAuthorize("hasAuthority('AUTHORIZATION_SEARCH_TENANTS')")
+  public ResponseEntity<TenantsSearchResultDTO> searchTenants(
+      String query, Integer page, Integer perPage, String field, String order) {
+    var decodedInfix = URLDecoder.decode(query, StandardCharsets.UTF_8).trim();
+    var isAscending = order.equalsIgnoreCase("asc");
+    var mappedField = tenantDtoMapper.mappedFieldOf(field);
+    var resultMap =
+        tenantServiceFacade.findTenantsByInfix(
+            decodedInfix, page - 1, perPage, mappedField, isAscending);
+
+    var result =
+        tenantDtoMapper.tenantsSearchResultOf(resultMap, query, page, perPage, field, order);
+
+    return ResponseEntity.ok(result);
   }
 }

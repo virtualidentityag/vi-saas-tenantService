@@ -14,6 +14,7 @@ import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.TenantEntity.TenantBase;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
@@ -24,17 +25,23 @@ import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 
 /** Facade to encapsulate services and logic needed to manage tenants */
@@ -223,7 +230,7 @@ public class TenantServiceFacade {
       log.debug("Enriching tenant with admin email data");
       multilingualTenantDTO.setAdminEmails(getAdminEmails(tenantAdmins));
     } else {
-      log.debug("No tenant admins found for a given tenant ", multilingualTenantDTO.getId());
+      log.debug("No tenant admins found for a given tenant {}", multilingualTenantDTO.getId());
     }
   }
 
@@ -313,5 +320,57 @@ public class TenantServiceFacade {
     }
     var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain.get());
     return tenantFacadeAuthorisationService.canAccessTenant(tenantBySubdomain);
+  }
+
+  public Map<String, Object> findTenantsByInfix(
+      String infix, int pageNumber, Integer pageSize, String fieldName, boolean isAscending) {
+    var direction = isAscending ? Direction.ASC : Direction.DESC;
+    var pageRequest = PageRequest.of(pageNumber, pageSize, direction, fieldName);
+    Page<TenantBase> tenantPage = tenantService.findAllByInfix(infix, pageRequest);
+    var tenantIds = tenantPage.stream().map(TenantBase::getId).collect(Collectors.toList());
+    var fullTenants = tenantService.findAllByIds(tenantIds);
+    return mapOf(tenantPage, fullTenants);
+  }
+
+  private Map<String, Object> mapOf(Page<TenantBase> tenantPage, List<TenantEntity> fullTenants) {
+    var fullTenantsLookupMap =
+        fullTenants.stream().collect(Collectors.toMap(TenantEntity::getId, Function.identity()));
+
+    var tenants = new ArrayList<Map<String, Object>>();
+    tenantPage.forEach(
+        tenantBase -> {
+          var fullTenant = fullTenantsLookupMap.get(tenantBase.getId());
+          var tenantMap = mapOf(tenantBase, fullTenant);
+          tenants.add(tenantMap);
+        });
+
+    return Map.of(
+        "totalElements",
+        (int) tenantPage.getTotalElements(),
+        "isFirstPage",
+        tenantPage.isFirst(),
+        "isLastPage",
+        tenantPage.isLast(),
+        "tenants",
+        tenants);
+  }
+
+  private Map<String, Object> mapOf(TenantBase tenantBase, TenantEntity fullTenant) {
+    Map<String, Object> map = new HashMap<>();
+    map.put("id", tenantBase.getId());
+    map.put("name", tenantBase.getName());
+    map.put("subdomain", fullTenant.getSubdomain());
+    map.put("beraterCount", fullTenant.getLicensingAllowedNumberOfUsers());
+    List<AdminResponseDTO> tenantAdmins =
+        userAdminService.getTenantAdmins(tenantBase.getId().intValue());
+    map.put("adminEmails", getAdminEmails(tenantAdmins));
+    map.put(
+        "createDate",
+        nonNull(fullTenant.getCreateDate()) ? fullTenant.getCreateDate().toString() : null);
+    map.put(
+        "createDate",
+        nonNull(fullTenant.getUpdateDate()) ? fullTenant.getUpdateDate().toString() : null);
+
+    return map;
   }
 }

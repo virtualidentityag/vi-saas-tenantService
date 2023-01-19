@@ -17,11 +17,12 @@ public interface TenantRepository extends JpaRepository<TenantEntity, Long> {
           "SELECT t.id as id, t.name as name "
               + "FROM TenantEntity t "
               + "WHERE"
-              + "  ?1 = '*' "
+              + "  id != 0L "
+              + "  AND ( ?1 = '*' "
               + "  OR CONVERT(t.id,char) LIKE CONCAT('%', UPPER(?1), '%') "
               + "  OR UPPER(t.name) LIKE CONCAT('%', UPPER(?1), '%')"
-              + "  ")
-  Page<TenantBase> findAllByInfix(String infix, Pageable pageable);
+              + "  )")
+  Page<TenantBase> findAllExceptTechnicalByInfix(String infix, Pageable pageable);
 
   List<TenantEntity> findAllByIdIn(List<Long> tenantIds);
 }

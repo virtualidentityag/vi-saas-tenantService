@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.facade;
 
 import static java.util.Objects.nonNull;
+import static liquibase.repackaged.org.apache.commons.collections4.ListUtils.emptyIfNull;
 
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
@@ -53,6 +54,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TenantServiceFacade {
 
+  private static final int TECHNICAL_TENANT_ID = 0;
   private final @NonNull TenantService tenantService;
   private final @NonNull TenantConverter tenantConverter;
   private final @NonNull TenantInputSanitizer tenantInputSanitizer;
@@ -332,25 +334,29 @@ public class TenantServiceFacade {
     return tenantFacadeAuthorisationService.canAccessTenant(tenantBySubdomain);
   }
 
-  public Map<String, Object> findTenantsByInfix(
+  public Map<String, Object> findTenantsExceptTechnicalByInfix(
       String infix, int pageNumber, Integer pageSize, String fieldName, boolean isAscending) {
     var direction = isAscending ? Direction.ASC : Direction.DESC;
     var pageRequest = PageRequest.of(pageNumber, pageSize, direction, fieldName);
-    Page<TenantBase> tenantPage = tenantService.findAllByInfix(infix, pageRequest);
+    Page<TenantBase> tenantPage = tenantService.findAllExceptTechnicalByInfix(infix, pageRequest);
     var tenantIds = tenantPage.stream().map(TenantBase::getId).collect(Collectors.toList());
     var fullTenants = tenantService.findAllByIds(tenantIds);
     return mapOf(tenantPage, fullTenants);
   }
 
-  public List<AdminTenantDTO> getAllAdminTenants() {
+  public List<AdminTenantDTO> getAllAdminTenantsExceptTechnical() {
     var tenantEntities = tenantService.getAllTenants();
+    excludeTechnicalTenantFrom(tenantEntities);
     List<AdminTenantDTO> adminTenantDTOS =
         tenantEntities.stream().map(tenantConverter::toAdminTenantDTO).collect(Collectors.toList());
-
     adminTenantDTOS.forEach(
         adminTenantDTO ->
             enrichWithAdminData(adminTenantDTO.getId().intValue(), adminTenantDTO::setAdminEmails));
     return adminTenantDTOS;
+  }
+
+  private void excludeTechnicalTenantFrom(List<TenantEntity> tenants) {
+    emptyIfNull(tenants).removeIf(tenant -> tenant.getId() == TECHNICAL_TENANT_ID);
   }
 
   private Map<String, Object> mapOf(Page<TenantBase> tenantPage, List<TenantEntity> fullTenants) {

@@ -76,8 +76,8 @@ public class TenantService {
     return tenantRepository.findAll();
   }
 
-  public Page<TenantBase> findAllByInfix(String infix, PageRequest pageRequest) {
-    return tenantRepository.findAllByInfix(infix, pageRequest);
+  public Page<TenantBase> findAllExceptTechnicalByInfix(String infix, PageRequest pageRequest) {
+    return tenantRepository.findAllExceptTechnicalByInfix(infix, pageRequest);
   }
 
   public List<TenantEntity> findAllByIds(List<Long> tenantIds) {

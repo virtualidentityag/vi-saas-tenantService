@@ -131,7 +131,7 @@ public class TenantController implements TenantApi, TenantadminApi {
     var isAscending = order.equalsIgnoreCase("asc");
     var mappedField = tenantDtoMapper.mappedFieldOf(field);
     var resultMap =
-        tenantServiceFacade.findTenantsByInfix(
+        tenantServiceFacade.findTenantsExceptTechnicalByInfix(
             decodedInfix, page - 1, perPage, mappedField, isAscending);
 
     var result =
@@ -144,7 +144,7 @@ public class TenantController implements TenantApi, TenantadminApi {
   @PreAuthorize(
       "hasAuthority('AUTHORIZATION_GET_ALL_TENANTS') AND hasAuthority('AUTHORIZATION_GET_TENANT_ADMIN_DATA')")
   public ResponseEntity<List<AdminTenantDTO>> getAllTenantsWithAdminData() {
-    var tenants = tenantServiceFacade.getAllAdminTenants();
+    var tenants = tenantServiceFacade.getAllAdminTenantsExceptTechnical();
     return !CollectionUtils.isEmpty(tenants)
         ? new ResponseEntity<>(tenants, HttpStatus.OK)
         : new ResponseEntity<>(HttpStatus.NO_CONTENT);

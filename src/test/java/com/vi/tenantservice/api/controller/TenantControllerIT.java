@@ -454,8 +454,8 @@ class TenantControllerIT {
                 .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                 .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(3)))
-        .andExpect(jsonPath("$[0].id").value(1))
+        .andExpect(jsonPath("$", hasSize(4)))
+        .andExpect(jsonPath("$[0].id").value(0))
         .andExpect(jsonPath("$[0].name").exists())
         .andExpect(jsonPath("$[0].subdomain").exists())
         .andExpect(jsonPath("$[0].licensing").exists())
@@ -791,6 +791,39 @@ class TenantControllerIT {
         .andExpect(jsonPath("_embedded[0].name").value("localhost tenant"))
         .andExpect(jsonPath("_embedded[0].subdomain").value("localhost"))
         .andExpect(jsonPath("_embedded[0].beraterCount").value(12));
+  }
+
+  @Test
+  void searchTenants_Should_returnEmpty_When_technicalTenantIdIsProvidedInQuery() throws Exception {
+    // given
+    final String tenantId = "0";
+    when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    // when, then
+    this.mockMvc
+        .perform(
+            get(TENANTADMIN_SEARCH + "?query=" + tenantId + "&page=1&perPage=10&order=ASC")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("_embedded", hasSize(0)));
+  }
+
+  @Test
+  void searchTenants_Should_returnEmpty_When_technicalTenantNameIsProvidedInQuery()
+      throws Exception {
+    // given
+    final String name = "notenant";
+    when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    // when, then
+    this.mockMvc
+        .perform(
+            get(TENANTADMIN_SEARCH + "?query=" + name + "&page=1&perPage=10&order=ASC")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build())))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("_embedded", hasSize(0)));
   }
 
   @Test

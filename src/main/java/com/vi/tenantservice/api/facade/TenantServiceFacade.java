@@ -5,6 +5,7 @@ import static java.util.Objects.nonNull;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
 import com.vi.tenantservice.api.converter.TenantConverter;
+import com.vi.tenantservice.api.converter.TenantExtendedSettingsConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
@@ -25,6 +26,7 @@ import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -64,6 +66,8 @@ public class TenantServiceFacade {
   private final @NonNull ApplicationSettingsService applicationSettingsService;
 
   private final @NonNull UserAdminService userAdminService;
+
+  private final @NonNull TenantExtendedSettingsConverter tenantExtendedSettingsConverter;
 
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
@@ -221,9 +225,25 @@ public class TenantServiceFacade {
   }
 
   private MultilingualTenantDTO getConvertedAndEnrichedTenant(Optional<TenantEntity> tenantById) {
-    var multilingualTenantDTO = tenantConverter.toMultilingualDTO(tenantById.get());
+    TenantEntity tenant = tenantById.get();
+    var multilingualTenantDTO = tenantConverter.toMultilingualDTO(tenant);
     enrichWithAdminDataIfSuperadmin(multilingualTenantDTO);
+    enrichWithConsultingTypeSettings(multilingualTenantDTO, tenant.getId());
+
     return multilingualTenantDTO;
+  }
+
+  private void enrichWithConsultingTypeSettings(
+      MultilingualTenantDTO multilingualTenantDTO, Long tenantId) {
+    FullConsultingTypeResponseDTO consultingTypesByTenantId =
+        consultingTypeService.getConsultingTypesByTenantId(tenantId.intValue());
+    if (consultingTypesByTenantId != null) {
+      multilingualTenantDTO
+          .getSettings()
+          .setExtendedSettings(
+              tenantExtendedSettingsConverter.convertExtendedTenantSettings(
+                  consultingTypesByTenantId));
+    }
   }
 
   private void enrichWithAdminDataIfSuperadmin(MultilingualTenantDTO multilingualTenantDTO) {

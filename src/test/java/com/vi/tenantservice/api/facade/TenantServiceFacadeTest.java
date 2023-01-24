@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
 import com.vi.tenantservice.api.converter.TenantConverter;
+import com.vi.tenantservice.api.converter.TenantExtendedSettingsConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.MultilingualContent;
@@ -30,6 +31,7 @@ import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminDTO;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import java.util.HashMap;
@@ -50,13 +52,22 @@ class TenantServiceFacadeTest {
   private static final long ID = 1L;
   public static final String DE = "de";
   public static final String SINGLE_DOMAIN_SUBDOMAIN_NAME = "app";
-  private final MultilingualTenantDTO tenantMultilingualDTO = new MultilingualTenantDTO();
+  private final MultilingualTenantDTO tenantMultilingualDTO = getMultilingualTenantDTO();
+
+  private MultilingualTenantDTO getMultilingualTenantDTO() {
+    var tenantDTO = new MultilingualTenantDTO();
+    tenantDTO.settings(new Settings());
+    return tenantDTO;
+  }
+
   private final TenantDTO tenantDTO = new TenantDTO();
-  private final MultilingualTenantDTO sanitizedTenantDTO = new MultilingualTenantDTO();
+  private final MultilingualTenantDTO sanitizedTenantDTO = getMultilingualTenantDTO();
   private final RestrictedTenantDTO restrictedTenantDTO = new RestrictedTenantDTO();
   private final TenantEntity tenantEntity = new TenantEntity();
 
   @Mock private TenantConverter converter;
+
+  @Mock private TenantExtendedSettingsConverter tenantExtendedSettingsConverter;
 
   @Mock private TenantService tenantService;
 
@@ -325,7 +336,10 @@ class TenantServiceFacadeTest {
   void findMultilingualTenantById_Should_findTenant_When_ExistingIdIsPassedForSingleTenantAdmin() {
     // given
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
+    tenantEntity.setId(1L);
     tenantMultilingualDTO.setId(1L);
+    when(consultingTypeService.getConsultingTypesByTenantId(Mockito.anyInt()))
+        .thenReturn(new FullConsultingTypeResponseDTO());
     when(converter.toMultilingualDTO(tenantEntity)).thenReturn(tenantMultilingualDTO);
     when(userAdminService.getTenantAdmins(1))
         .thenReturn(

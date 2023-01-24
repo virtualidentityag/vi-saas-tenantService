@@ -5,6 +5,7 @@ import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControl
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import java.io.File;
 import java.io.IOException;
 import java.net.MalformedURLException;
@@ -70,6 +71,13 @@ public class ConsultingTypeService {
         consultingTypeServiceApiControllerFactory.createControllerApi();
     addDefaultHeaders(consultingTypeControllerApi.getApiClient());
     consultingTypeControllerApi.createConsultingType(consultingTypeDTO);
+  }
+
+  public FullConsultingTypeResponseDTO getConsultingTypesByTenantId(Integer tenantId) {
+    var consultingTypeControllerApi =
+        consultingTypeServiceApiControllerFactory.createControllerApi();
+
+    return consultingTypeControllerApi.getFullConsultingTypeByTenantId(tenantId);
   }
 
   private void addDefaultHeaders(

@@ -27,6 +27,7 @@ import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
+import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
@@ -35,6 +36,11 @@ import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -100,6 +106,8 @@ class TenantControllerIT {
   @MockBean SecurityHeaderSupplier securityHeaderSupplier;
   @MockBean TenantResolverService tenantResolverService;
 
+  @MockBean ConsultingTypeService consultingTypeService;
+
   @MockBean UserAdminService userAdminService;
 
   @MockBean SubdomainExtractor subdomainExtractor;
@@ -114,6 +122,7 @@ class TenantControllerIT {
         .thenReturn(consultingTypeControllerApi);
     when(consultingTypeControllerApi.getApiClient())
         .thenReturn(mock(com.vi.tenantservice.consultingtypeservice.generated.ApiClient.class));
+
     when(securityHeaderSupplier.getCsrfHttpHeaders()).thenReturn(mock(HttpHeaders.class));
     when(securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders())
         .thenReturn(mock(HttpHeaders.class));
@@ -229,14 +238,30 @@ class TenantControllerIT {
   }
 
   @Test
-  void getTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
-      throws Exception {
+  void
+      getMultilingualTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
+          throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     Mockito.when(userAdminService.getTenantAdmins(1))
         .thenReturn(
             Lists.newArrayList(
                 adminResponseWithMail("admin@admin.com"),
                 adminResponseWithMail("admin1@admin.com")));
+    when(consultingTypeService.getConsultingTypesByTenantId(1))
+        .thenReturn(
+            new FullConsultingTypeResponseDTO()
+                .languageFormal(true)
+                .sendFurtherStepsMessage(true)
+                .sendSaveSessionDataMessage(true)
+                .welcomeMessage(
+                    new WelcomeMessageDTO().welcomeMessageText("welcome").sendWelcomeMessage(true))
+                .notifications(
+                    new NotificationsDTO()
+                        .teamSessions(
+                            new NotificationsDTOTeamSessions()
+                                .newMessage(
+                                    new TeamSessionsDTONewMessage().allTeamConsultants(true))))
+                .isVideoCallAllowed(true));
 
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     mockMvc
@@ -246,7 +271,18 @@ class TenantControllerIT {
                 .contentType(APPLICATION_JSON)
                 .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("adminEmails", contains("admin@admin.com", "admin1@admin.com")));
+        .andExpect(jsonPath("adminEmails", contains("admin@admin.com", "admin1@admin.com")))
+        .andExpect(jsonPath("settings.extendedSettings.isVideoCallAllowed", is(true)))
+        .andExpect(jsonPath("settings.extendedSettings.languageFormal", is(true)))
+        .andExpect(jsonPath("settings.extendedSettings.sendFurtherStepsMessage", is(true)))
+        .andExpect(
+            jsonPath("settings.extendedSettings.welcomeMessage.sendWelcomeMessage", is(true)))
+        .andExpect(
+            jsonPath("settings.extendedSettings.welcomeMessage.welcomeMessageText", is("welcome")))
+        .andExpect(
+            jsonPath(
+                "settings.extendedSettings.notifications.teamSessions.newMessage.allTeamConsultants",
+                is(true)));
   }
 
   private com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO

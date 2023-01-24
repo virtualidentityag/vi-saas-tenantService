@@ -77,6 +77,7 @@ public class ConsultingTypeService {
     var consultingTypeControllerApi =
         consultingTypeServiceApiControllerFactory.createControllerApi();
 
+    addDefaultHeaders(consultingTypeControllerApi.getApiClient());
     return consultingTypeControllerApi.getFullConsultingTypeByTenantId(tenantId);
   }
 

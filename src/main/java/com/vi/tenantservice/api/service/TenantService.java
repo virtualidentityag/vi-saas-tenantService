@@ -46,15 +46,17 @@ public class TenantService {
 
   private void overrideSubdomainIfNeededForSingleDomainMultitenancy(TenantEntity tenantEntity) {
     if (multitenancyWithSingleDomain) {
-      String mainTenantSubdomain =
-          applicationSettingsService
-              .getApplicationSettings()
-              .getMainTenantSubdomainForSingleDomainMultitenancy()
-              .getValue();
-      if (shouldOverrideSubdomain(tenantEntity, mainTenantSubdomain)) {
+      if (shouldOverrideSubdomain(tenantEntity, getMainTenantSubdomain())) {
         tenantEntity.setSubdomain(StringUtils.EMPTY);
       }
     }
+  }
+
+  private String getMainTenantSubdomain() {
+    return applicationSettingsService
+        .getApplicationSettings()
+        .getMainTenantSubdomainForSingleDomainMultitenancy()
+        .getValue();
   }
 
   private void setCreateAndUpdateDate(TenantEntity tenantEntity) {
@@ -82,7 +84,8 @@ public class TenantService {
   }
 
   private void validateTenant(TenantEntity tenantEntity) {
-    if (!multitenancyWithSingleDomain) {
+    if (!multitenancyWithSingleDomain
+        || getMainTenantSubdomain().equals(tenantEntity.getSubdomain())) {
       validateTenantSubdomainDoesNotExist(tenantEntity);
     }
   }

@@ -10,4 +10,5 @@
   <include file="db/changelog/changeset/0005_change_tenant_settings_structure/0005-changeSet.xml"/>
   <include file="db/changelog/changeset/0006_migrate_content_to_multilingual_structure/0006-changeSet.xml"/>
   <include file="db/changelog/changeset/0007_content_activation_dates/0007-changeSet.xml"/>
+  <include file="db/changelog/changeset/0008_drop_unique_constraint_for_subdomain/0008-changeSet.xml"/>
 </databaseChangeLog>

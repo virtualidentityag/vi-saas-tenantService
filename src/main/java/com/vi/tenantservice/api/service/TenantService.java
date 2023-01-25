@@ -6,6 +6,7 @@ import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantBase;
 import com.vi.tenantservice.api.repository.TenantRepository;
+import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
@@ -13,6 +14,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -28,10 +30,31 @@ public class TenantService {
 
   private final @NonNull TenantRepository tenantRepository;
 
+  private final @NonNull ApplicationSettingsService applicationSettingsService;
+
   public TenantEntity create(TenantEntity tenantEntity) {
     validateTenant(tenantEntity);
+    overrideSubdomainIfNeededForSingleDomainMultitenancy(tenantEntity);
     setCreateAndUpdateDate(tenantEntity);
     return tenantRepository.save(tenantEntity);
+  }
+
+  private boolean shouldOverrideSubdomain(TenantEntity tenantEntity, String mainTenantSubdomain) {
+    return tenantEntity.getSubdomain() == null
+        || !tenantEntity.getSubdomain().equals(mainTenantSubdomain);
+  }
+
+  private void overrideSubdomainIfNeededForSingleDomainMultitenancy(TenantEntity tenantEntity) {
+    if (multitenancyWithSingleDomain) {
+      String mainTenantSubdomain =
+          applicationSettingsService
+              .getApplicationSettings()
+              .getMainTenantSubdomainForSingleDomainMultitenancy()
+              .getValue();
+      if (shouldOverrideSubdomain(tenantEntity, mainTenantSubdomain)) {
+        tenantEntity.setSubdomain(StringUtils.EMPTY);
+      }
+    }
   }
 
   private void setCreateAndUpdateDate(TenantEntity tenantEntity) {
@@ -53,6 +76,7 @@ public class TenantService {
 
   public TenantEntity update(TenantEntity tenantEntity) {
     validateTenant(tenantEntity);
+    overrideSubdomainIfNeededForSingleDomainMultitenancy(tenantEntity);
     tenantEntity.setUpdateDate(LocalDateTime.now(ZoneOffset.UTC));
     return tenantRepository.save(tenantEntity);
   }

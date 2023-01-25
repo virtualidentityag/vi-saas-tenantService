@@ -370,7 +370,6 @@ components:
           required:
             - id
             - name
-            - subdomain
           properties:
             id:
               type: long

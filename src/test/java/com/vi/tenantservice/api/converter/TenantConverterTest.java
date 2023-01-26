@@ -27,7 +27,7 @@ class TenantConverterTest {
             .withLicensing()
             .withSettings()
             .build();
-
+    tenantDTO.getSettings().extendedSettings(null);
     // when
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
@@ -53,6 +53,7 @@ class TenantConverterTest {
             .withLicensing()
             .withSettings()
             .build();
+    tenantDTO.getSettings().extendedSettings(null);
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when

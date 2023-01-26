@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.util;
 
 import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
@@ -102,7 +103,9 @@ public class MultilingualTenantTestDataBuilder {
         .featureGroupChatV2Enabled(true)
         .featureToolsEnabled(true)
         .featureToolsOICDToken("1234")
-        .featureAttachmentUploadDisabled(false);
+        .featureAttachmentUploadDisabled(false)
+        .extendedSettings(
+            new ConsultingTypePatchDTO().isVideoCallAllowed(true).languageFormal(true));
   }
 
   private Licensing licensing(int numberOfUsers) {

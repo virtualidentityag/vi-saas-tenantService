@@ -1,8 +1,8 @@
 package com.vi.tenantservice.api.converter;
 
-import com.vi.tenantservice.api.model.ExtendedTenantSettings;
-import com.vi.tenantservice.api.model.ExtendedTenantSettingsNotifications;
-import com.vi.tenantservice.api.model.ExtendedTenantSettingsWelcomeMessage;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTONotifications;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTOWelcomeMessage;
 import com.vi.tenantservice.api.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.api.model.TeamSessionsDTONewMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
@@ -12,42 +12,42 @@ import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
-public class TenantExtendedSettingsConverter {
+public class ConsultingTypePatchDTOConverter {
 
-  public ExtendedTenantSettings convertExtendedTenantSettings(
+  public ConsultingTypePatchDTO convertConsultingTypePatchDTO(
       FullConsultingTypeResponseDTO consultingTypeResponseDTO) {
-    ExtendedTenantSettings extendedTenantSettings = initializeExtendedTenantSettings();
-    extendedTenantSettings.setLanguageFormal(consultingTypeResponseDTO.getLanguageFormal());
-    extendedTenantSettings.setIsVideoCallAllowed(consultingTypeResponseDTO.getIsVideoCallAllowed());
+    ConsultingTypePatchDTO consultingTypePatchDTO = initializeExtendedTenantSettings();
+    consultingTypePatchDTO.setLanguageFormal(consultingTypeResponseDTO.getLanguageFormal());
+    consultingTypePatchDTO.setIsVideoCallAllowed(consultingTypeResponseDTO.getIsVideoCallAllowed());
 
     if (consultingTypeResponseDTO.getWelcomeMessage() != null) {
-      extendedTenantSettings
+      consultingTypePatchDTO
           .getWelcomeMessage()
           .setSendWelcomeMessage(
               consultingTypeResponseDTO.getWelcomeMessage().getSendWelcomeMessage());
-      extendedTenantSettings
+      consultingTypePatchDTO
           .getWelcomeMessage()
           .setWelcomeMessageText(
               consultingTypeResponseDTO.getWelcomeMessage().getWelcomeMessageText());
     }
 
-    extendedTenantSettings.setSendFurtherStepsMessage(
+    consultingTypePatchDTO.setSendFurtherStepsMessage(
         consultingTypeResponseDTO.getSendFurtherStepsMessage());
-    extendedTenantSettings.setSendSaveSessionDataMessage(
+    consultingTypePatchDTO.setSendSaveSessionDataMessage(
         consultingTypeResponseDTO.getSendSaveSessionDataMessage());
 
-    convertNotifications(consultingTypeResponseDTO, extendedTenantSettings);
-    return extendedTenantSettings;
+    convertNotifications(consultingTypeResponseDTO, consultingTypePatchDTO);
+    return consultingTypePatchDTO;
   }
 
   private void convertNotifications(
       FullConsultingTypeResponseDTO consultingTypeResponseDTO,
-      ExtendedTenantSettings extendedTenantSettings) {
+      ConsultingTypePatchDTO consultingTypePatchDTO) {
     NotificationsDTO notifications = consultingTypeResponseDTO.getNotifications();
     if (notifications != null
         && notifications.getTeamSessions() != null
         && notifications.getTeamSessions().getNewMessage() != null) {
-      extendedTenantSettings
+      consultingTypePatchDTO
           .getNotifications()
           .getTeamSessions()
           .getNewMessage()
@@ -56,13 +56,13 @@ public class TenantExtendedSettingsConverter {
     }
   }
 
-  private ExtendedTenantSettings initializeExtendedTenantSettings() {
-    ExtendedTenantSettings extendedTenantSettings = new ExtendedTenantSettings();
-    extendedTenantSettings.setNotifications(
-        new ExtendedTenantSettingsNotifications()
+  private ConsultingTypePatchDTO initializeExtendedTenantSettings() {
+    ConsultingTypePatchDTO consultingTypePatchDTO = new ConsultingTypePatchDTO();
+    consultingTypePatchDTO.setNotifications(
+        new ConsultingTypePatchDTONotifications()
             .teamSessions(
                 new NotificationsDTOTeamSessions().newMessage(new TeamSessionsDTONewMessage())));
-    extendedTenantSettings.setWelcomeMessage(new ExtendedTenantSettingsWelcomeMessage());
-    return extendedTenantSettings;
+    consultingTypePatchDTO.setWelcomeMessage(new ConsultingTypePatchDTOWelcomeMessage());
+    return consultingTypePatchDTO;
   }
 }

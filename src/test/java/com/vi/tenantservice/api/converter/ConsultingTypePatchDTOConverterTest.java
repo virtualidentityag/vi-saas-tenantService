@@ -2,7 +2,7 @@ package com.vi.tenantservice.api.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.vi.tenantservice.api.model.ExtendedTenantSettings;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
@@ -14,9 +14,9 @@ import org.mockito.InjectMocks;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class TenantExtendedSettingsConverterTest {
+class ConsultingTypePatchDTOConverterTest {
 
-  @InjectMocks TenantExtendedSettingsConverter tenantExtendedSettingsConverter;
+  @InjectMocks ConsultingTypePatchDTOConverter consultingTypePatchDTOConverter;
 
   @Test
   void convertExtendedTenantSettings_Should_ConvertConsultingTypeSettings() {
@@ -37,20 +37,20 @@ class TenantExtendedSettingsConverterTest {
                     .newMessage(new TeamSessionsDTONewMessage().allTeamConsultants(true))));
 
     // when
-    ExtendedTenantSettings extendedTenantSettings =
-        tenantExtendedSettingsConverter.convertExtendedTenantSettings(
+    ConsultingTypePatchDTO consultingTypePatchDTO =
+        consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(
             fullConsultingTypeResponseDTO);
 
     // then
-    assertThat(extendedTenantSettings.getWelcomeMessage().getWelcomeMessageText())
+    assertThat(consultingTypePatchDTO.getWelcomeMessage().getWelcomeMessageText())
         .isEqualTo("welcome");
-    assertThat(extendedTenantSettings.getWelcomeMessage().getSendWelcomeMessage()).isTrue();
-    assertThat(extendedTenantSettings.getIsVideoCallAllowed()).isTrue();
-    assertThat(extendedTenantSettings.getLanguageFormal()).isTrue();
-    assertThat(extendedTenantSettings.getSendFurtherStepsMessage()).isTrue();
-    assertThat(extendedTenantSettings.getSendSaveSessionDataMessage()).isTrue();
+    assertThat(consultingTypePatchDTO.getWelcomeMessage().getSendWelcomeMessage()).isTrue();
+    assertThat(consultingTypePatchDTO.getIsVideoCallAllowed()).isTrue();
+    assertThat(consultingTypePatchDTO.getLanguageFormal()).isTrue();
+    assertThat(consultingTypePatchDTO.getSendFurtherStepsMessage()).isTrue();
+    assertThat(consultingTypePatchDTO.getSendSaveSessionDataMessage()).isTrue();
     assertThat(
-            extendedTenantSettings
+            consultingTypePatchDTO
                 .getNotifications()
                 .getTeamSessions()
                 .getNewMessage()
@@ -72,20 +72,20 @@ class TenantExtendedSettingsConverterTest {
     fullConsultingTypeResponseDTO.sendSaveSessionDataMessage(true);
 
     // when
-    ExtendedTenantSettings extendedTenantSettings =
-        tenantExtendedSettingsConverter.convertExtendedTenantSettings(
+    ConsultingTypePatchDTO consultingTypePatchDTO =
+        consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(
             fullConsultingTypeResponseDTO);
 
     // then
-    assertThat(extendedTenantSettings.getWelcomeMessage().getWelcomeMessageText())
+    assertThat(consultingTypePatchDTO.getWelcomeMessage().getWelcomeMessageText())
         .isEqualTo("welcome");
-    assertThat(extendedTenantSettings.getWelcomeMessage().getSendWelcomeMessage()).isTrue();
-    assertThat(extendedTenantSettings.getIsVideoCallAllowed()).isTrue();
-    assertThat(extendedTenantSettings.getLanguageFormal()).isTrue();
-    assertThat(extendedTenantSettings.getSendFurtherStepsMessage()).isTrue();
-    assertThat(extendedTenantSettings.getSendSaveSessionDataMessage()).isTrue();
+    assertThat(consultingTypePatchDTO.getWelcomeMessage().getSendWelcomeMessage()).isTrue();
+    assertThat(consultingTypePatchDTO.getIsVideoCallAllowed()).isTrue();
+    assertThat(consultingTypePatchDTO.getLanguageFormal()).isTrue();
+    assertThat(consultingTypePatchDTO.getSendFurtherStepsMessage()).isTrue();
+    assertThat(consultingTypePatchDTO.getSendSaveSessionDataMessage()).isTrue();
     assertThat(
-            extendedTenantSettings
+            consultingTypePatchDTO
                 .getNotifications()
                 .getTeamSessions()
                 .getNewMessage()

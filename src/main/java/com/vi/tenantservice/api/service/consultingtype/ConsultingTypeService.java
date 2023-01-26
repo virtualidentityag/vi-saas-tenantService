@@ -5,6 +5,7 @@ import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControl
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import java.io.File;
 import java.io.IOException;
@@ -63,14 +64,20 @@ public class ConsultingTypeService {
     }
   }
 
-  private void createConsultingType(
-      com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTO
-          consultingTypeDTO)
+  private void createConsultingType(ConsultingTypeDTO consultingTypeDTO)
       throws RestClientException {
     var consultingTypeControllerApi =
         consultingTypeServiceApiControllerFactory.createControllerApi();
     addDefaultHeaders(consultingTypeControllerApi.getApiClient());
     consultingTypeControllerApi.createConsultingType(consultingTypeDTO);
+  }
+
+  public FullConsultingTypeResponseDTO patchConsultingType(
+      Integer id, ConsultingTypePatchDTO consultingTypeDTO) throws RestClientException {
+    var consultingTypeControllerApi =
+        consultingTypeServiceApiControllerFactory.createControllerApi();
+    addDefaultHeaders(consultingTypeControllerApi.getApiClient());
+    return consultingTypeControllerApi.patchConsultingType(id, consultingTypeDTO);
   }
 
   public FullConsultingTypeResponseDTO getConsultingTypesByTenantId(Integer tenantId) {

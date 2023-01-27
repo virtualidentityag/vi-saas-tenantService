@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.facade;
 
 import static java.util.Objects.nonNull;
 import static liquibase.repackaged.org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
@@ -192,15 +193,28 @@ public class TenantServiceFacade {
     }
   }
 
-  private void updateExtendedSettings(MultilingualTenantDTO sanitizedTenantDTO, Long tenantId) {
+  private void updateExtendedSettingsAsConsultingType(MultilingualTenantDTO sanitizedTenantDTO, Long tenantId) {
     FullConsultingTypeResponseDTO consultingTypesByTenantId =
         consultingTypeService.getConsultingTypesByTenantId(tenantId.intValue());
 
     if (sanitizedTenantDTO.getSettings() != null
         && sanitizedTenantDTO.getSettings().getExtendedSettings() != null)
-      consultingTypeService.patchConsultingType(
-          consultingTypesByTenantId.getId(),
-          convertModels(sanitizedTenantDTO.getSettings().getExtendedSettings()));
+
+      if (extendedTenantSettingsChanged(consultingTypesByTenantId, sanitizedTenantDTO.getSettings().getExtendedSettings())) {
+        consultingTypeService.patchConsultingType(
+            consultingTypesByTenantId.getId(),
+            convertModels(sanitizedTenantDTO.getSettings().getExtendedSettings()));
+      } else {
+        log.debug("Skipping consulting types update during tenant update, these settings did not change");
+      }
+  }
+
+  private boolean extendedTenantSettingsChanged(
+      FullConsultingTypeResponseDTO consultingTypesByTenantId,
+      ConsultingTypePatchDTO newExtendedTenantSettings) {
+    ConsultingTypePatchDTO existingExtendedTenantSettings = consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(
+        consultingTypesByTenantId);
+    return !nullSafeEquals(newExtendedTenantSettings, existingExtendedTenantSettings);
   }
 
   private com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
@@ -218,10 +232,10 @@ public class TenantServiceFacade {
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(
         sanitizedTenantDTO, existingTenantEntity);
     var updatedEntity = tenantConverter.toEntity(existingTenantEntity, sanitizedTenantDTO);
-    log.info("Tenant with id {} updated", existingTenantEntity.getId());
     setContentActivationDates(updatedEntity, sanitizedTenantDTO);
     updatedEntity = tenantService.update(updatedEntity);
-    updateExtendedSettings(sanitizedTenantDTO, existingTenantEntity.getId());
+    updateExtendedSettingsAsConsultingType(sanitizedTenantDTO, existingTenantEntity.getId());
+    log.info("Tenant with id {} updated", existingTenantEntity.getId());
     return getConvertedAndEnrichedTenant(updatedEntity);
   }
 

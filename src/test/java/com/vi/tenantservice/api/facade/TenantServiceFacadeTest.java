@@ -280,7 +280,7 @@ class TenantServiceFacadeTest {
 
   @Test
   void
-      updateTenant_Should_updateTenant_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
+      updateTenant_Should_updateTenantAndExtendedTenantSettings_When_tenantIsFoundAndUserIsSingleTenantAdminForThatTenant() {
     // given
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
@@ -306,6 +306,37 @@ class TenantServiceFacadeTest {
                 com.vi.tenantservice.consultingtypeservice.generated.web.model
                     .ConsultingTypePatchDTO.class));
   }
+
+  @Test
+  void
+  updateTenant_Should_updateTenantButNotExtendedTenantSettings_When_tenantIsFoundAndExtendedTenantSettingsDidNotChange() {
+    // given
+    when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
+    when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
+    when(converter.toEntity(
+        Mockito.any(TenantEntity.class), Mockito.any(MultilingualTenantDTO.class)))
+        .thenReturn(tenantEntity);
+    when(tenantService.update(tenantEntity)).thenReturn(tenantEntity);
+    when(converter.toMultilingualDTO(tenantEntity)).thenReturn(sanitizedTenantDTO);
+
+    tenantEntity.setId(ID);
+    givenConsultingTypeReturnsConsultingTypeByTenantId();
+    when(consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(Mockito.any(FullConsultingTypeResponseDTO.class))).thenReturn(sanitizedTenantDTO.getSettings().getExtendedSettings());
+    // when
+    tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
+
+    // then
+    verify(tenantService).findTenantById(ID);
+    verify(converter).toEntity(tenantEntity, sanitizedTenantDTO);
+    verify(tenantService).update(tenantEntity);
+    verify(consultingTypeService, never())
+        .patchConsultingType(
+            Mockito.anyInt(),
+            Mockito.any(
+                com.vi.tenantservice.consultingtypeservice.generated.web.model
+                    .ConsultingTypePatchDTO.class));
+  }
+
 
   @Test
   void updateTenant_Should_ThrowAccessDeniedException_When_UserNotAuthorizedToPerformOperation() {

@@ -13,10 +13,11 @@ import static org.mockito.Mockito.when;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
+import com.vi.tenantservice.api.converter.ConsultingTypePatchDTOConverter;
 import com.vi.tenantservice.api.converter.TenantConverter;
-import com.vi.tenantservice.api.converter.TenantExtendedSettingsConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
@@ -37,6 +38,7 @@ import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDT
 import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -49,14 +51,17 @@ import org.springframework.test.util.ReflectionTestUtils;
 @ExtendWith(MockitoExtension.class)
 class TenantServiceFacadeTest {
 
-  private static final long ID = 1L;
+  private static final Long ID = 1L;
   public static final String DE = "de";
   public static final String SINGLE_DOMAIN_SUBDOMAIN_NAME = "app";
+  public static final int CONSULTING_TYPE_ID = 2;
   private final MultilingualTenantDTO tenantMultilingualDTO = getMultilingualTenantDTO();
 
   private MultilingualTenantDTO getMultilingualTenantDTO() {
     var tenantDTO = new MultilingualTenantDTO();
-    tenantDTO.settings(new Settings());
+    Settings settings = new Settings();
+    settings.setExtendedSettings(new ConsultingTypePatchDTO());
+    tenantDTO.settings(settings);
     return tenantDTO;
   }
 
@@ -67,7 +72,7 @@ class TenantServiceFacadeTest {
 
   @Mock private TenantConverter converter;
 
-  @Mock private TenantExtendedSettingsConverter tenantExtendedSettingsConverter;
+  @Mock private ConsultingTypePatchDTOConverter consultingTypePatchDTOConverter;
 
   @Mock private TenantService tenantService;
 
@@ -89,13 +94,17 @@ class TenantServiceFacadeTest {
 
   @InjectMocks private TenantServiceFacade tenantServiceFacade;
 
+  @BeforeEach
+  public void initialize() {
+    tenantEntity.setId(ID);
+  }
+
   @Test
   void createTenant_Should_createTenant() {
     // given
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(converter.toEntity(tenantMultilingualDTO)).thenReturn(tenantEntity);
     when(tenantService.create(tenantEntity)).thenReturn(tenantEntity);
-    tenantEntity.setId(ID);
 
     // when
     tenantServiceFacade.createTenant(tenantMultilingualDTO);
@@ -199,6 +208,9 @@ class TenantServiceFacadeTest {
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
     when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
+    givenConsultingTypeReturnsConsultingTypeByTenantId();
+    when(tenantService.update(tenantEntity)).thenReturn(tenantEntity);
+    when(converter.toMultilingualDTO(tenantEntity)).thenReturn(sanitizedTenantDTO);
 
     // when
     tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
@@ -207,6 +219,12 @@ class TenantServiceFacadeTest {
     verify(tenantService).findTenantById(ID);
     verify(converter).toEntity(tenantEntity, sanitizedTenantDTO);
     verify(tenantService).update(tenantEntity);
+  }
+
+  private void givenConsultingTypeReturnsConsultingTypeByTenantId() {
+
+    when(consultingTypeService.getConsultingTypesByTenantId(ID.intValue()))
+        .thenReturn(new FullConsultingTypeResponseDTO().id(CONSULTING_TYPE_ID));
   }
 
   @Test
@@ -235,7 +253,9 @@ class TenantServiceFacadeTest {
     claim.put("en", "english claim");
     claim.put("de", "german claim");
     tenantMultilingualDTO.setContent(new MultilingualContent().claim(claim));
-
+    givenConsultingTypeReturnsConsultingTypeByTenantId();
+    when(tenantService.update(tenantEntity)).thenReturn(tenantEntity);
+    when(converter.toMultilingualDTO(tenantEntity)).thenReturn(sanitizedTenantDTO);
     // when
     tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
 
@@ -264,8 +284,14 @@ class TenantServiceFacadeTest {
     // given
     when(tenantInputSanitizer.sanitize(tenantMultilingualDTO)).thenReturn(sanitizedTenantDTO);
     when(tenantService.findTenantById(ID)).thenReturn(Optional.of(tenantEntity));
-    when(converter.toEntity(tenantEntity, sanitizedTenantDTO)).thenReturn(tenantEntity);
+    when(converter.toEntity(
+            Mockito.any(TenantEntity.class), Mockito.any(MultilingualTenantDTO.class)))
+        .thenReturn(tenantEntity);
+    when(tenantService.update(tenantEntity)).thenReturn(tenantEntity);
+    when(converter.toMultilingualDTO(tenantEntity)).thenReturn(sanitizedTenantDTO);
 
+    tenantEntity.setId(ID);
+    givenConsultingTypeReturnsConsultingTypeByTenantId();
     // when
     tenantServiceFacade.updateTenant(ID, tenantMultilingualDTO);
 
@@ -273,6 +299,12 @@ class TenantServiceFacadeTest {
     verify(tenantService).findTenantById(ID);
     verify(converter).toEntity(tenantEntity, sanitizedTenantDTO);
     verify(tenantService).update(tenantEntity);
+    verify(consultingTypeService)
+        .patchConsultingType(
+            Mockito.eq(2),
+            Mockito.any(
+                com.vi.tenantservice.consultingtypeservice.generated.web.model
+                    .ConsultingTypePatchDTO.class));
   }
 
   @Test

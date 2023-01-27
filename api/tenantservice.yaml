@@ -540,61 +540,7 @@ components:
             type: string
           example: "[en, de, fr]"
         extendedSettings:
-          $ref:
-            '#/components/schemas/ExtendedTenantSettings'
-
-    ExtendedTenantSettings:
-      type: object
-      properties:
-        isVideoCallAllowed:
-          type: boolean
-          example: true
-        languageFormal:
-          type: boolean
-          example: true
-        sendFurtherStepsMessage:
-          type: boolean
-          example: true
-        sendSaveSessionDataMessage:
-          type: boolean
-          example: false
-        welcomeMessage:
-          allOf:
-            - $ref: '#/components/schemas/WelcomeMessageDTO'
-        notifications:
-          allOf:
-            - $ref: '#/components/schemas/NotificationsDTO'
-
-    WelcomeMessageDTO:
-      type: object
-      properties:
-        sendWelcomeMessage:
-          type: boolean
-          example: true
-        welcomeMessageText:
-          type: string
-          example: Lorem ipsum
-
-    NotificationsDTO:
-      type: object
-      properties:
-        teamSessions:
-          allOf:
-            - $ref: '#/components/schemas/TeamSessionsDTO'
-
-    TeamSessionsDTO:
-      type: object
-      properties:
-        newMessage:
-          allOf:
-            - $ref: '#/components/schemas/NewMessageDTO'
-
-    NewMessageDTO:
-      type: object
-      properties:
-        allTeamConsultants:
-          type: "boolean"
-          example: true
+          $ref: './../services/consultingtypeservice.yaml#/components/schemas/ConsultingTypePatchDTO'
 
     MultilingualContent:
       type: object

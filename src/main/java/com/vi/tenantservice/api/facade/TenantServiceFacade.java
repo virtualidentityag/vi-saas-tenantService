@@ -5,13 +5,14 @@ import static liquibase.repackaged.org.apache.commons.collections4.ListUtils.emp
 
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
+import com.vi.tenantservice.api.converter.ConsultingTypePatchDTOConverter;
 import com.vi.tenantservice.api.converter.TenantConverter;
-import com.vi.tenantservice.api.converter.TenantExtendedSettingsConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
 import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
@@ -44,6 +45,7 @@ import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -69,7 +71,7 @@ public class TenantServiceFacade {
 
   private final @NonNull UserAdminService userAdminService;
 
-  private final @NonNull TenantExtendedSettingsConverter tenantExtendedSettingsConverter;
+  private final @NonNull ConsultingTypePatchDTOConverter consultingTypePatchDTOConverter;
 
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
@@ -105,6 +107,7 @@ public class TenantServiceFacade {
     tenantFacadeAuthorisationService.assertUserIsAuthorizedToAccessTenant(id);
     validateTenantInput(tenantDTO);
     MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
+
     log.info("Attempting to update tenant with id {}", id);
     return updateWithSanitizedInput(id, sanitizedTenantDTO);
   }
@@ -189,15 +192,37 @@ public class TenantServiceFacade {
     }
   }
 
+  private void updateExtendedSettings(MultilingualTenantDTO sanitizedTenantDTO, Long tenantId) {
+    FullConsultingTypeResponseDTO consultingTypesByTenantId =
+        consultingTypeService.getConsultingTypesByTenantId(tenantId.intValue());
+
+    if (sanitizedTenantDTO.getSettings() != null
+        && sanitizedTenantDTO.getSettings().getExtendedSettings() != null)
+      consultingTypeService.patchConsultingType(
+          consultingTypesByTenantId.getId(),
+          convertModels(sanitizedTenantDTO.getSettings().getExtendedSettings()));
+  }
+
+  private com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+      convertModels(ConsultingTypePatchDTO extendedSettings) {
+    com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+        targetDTO =
+            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                .ConsultingTypePatchDTO();
+    BeanUtils.copyProperties(extendedSettings, targetDTO);
+    return targetDTO;
+  }
+
   private MultilingualTenantDTO updateExistingTenant(
-      MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenant) {
+      MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenantEntity) {
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(
-        sanitizedTenantDTO, existingTenant);
-    var updatedEntity = tenantConverter.toEntity(existingTenant, sanitizedTenantDTO);
-    log.info("Tenant with id {} updated", existingTenant.getId());
+        sanitizedTenantDTO, existingTenantEntity);
+    var updatedEntity = tenantConverter.toEntity(existingTenantEntity, sanitizedTenantDTO);
+    log.info("Tenant with id {} updated", existingTenantEntity.getId());
     setContentActivationDates(updatedEntity, sanitizedTenantDTO);
     updatedEntity = tenantService.update(updatedEntity);
-    return tenantConverter.toMultilingualDTO(updatedEntity);
+    updateExtendedSettings(sanitizedTenantDTO, existingTenantEntity.getId());
+    return getConvertedAndEnrichedTenant(updatedEntity);
   }
 
   private void setContentActivationDates(TenantEntity entity, MultilingualTenantDTO tenantDTO) {
@@ -226,12 +251,10 @@ public class TenantServiceFacade {
                 tenantById.get(), translationService.getCurrentLanguageContext()));
   }
 
-  private MultilingualTenantDTO getConvertedAndEnrichedTenant(Optional<TenantEntity> tenantById) {
-    TenantEntity tenant = tenantById.get();
-    var multilingualTenantDTO = tenantConverter.toMultilingualDTO(tenant);
+  private MultilingualTenantDTO getConvertedAndEnrichedTenant(TenantEntity tenantEntity) {
+    var multilingualTenantDTO = tenantConverter.toMultilingualDTO(tenantEntity);
     enrichWithAdminDataIfSuperadmin(multilingualTenantDTO);
-    enrichWithConsultingTypeSettings(multilingualTenantDTO, tenant.getId());
-
+    enrichWithConsultingTypeSettings(multilingualTenantDTO, tenantEntity.getId());
     return multilingualTenantDTO;
   }
 
@@ -243,7 +266,7 @@ public class TenantServiceFacade {
       multilingualTenantDTO
           .getSettings()
           .setExtendedSettings(
-              tenantExtendedSettingsConverter.convertExtendedTenantSettings(
+              consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(
                   consultingTypesByTenantId));
     }
   }
@@ -277,7 +300,7 @@ public class TenantServiceFacade {
     var tenantById = tenantService.findTenantById(id);
     return tenantById.isEmpty()
         ? Optional.empty()
-        : Optional.of(getConvertedAndEnrichedTenant(tenantById));
+        : Optional.of(getConvertedAndEnrichedTenant(tenantById.get()));
   }
 
   public Optional<RestrictedTenantDTO> findRestrictedTenantById(Long id) {

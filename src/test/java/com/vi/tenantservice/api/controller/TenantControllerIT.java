@@ -57,6 +57,7 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -88,6 +89,7 @@ class TenantControllerIT {
   private static final String EXISTING_SUBDOMAIN = "examplesubdomain";
   private static final String SCRIPT_CONTENT = "<script>error</script>";
   private static final int PAGE_SIZE = 3;
+  private static final int CONSULTING_TYPE_ID = 2;
 
   @Autowired private WebApplicationContext context;
 
@@ -299,24 +301,32 @@ class TenantControllerIT {
     when(authorisationService.hasRole("tenant-admin")).thenReturn(true);
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
-    mockMvc
-        .perform(
-            put("/tenantadmin/1")
-                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
-                .contentType(APPLICATION_JSON)
-                .content(
-                    multilingualTenantTestDataBuilder
-                        .withId(1L)
-                        .withName("tenant")
-                        .withSubdomain("changed subdomain")
-                        .withSettingActiveLanguages(Lists.newArrayList("fr", "pl"))
-                        .withLicensing()
-                        .jsonify())
-                .contentType(APPLICATION_JSON))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
-        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
-        .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")));
+    when(consultingTypeService.getConsultingTypesByTenantId(1))
+        .thenReturn(new FullConsultingTypeResponseDTO().id(2));
+    MvcResult mvcResult =
+        mockMvc
+            .perform(
+                put("/tenantadmin/1")
+                    .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                    .contentType(APPLICATION_JSON)
+                    .content(
+                        multilingualTenantTestDataBuilder
+                            .withId(1L)
+                            .withName("tenant")
+                            .withSubdomain("changed subdomain")
+                            .withSettingActiveLanguages(Lists.newArrayList("fr", "pl"))
+                            .withLicensing()
+                            .jsonify())
+                    .contentType(APPLICATION_JSON))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
+            .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
+            .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")))
+            .andReturn();
+
+    var response = mvcResult.getResponse().getContentAsString();
+    // .andExpect(jsonPath("$.settings.extendedSettings.languageFormal").value("true"));
+
   }
 
   @Test
@@ -327,6 +337,12 @@ class TenantControllerIT {
     when(authorisationService.findTenantIdInAccessToken()).thenReturn(Optional.of(1L));
     when(authorisationService.hasRole(SINGLE_TENANT_ADMIN.getValue())).thenReturn(true);
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    when(consultingTypeService.getConsultingTypesByTenantId(1))
+        .thenReturn(
+            new FullConsultingTypeResponseDTO()
+                .id(CONSULTING_TYPE_ID)
+                .isVideoCallAllowed(true)
+                .languageFormal(true));
     mockMvc
         .perform(
             put(EXISTING_TENANT_VIA_ADMIN)

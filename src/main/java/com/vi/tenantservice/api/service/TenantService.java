@@ -2,15 +2,20 @@ package com.vi.tenantservice.api.service;
 
 import static com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason.SUBDOMAIN_NOT_UNIQUE;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantBase;
+import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.repository.TenantRepository;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
+import java.io.File;
+import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Optional;
+import javax.ws.rs.InternalServerErrorException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -28,9 +33,14 @@ public class TenantService {
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
 
+  @Value("${default.tenant.settings.json.path}")
+  private String defaultTenantSettingsFilePath;
+
   private final @NonNull TenantRepository tenantRepository;
 
   private final @NonNull ApplicationSettingsService applicationSettingsService;
+
+  private final @NonNull ConfigurationFileLoader configurationFileLoader;
 
   public TenantEntity create(TenantEntity tenantEntity) {
     validateTenant(tenantEntity);
@@ -109,5 +119,15 @@ public class TenantService {
 
   public List<TenantEntity> findAllByIds(List<Long> tenantIds) {
     return tenantRepository.findAllByIdIn(tenantIds);
+  }
+
+  public TenantSettings getDefaultTenantSettings() {
+    final File file = configurationFileLoader.loadFrom(defaultTenantSettingsFilePath);
+    try {
+      return new ObjectMapper().readValue(file, TenantSettings.class);
+    } catch (IOException ioException) {
+      log.error("Error while reading default tenant settings configuration file", ioException);
+      throw new InternalServerErrorException();
+    }
   }
 }

@@ -2,6 +2,7 @@ package com.vi.tenantservice.api.service.consultingtype;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
+import com.vi.tenantservice.api.service.ConfigurationFileLoader;
 import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTO;
@@ -9,10 +10,6 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.Consulting
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URISyntaxException;
-import java.nio.file.InvalidPathException;
-import java.nio.file.Paths;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.InternalServerErrorException;
@@ -34,12 +31,13 @@ public class ConsultingTypeService {
       consultingTypeServiceApiControllerFactory;
   private final @NonNull SecurityHeaderSupplier securityHeaderSupplier;
   private final @NonNull TenantResolverService tenantResolverService;
+  private final @NonNull ConfigurationFileLoader configurationFileLoader;
 
   @Value("${default.consulting.types.json.path}")
   private String defaultConsultingTypesFilePath;
 
   public void createDefaultConsultingTypes(Long tenantId) {
-    final File file = defaultConsultingTypesConfigurationFile();
+    final File file = configurationFileLoader.loadFrom(defaultConsultingTypesFilePath);
     try {
       ConsultingTypeDTO consultingTypeDTO =
           new ObjectMapper().readValue(file, ConsultingTypeDTO.class);
@@ -47,19 +45,6 @@ public class ConsultingTypeService {
       createConsultingType(consultingTypeDTO);
     } catch (IOException ioException) {
       log.error("Error while reading default consulting types configuration file", ioException);
-      throw new InternalServerErrorException();
-    }
-  }
-
-  private File defaultConsultingTypesConfigurationFile() {
-    try {
-      var fileUrl = Paths.get(defaultConsultingTypesFilePath).toUri().toURL();
-      return new File(fileUrl.toURI());
-    } catch (URISyntaxException | MalformedURLException | InvalidPathException exception) {
-      log.error(
-          "Could not load default consulting types configuration file {}",
-          defaultConsultingTypesFilePath,
-          exception);
       throw new InternalServerErrorException();
     }
   }

@@ -157,7 +157,19 @@ class TenantControllerIT {
                         .withLicensing()
                         .jsonify())
                 .contentType(APPLICATION_JSON))
-        .andExpect(status().isOk());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("id").exists())
+        .andExpect(jsonPath("name", is("tenant")))
+        .andExpect(jsonPath("subdomain", is("subdomain")))
+        .andExpect(jsonPath("settings.featureStatisticsEnabled", is(false)))
+        .andExpect(jsonPath("settings.featureTopicsEnabled", is(true)))
+        .andExpect(jsonPath("settings.topicsInRegistrationEnabled", is(true)))
+        .andExpect(jsonPath("settings.featureDemographicsEnabled", is(false)))
+        .andExpect(jsonPath("settings.featureAppointmentsEnabled", is(false)))
+        .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(false)))
+        .andExpect(jsonPath("settings.featureAttachmentUploadDisabled", is(true)))
+        .andExpect(jsonPath("settings.featureToolsOICDToken", is("token")))
+        .andExpect(jsonPath("settings.activeLanguages", is(Lists.newArrayList("de", "en"))));
   }
 
   @Test

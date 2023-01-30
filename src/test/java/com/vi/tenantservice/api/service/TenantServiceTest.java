@@ -27,8 +27,8 @@ class TenantServiceTest {
 
   public static final String MAIN_SUBDOMAIN_FOR_SINGLE_DOMAIN_MULTITENANCY = "app";
   @Mock private TenantRepository tenantRepository;
-
-  @Mock ApplicationSettingsService applicationSettingsService;
+  @Mock private ApplicationSettingsService applicationSettingsService;
+  @Mock private ConfigurationFileLoader configurationFileLoader;
 
   @InjectMocks private TenantService tenantService;
 

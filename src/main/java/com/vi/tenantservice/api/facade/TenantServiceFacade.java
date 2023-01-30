@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.facade;
 
+import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 import static java.util.Objects.nonNull;
 import static liquibase.repackaged.org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
@@ -82,13 +83,24 @@ public class TenantServiceFacade {
     MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     validateCreateTenantInput(tenantDTO);
     var entity = tenantConverter.toEntity(sanitizedTenantDTO);
-    setContentActivationDates(entity, tenantDTO);
+    populateTenantSettingsAndActivationDates(entity, tenantDTO);
     TenantEntity createdTenant = tenantService.create(entity);
-    setDefaultSettings(createdTenant);
+    createDefaultConsultingTypeSettings(createdTenant);
     return tenantConverter.toMultilingualDTO(createdTenant);
   }
 
-  private void setDefaultSettings(TenantEntity createdTenant) {
+  private void populateTenantSettingsAndActivationDates(
+      TenantEntity entity, MultilingualTenantDTO tenantDTO) {
+    setContentActivationDates(entity, tenantDTO);
+    setDefaultTenantSettings(entity);
+  }
+
+  private void setDefaultTenantSettings(TenantEntity tenant) {
+    var defaultTenantSettings = tenantService.getDefaultTenantSettings();
+    tenant.setSettings(convertToJson(defaultTenantSettings));
+  }
+
+  private void createDefaultConsultingTypeSettings(TenantEntity createdTenant) {
     consultingTypeService.createDefaultConsultingTypes(createdTenant.getId());
     if (isAttemptToCreateFirstNonTechnicalTenant(createdTenant.getId())) {
       validateSubDomain(createdTenant.getSubdomain());

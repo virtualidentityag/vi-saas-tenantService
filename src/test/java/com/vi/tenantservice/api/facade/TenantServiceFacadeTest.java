@@ -289,6 +289,11 @@ class TenantServiceFacadeTest {
         .thenReturn(tenantEntity);
     when(tenantService.update(tenantEntity)).thenReturn(tenantEntity);
     when(converter.toMultilingualDTO(tenantEntity)).thenReturn(sanitizedTenantDTO);
+    when(consultingTypePatchDTOConverter.convertToConsultingTypeServiceModel(
+            Mockito.any(ConsultingTypePatchDTO.class)))
+        .thenReturn(
+            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                .ConsultingTypePatchDTO());
 
     tenantEntity.setId(ID);
     givenConsultingTypeReturnsConsultingTypeByTenantId();

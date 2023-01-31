@@ -30,11 +30,7 @@ import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTONotifications;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTOWelcomeMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -51,7 +47,6 @@ import javax.ws.rs.BadRequestException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -220,7 +215,8 @@ public class TenantServiceFacade {
           consultingTypesByTenantId, sanitizedTenantDTO.getSettings().getExtendedSettings())) {
         consultingTypeService.patchConsultingType(
             consultingTypesByTenantId.getId(),
-            convertModels(sanitizedTenantDTO.getSettings().getExtendedSettings()));
+            consultingTypePatchDTOConverter.convertToConsultingTypeServiceModel(
+                sanitizedTenantDTO.getSettings().getExtendedSettings()));
       } else {
         log.debug(
             "Skipping consulting types update during tenant update, these settings did not change");
@@ -233,40 +229,6 @@ public class TenantServiceFacade {
     ConsultingTypePatchDTO existingExtendedTenantSettings =
         consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(consultingTypesByTenantId);
     return !nullSafeEquals(newExtendedTenantSettings, existingExtendedTenantSettings);
-  }
-
-  private com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
-      convertModels(ConsultingTypePatchDTO extendedSettings) {
-    com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
-        targetDTO =
-            new com.vi.tenantservice.consultingtypeservice.generated.web.model
-                .ConsultingTypePatchDTO();
-
-    BeanUtils.copyProperties(extendedSettings, targetDTO);
-    if (extendedSettings.getWelcomeMessage() != null) {
-      targetDTO.setWelcomeMessage(new ConsultingTypeDTOWelcomeMessage());
-      BeanUtils.copyProperties(extendedSettings.getWelcomeMessage(), targetDTO.getWelcomeMessage());
-    }
-
-    if (extendedSettings.getNotifications() != null
-        && extendedSettings.getNotifications().getTeamSessions() != null
-        && extendedSettings.getNotifications().getTeamSessions().getNewMessage() != null) {
-      targetDTO.notifications(
-          new ConsultingTypeDTONotifications()
-              .teamSessions(
-                  new NotificationsDTOTeamSessions().newMessage(new TeamSessionsDTONewMessage())));
-      targetDTO
-          .getNotifications()
-          .getTeamSessions()
-          .getNewMessage()
-          .allTeamConsultants(
-              extendedSettings
-                  .getNotifications()
-                  .getTeamSessions()
-                  .getNewMessage()
-                  .getAllTeamConsultants());
-    }
-    return targetDTO;
   }
 
   private MultilingualTenantDTO updateExistingTenant(

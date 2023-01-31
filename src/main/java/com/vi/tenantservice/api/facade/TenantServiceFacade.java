@@ -205,27 +205,29 @@ public class TenantServiceFacade {
     }
   }
 
-  private void updateExtendedSettingsAsConsultingType(MultilingualTenantDTO sanitizedTenantDTO, Long tenantId) {
+  private void updateExtendedSettingsAsConsultingType(
+      MultilingualTenantDTO sanitizedTenantDTO, Long tenantId) {
     FullConsultingTypeResponseDTO consultingTypesByTenantId =
         consultingTypeService.getConsultingTypesByTenantId(tenantId.intValue());
 
     if (sanitizedTenantDTO.getSettings() != null
         && sanitizedTenantDTO.getSettings().getExtendedSettings() != null)
-
-      if (extendedTenantSettingsChanged(consultingTypesByTenantId, sanitizedTenantDTO.getSettings().getExtendedSettings())) {
+      if (extendedTenantSettingsChanged(
+          consultingTypesByTenantId, sanitizedTenantDTO.getSettings().getExtendedSettings())) {
         consultingTypeService.patchConsultingType(
             consultingTypesByTenantId.getId(),
             convertModels(sanitizedTenantDTO.getSettings().getExtendedSettings()));
       } else {
-        log.debug("Skipping consulting types update during tenant update, these settings did not change");
+        log.debug(
+            "Skipping consulting types update during tenant update, these settings did not change");
       }
   }
 
   private boolean extendedTenantSettingsChanged(
       FullConsultingTypeResponseDTO consultingTypesByTenantId,
       ConsultingTypePatchDTO newExtendedTenantSettings) {
-    ConsultingTypePatchDTO existingExtendedTenantSettings = consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(
-        consultingTypesByTenantId);
+    ConsultingTypePatchDTO existingExtendedTenantSettings =
+        consultingTypePatchDTOConverter.convertConsultingTypePatchDTO(consultingTypesByTenantId);
     return !nullSafeEquals(newExtendedTenantSettings, existingExtendedTenantSettings);
   }
 

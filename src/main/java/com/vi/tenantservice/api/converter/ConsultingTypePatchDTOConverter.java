@@ -8,6 +8,7 @@ import com.vi.tenantservice.api.model.TeamSessionsDTONewMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -64,5 +65,46 @@ public class ConsultingTypePatchDTOConverter {
                 new NotificationsDTOTeamSessions().newMessage(new TeamSessionsDTONewMessage())));
     consultingTypePatchDTO.setWelcomeMessage(new ConsultingTypePatchDTOWelcomeMessage());
     return consultingTypePatchDTO;
+  }
+
+  public com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+      convertToConsultingTypeServiceModel(ConsultingTypePatchDTO extendedSettings) {
+    com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+        targetDTO =
+            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                .ConsultingTypePatchDTO();
+
+    BeanUtils.copyProperties(extendedSettings, targetDTO);
+    if (extendedSettings.getWelcomeMessage() != null) {
+      targetDTO.setWelcomeMessage(
+          new com.vi.tenantservice.consultingtypeservice.generated.web.model
+              .ConsultingTypeDTOWelcomeMessage());
+      BeanUtils.copyProperties(extendedSettings.getWelcomeMessage(), targetDTO.getWelcomeMessage());
+    }
+
+    if (extendedSettings.getNotifications() != null
+        && extendedSettings.getNotifications().getTeamSessions() != null
+        && extendedSettings.getNotifications().getTeamSessions().getNewMessage() != null) {
+      targetDTO.notifications(
+          new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                  .ConsultingTypeDTONotifications()
+              .teamSessions(
+                  new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                          .NotificationsDTOTeamSessions()
+                      .newMessage(
+                          new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                              .TeamSessionsDTONewMessage())));
+      targetDTO
+          .getNotifications()
+          .getTeamSessions()
+          .getNewMessage()
+          .allTeamConsultants(
+              extendedSettings
+                  .getNotifications()
+                  .getTeamSessions()
+                  .getNewMessage()
+                  .getAllTeamConsultants());
+    }
+    return targetDTO;
   }
 }

@@ -8,6 +8,7 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.Notificati
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
+import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -91,5 +92,25 @@ class ConsultingTypePatchDTOConverterTest {
                 .getNewMessage()
                 .getAllTeamConsultants())
         .isNull();
+  }
+
+  @Test
+  public void convertToConsultingTypeServiceModel_Should_ConvertAllSettings() {
+
+    // given
+    ConsultingTypePatchDTO source = new EasyRandom().nextObject(ConsultingTypePatchDTO.class);
+
+    // when
+    com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO target =
+        consultingTypePatchDTOConverter.convertToConsultingTypeServiceModel(source);
+
+    // then
+    assertThat(target.getLanguageFormal()).isEqualTo(source.getLanguageFormal());
+    assertThat(target.getWelcomeMessage().getSendWelcomeMessage())
+        .isEqualTo(source.getWelcomeMessage().getSendWelcomeMessage());
+    assertThat(target.getIsVideoCallAllowed()).isEqualTo(source.getIsVideoCallAllowed());
+    assertThat(target.getSendFurtherStepsMessage()).isEqualTo(source.getSendFurtherStepsMessage());
+    assertThat(target.getSendSaveSessionDataMessage())
+        .isEqualTo(source.getSendSaveSessionDataMessage());
   }
 }

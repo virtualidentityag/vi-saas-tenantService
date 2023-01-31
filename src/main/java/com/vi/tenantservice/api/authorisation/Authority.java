@@ -24,8 +24,7 @@ public enum Authority {
           AuthorityValue.CHANGE_LEGAL_CONTENT,
           AuthorityValue.SEARCH_TENANTS,
           AuthorityValue.GET_TENANT_ADMIN_DATA,
-          AuthorityValue.UPDATE_EXTENDED_TENANT_SETTINGS
-          )),
+          AuthorityValue.UPDATE_EXTENDED_TENANT_SETTINGS)),
 
   SINGLE_TENANT_ADMIN(
       UserRole.SINGLE_TENANT_ADMIN,
@@ -57,6 +56,7 @@ public enum Authority {
     public static final String SEARCH_TENANTS = PREFIX + "SEARCH_TENANTS";
     public static final String GET_TENANT_ADMIN_DATA = PREFIX + "GET_TENANT_ADMIN_DATA";
 
-    public static final String UPDATE_EXTENDED_TENANT_SETTINGS = PREFIX + "UPDATE_EXTENDED_TENANT_SETTINGS";
+    public static final String UPDATE_EXTENDED_TENANT_SETTINGS =
+        PREFIX + "UPDATE_EXTENDED_TENANT_SETTINGS";
   }
 }

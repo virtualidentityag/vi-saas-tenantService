@@ -75,25 +75,19 @@ public class ConsultingTypePatchDTOConverter {
                 .ConsultingTypePatchDTO();
 
     BeanUtils.copyProperties(extendedSettings, targetDTO);
-    if (extendedSettings.getWelcomeMessage() != null) {
-      targetDTO.setWelcomeMessage(
-          new com.vi.tenantservice.consultingtypeservice.generated.web.model
-              .ConsultingTypeDTOWelcomeMessage());
-      BeanUtils.copyProperties(extendedSettings.getWelcomeMessage(), targetDTO.getWelcomeMessage());
-    }
+    convertWelcomeMessage(extendedSettings, targetDTO);
+    convertNotifications(extendedSettings, targetDTO);
+    return targetDTO;
+  }
 
+  private void convertNotifications(
+      ConsultingTypePatchDTO extendedSettings,
+      com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+          targetDTO) {
     if (extendedSettings.getNotifications() != null
         && extendedSettings.getNotifications().getTeamSessions() != null
         && extendedSettings.getNotifications().getTeamSessions().getNewMessage() != null) {
-      targetDTO.notifications(
-          new com.vi.tenantservice.consultingtypeservice.generated.web.model
-                  .ConsultingTypeDTONotifications()
-              .teamSessions(
-                  new com.vi.tenantservice.consultingtypeservice.generated.web.model
-                          .NotificationsDTOTeamSessions()
-                      .newMessage(
-                          new com.vi.tenantservice.consultingtypeservice.generated.web.model
-                              .TeamSessionsDTONewMessage())));
+      createEmptyNotificationsObjectAndSubobjects(targetDTO);
       targetDTO
           .getNotifications()
           .getTeamSessions()
@@ -105,6 +99,31 @@ public class ConsultingTypePatchDTOConverter {
                   .getNewMessage()
                   .getAllTeamConsultants());
     }
-    return targetDTO;
+  }
+
+  private void createEmptyNotificationsObjectAndSubobjects(
+      com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+          targetDTO) {
+    targetDTO.notifications(
+        new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                .ConsultingTypeDTONotifications()
+            .teamSessions(
+                new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                        .NotificationsDTOTeamSessions()
+                    .newMessage(
+                        new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                            .TeamSessionsDTONewMessage())));
+  }
+
+  private void convertWelcomeMessage(
+      ConsultingTypePatchDTO extendedSettings,
+      com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypePatchDTO
+          targetDTO) {
+    if (extendedSettings.getWelcomeMessage() != null) {
+      targetDTO.setWelcomeMessage(
+          new com.vi.tenantservice.consultingtypeservice.generated.web.model
+              .ConsultingTypeDTOWelcomeMessage());
+      BeanUtils.copyProperties(extendedSettings.getWelcomeMessage(), targetDTO.getWelcomeMessage());
+    }
   }
 }

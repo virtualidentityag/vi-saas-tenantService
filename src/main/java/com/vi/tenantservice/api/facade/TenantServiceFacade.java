@@ -30,7 +30,11 @@ import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTONotifications;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ConsultingTypeDTOWelcomeMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -237,7 +241,31 @@ public class TenantServiceFacade {
         targetDTO =
             new com.vi.tenantservice.consultingtypeservice.generated.web.model
                 .ConsultingTypePatchDTO();
+
     BeanUtils.copyProperties(extendedSettings, targetDTO);
+    if (extendedSettings.getWelcomeMessage() != null) {
+      targetDTO.setWelcomeMessage(new ConsultingTypeDTOWelcomeMessage());
+      BeanUtils.copyProperties(extendedSettings.getWelcomeMessage(), targetDTO.getWelcomeMessage());
+    }
+
+    if (extendedSettings.getNotifications() != null
+        && extendedSettings.getNotifications().getTeamSessions() != null
+        && extendedSettings.getNotifications().getTeamSessions().getNewMessage() != null) {
+      targetDTO.notifications(
+          new ConsultingTypeDTONotifications()
+              .teamSessions(
+                  new NotificationsDTOTeamSessions().newMessage(new TeamSessionsDTONewMessage())));
+      targetDTO
+          .getNotifications()
+          .getTeamSessions()
+          .getNewMessage()
+          .allTeamConsultants(
+              extendedSettings
+                  .getNotifications()
+                  .getTeamSessions()
+                  .getNewMessage()
+                  .getAllTeamConsultants());
+    }
     return targetDTO;
   }
 

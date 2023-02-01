@@ -74,6 +74,9 @@ public class TenantServiceFacade {
 
   private final @NonNull ConsultingTypePatchDTOConverter consultingTypePatchDTOConverter;
 
+  private final @NonNull TenantFacadeDependentSettingsOverrideService
+      tenantFacadeDependentSettingsOverrideService;
+
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
 
@@ -81,6 +84,8 @@ public class TenantServiceFacade {
     log.info("Creating new tenant");
     MultilingualTenantDTO sanitizedTenantDTO = tenantInputSanitizer.sanitize(tenantDTO);
     validateCreateTenantInput(tenantDTO);
+    tenantFacadeDependentSettingsOverrideService.overrideDependentSettingsOnCreate(
+        sanitizedTenantDTO);
     var entity = tenantConverter.toEntity(sanitizedTenantDTO);
     populateTenantSettingsAndActivationDates(entity, tenantDTO);
     TenantEntity createdTenant = tenantService.create(entity);
@@ -234,6 +239,8 @@ public class TenantServiceFacade {
   private MultilingualTenantDTO updateExistingTenant(
       MultilingualTenantDTO sanitizedTenantDTO, TenantEntity existingTenantEntity) {
     tenantFacadeAuthorisationService.assertUserHasSufficientPermissionsToChangeAttributes(
+        sanitizedTenantDTO, existingTenantEntity);
+    tenantFacadeDependentSettingsOverrideService.overrideDependentSettingsOnUpdate(
         sanitizedTenantDTO, existingTenantEntity);
     var updatedEntity = tenantConverter.toEntity(existingTenantEntity, sanitizedTenantDTO);
     setContentActivationDates(updatedEntity, sanitizedTenantDTO);

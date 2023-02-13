@@ -20,6 +20,7 @@ import java.util.Optional;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
@@ -32,6 +33,9 @@ public class TenantFacadeAuthorisationService {
   private final @NonNull TenantFacadeChangeDetectionService tenantFacadeChangeDetectionService;
 
   private final @NonNull ApplicationSettingsService applicationSettingsService;
+
+  @Value("${feature.multitenancy.with.single.domain.enabled}")
+  private boolean multitenancyWithSingleDomain;
 
   private boolean userHasAnyRoleOf(List<UserRole> roles) {
     return roles.stream().anyMatch(userRole -> authorisationService.hasRole(userRole.getValue()));
@@ -176,9 +180,10 @@ public class TenantFacadeAuthorisationService {
   }
 
   public boolean canAccessTenant(Optional<TenantEntity> tenant) {
-    if (isSuperAdmin()) {
+    if (isSuperAdmin() || multitenancyWithSingleDomain) {
       return true;
     }
+
     if (tenant.isEmpty()) {
       return false;
     }

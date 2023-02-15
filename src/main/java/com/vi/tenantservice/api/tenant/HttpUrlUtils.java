@@ -2,7 +2,6 @@ package com.vi.tenantservice.api.tenant;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
-
 public class HttpUrlUtils {
 
   private HttpUrlUtils() {}

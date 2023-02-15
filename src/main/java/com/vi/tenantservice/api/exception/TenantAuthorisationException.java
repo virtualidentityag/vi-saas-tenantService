@@ -11,13 +11,12 @@ import org.springframework.http.HttpStatus;
 @Slf4j
 public class TenantAuthorisationException extends RuntimeException {
 
-    private final HttpHeaders customHttpHeaders;
-    private final HttpStatus httpStatus;
+  private final HttpHeaders customHttpHeaders;
+  private final HttpStatus httpStatus;
 
-    public TenantAuthorisationException(String message, HttpStatusExceptionReason exceptionReason) {
-        super(message);
-        this.customHttpHeaders = new CustomHttpHeader(exceptionReason)
-            .buildHeader();
-        this.httpStatus = HttpStatus.FORBIDDEN;
-    }
+  public TenantAuthorisationException(String message, HttpStatusExceptionReason exceptionReason) {
+    super(message);
+    this.customHttpHeaders = new CustomHttpHeader(exceptionReason).buildHeader();
+    this.httpStatus = HttpStatus.FORBIDDEN;
+  }
 }

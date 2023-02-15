@@ -1,6 +1,11 @@
 package com.vi.tenantservice.api.validation;
 
+import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
+import static org.mockito.Mockito.*;
+
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import java.util.HashMap;
+import java.util.Map;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -9,23 +14,17 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.HashMap;
-import java.util.Map;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
-import static org.mockito.Mockito.*;
-
 @ExtendWith(MockitoExtension.class)
 class TenantInputSanitizerTest {
 
-  private static final String LINK_CONTENT = "<a href=\"http://onlineberatung.net\">content</a>further content";
-  private static final String IMAGE_CONTENT = "<img src=\"http://onlineberatung.net/images/test.png\" width=\"272\" height=\"92\" />";
+  private static final String LINK_CONTENT =
+      "<a href=\"http://onlineberatung.net\">content</a>further content";
+  private static final String IMAGE_CONTENT =
+      "<img src=\"http://onlineberatung.net/images/test.png\" width=\"272\" height=\"92\" />";
 
-  @InjectMocks
-  TenantInputSanitizer tenantInputSanitizer;
+  @InjectMocks TenantInputSanitizer tenantInputSanitizer;
 
-  @Mock
-  InputSanitizer inputSanitizer;
+  @Mock InputSanitizer inputSanitizer;
 
   @Test
   void sanitize_Should_sanitizeTenantDTO() {
@@ -35,10 +34,11 @@ class TenantInputSanitizerTest {
     tenantDTO.getContent().setImpressum(getDefaultTranslationsAsMap("impressum"));
     tenantDTO.getContent().setClaim(getDefaultTranslationsAsMap("claim"));
     tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap("privacy"));
-    tenantDTO.getContent().setTermsAndConditions(getDefaultTranslationsAsMap("terms and conditions"));
+    tenantDTO
+        .getContent()
+        .setTermsAndConditions(getDefaultTranslationsAsMap("terms and conditions"));
     when(inputSanitizer.sanitizeAllowingFormattingAndLinks(Mockito.anyString())).thenReturn("");
     when(inputSanitizer.sanitizeAllowingFormatting(Mockito.anyString())).thenReturn("");
-
 
     // when
     MultilingualTenantDTO sanitized = tenantInputSanitizer.sanitize(tenantDTO);
@@ -56,14 +56,18 @@ class TenantInputSanitizerTest {
     tenantDTO.getContent().setTermsAndConditions(getDefaultTranslationsAsMap(LINK_CONTENT));
     tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap(LINK_CONTENT));
     tenantDTO.getContent().setImpressum(getDefaultTranslationsAsMap(LINK_CONTENT));
-    TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
+    TenantInputSanitizer nonMockedTenantInputSanitizer =
+        new TenantInputSanitizer(new InputSanitizer());
     // when
     MultilingualTenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
 
     // then
-    assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
-    assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
-    assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
+    assertThat(sanitized.getContent().getTermsAndConditions())
+        .isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
+    assertThat(sanitized.getContent().getPrivacy())
+        .isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
+    assertThat(sanitized.getContent().getImpressum())
+        .isEqualTo(getDefaultTranslationsAsMap(LINK_CONTENT));
   }
 
   private Map<String, String> getDefaultTranslationsAsMap(String content) {
@@ -80,14 +84,18 @@ class TenantInputSanitizerTest {
     tenantDTO.getContent().setTermsAndConditions(getDefaultTranslationsAsMap(IMAGE_CONTENT));
     tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap(IMAGE_CONTENT));
     tenantDTO.getContent().setImpressum(getDefaultTranslationsAsMap(IMAGE_CONTENT));
-    TenantInputSanitizer nonMockedTenantInputSanitizer = new TenantInputSanitizer(new InputSanitizer());
+    TenantInputSanitizer nonMockedTenantInputSanitizer =
+        new TenantInputSanitizer(new InputSanitizer());
     // when
     MultilingualTenantDTO sanitized = nonMockedTenantInputSanitizer.sanitize(tenantDTO);
 
     // then
-    assertThat(sanitized.getContent().getTermsAndConditions()).isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
-    assertThat(sanitized.getContent().getPrivacy()).isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
-    assertThat(sanitized.getContent().getImpressum()).isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    assertThat(sanitized.getContent().getTermsAndConditions())
+        .isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    assertThat(sanitized.getContent().getPrivacy())
+        .isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
+    assertThat(sanitized.getContent().getImpressum())
+        .isEqualTo(getDefaultTranslationsAsMap(IMAGE_CONTENT));
   }
 
   private void verifyNeededSanitizationsAreCalled(MultilingualTenantDTO tenantDTO) {
@@ -96,18 +104,19 @@ class TenantInputSanitizerTest {
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getLogo());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getFavicon());
     verify(inputSanitizer).sanitizeAllowingFormatting(Mockito.anyString());
-    verify(inputSanitizer, Mockito.times(3)).sanitizeAllowingFormattingAndLinks(Mockito.anyString());
+    verify(inputSanitizer, Mockito.times(3))
+        .sanitizeAllowingFormattingAndLinks(Mockito.anyString());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getPrimaryColor());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getSecondaryColor());
     verifyNoMoreInteractions(inputSanitizer);
   }
 
-  private void assertNonSanitizableFieldsHaveSameValues(MultilingualTenantDTO tenantDTO, MultilingualTenantDTO sanitized) {
+  private void assertNonSanitizableFieldsHaveSameValues(
+      MultilingualTenantDTO tenantDTO, MultilingualTenantDTO sanitized) {
     assertThat(tenantDTO.getId()).isEqualTo(sanitized.getId());
     assertThat(tenantDTO.getCreateDate()).isEqualTo(sanitized.getCreateDate());
     assertThat(tenantDTO.getUpdateDate()).isEqualTo(sanitized.getUpdateDate());
-    assertThat(tenantDTO.getLicensing().getAllowedNumberOfUsers()).isEqualTo(
-        sanitized.getLicensing().getAllowedNumberOfUsers());
+    assertThat(tenantDTO.getLicensing().getAllowedNumberOfUsers())
+        .isEqualTo(sanitized.getLicensing().getAllowedNumberOfUsers());
   }
-
 }

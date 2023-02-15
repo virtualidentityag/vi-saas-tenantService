@@ -1,12 +1,12 @@
 package com.vi.tenantservice.api.util;
 
 import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.Theming;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -53,17 +53,15 @@ public class MultilingualTenantTestDataBuilder {
 
   public MultilingualTenantTestDataBuilder withSettingTopicsInRegistrationEnabled(
       boolean topicsInRegistrationEnabled) {
-    tenantMultilingualDTO.setSettings(getSettings()
-        .topicsInRegistrationEnabled(topicsInRegistrationEnabled));
+    tenantMultilingualDTO.setSettings(
+        getSettings().topicsInRegistrationEnabled(topicsInRegistrationEnabled));
     return this;
   }
 
   public MultilingualTenantTestDataBuilder withSettingActiveLanguages(
-          List<String> activeLanguages) {
-    tenantMultilingualDTO.setSettings(getSettings()
-            .topicsInRegistrationEnabled(true)
-            .activeLanguages(activeLanguages)
-    );
+      List<String> activeLanguages) {
+    tenantMultilingualDTO.setSettings(
+        getSettings().topicsInRegistrationEnabled(true).activeLanguages(activeLanguages));
     return this;
   }
 
@@ -90,23 +88,24 @@ public class MultilingualTenantTestDataBuilder {
   public MultilingualTenantTestDataBuilder withSettings() {
     tenantMultilingualDTO.setSettings(
         getSettings()
-                .topicsInRegistrationEnabled(true)
-                .activeLanguages(Lists.newArrayList("de", "en"))
-    );
+            .topicsInRegistrationEnabled(true)
+            .activeLanguages(Lists.newArrayList("de", "en")));
     return this;
   }
 
   private static Settings getSettings() {
     return new Settings()
-            .featureTopicsEnabled(true)
-            .featureDemographicsEnabled(true)
-            .featureAppointmentsEnabled(true)
-            .featureStatisticsEnabled(true)
-            .featureTopicsEnabled(true)
-            .featureGroupChatV2Enabled(true)
-            .featureToolsEnabled(true)
-            .featureToolsOICDToken("1234")
-            .featureAttachmentUploadDisabled(false);
+        .featureTopicsEnabled(true)
+        .featureDemographicsEnabled(true)
+        .featureAppointmentsEnabled(true)
+        .featureStatisticsEnabled(true)
+        .featureTopicsEnabled(true)
+        .featureGroupChatV2Enabled(true)
+        .featureToolsEnabled(true)
+        .featureToolsOICDToken("1234")
+        .featureAttachmentUploadDisabled(false)
+        .extendedSettings(
+            new ConsultingTypePatchDTO().isVideoCallAllowed(true).languageFormal(true));
   }
 
   private Licensing licensing(int numberOfUsers) {
@@ -156,7 +155,8 @@ public class MultilingualTenantTestDataBuilder {
     return this;
   }
 
-  public MultilingualTenantTestDataBuilder withTranslatedImpressum(String language, String impressum) {
+  public MultilingualTenantTestDataBuilder withTranslatedImpressum(
+      String language, String impressum) {
     MultilingualContent content = new MultilingualContent();
     var translatedMap = new HashMap<String, String>();
     translatedMap.put(language, impressum);

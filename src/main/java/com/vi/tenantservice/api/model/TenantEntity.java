@@ -77,4 +77,10 @@ public class TenantEntity {
   @Column(name = "update_date")
   private LocalDateTime updateDate;
 
+  public interface TenantBase {
+
+    Long getId();
+
+    String getName();
+  }
 }

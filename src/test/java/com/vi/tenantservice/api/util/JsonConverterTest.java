@@ -1,8 +1,8 @@
 package com.vi.tenantservice.api.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.collection.IsMapContaining.hasEntry;
 
@@ -13,63 +13,63 @@ import org.junit.jupiter.api.Test;
 
 class JsonConverterTest {
 
-
   @Test
   void convertMapFromJson_Should_returnResult_When_jsonContainsNewLineOrTabulation() {
-    //given
+    // given
     final String json = "{\"de\": \"test\n new line \t tabulation\"}";
 
-    //when
+    // when
     Map<String, String> result = JsonConverter.convertMapFromJson(json);
 
-    //then
+    // then
     assertThat(result, notNullValue());
   }
 
   @Test
   void convertFromJson_Should_returnTenantSettings_When_jsonContainsNewLineOrTabulation() {
-    //given
+    // given
     final String json = "{\"test\": \"test\n new line \t tabulation\"}";
 
-    //when
+    // when
     TenantSettings result = JsonConverter.convertFromJson(json);
 
-    //then
+    // then
     assertThat(result, notNullValue());
   }
 
   @Test
   void convertToJson_Should_returnCorrectJson() {
-    //given
+    // given
     final Map<String, String> translations = new HashMap<>();
     translations.put("en", "en translation");
 
-    //when
+    // when
     final String json = JsonConverter.convertToJson(translations);
 
-    //then
+    // then
     assertThat(json, is("{\"en\":\"en translation\"}"));
   }
 
   @Test
   void convertFromJson_Should_returnCorrectTenantSettings() {
-    //given
-    final String json = "{"
-        + "\"featureStatisticsEnabled\":true,"
-        + "\"featureTopicsEnabled\":true,"
-        + "\"topicsInRegistrationEnabled\":true,"
-        + "\"featureDemographicsEnabled\":false,"
-        + "\"featureAppointmentsEnabled\":false,"
-        + "\"featureGroupChatV2Enabled\":false,"
-        + "\"featureToolsEnabled\":false,"
-        + "\"featureAttachmentUploadDisabled\":true,"
-        + "\"featureToolsOIDCToken\":null"
-        + "}";
+    // given
+    final String json =
+        "{"
+            + "\"featureStatisticsEnabled\":true,"
+            + "\"featureTopicsEnabled\":true,"
+            + "\"topicsInRegistrationEnabled\":true,"
+            + "\"featureDemographicsEnabled\":false,"
+            + "\"featureAppointmentsEnabled\":false,"
+            + "\"featureGroupChatV2Enabled\":false,"
+            + "\"featureToolsEnabled\":false,"
+            + "\"featureAttachmentUploadDisabled\":true,"
+            + "\"featureToolsOIDCToken\":null"
+            + "}";
 
-    //when
+    // when
     final TenantSettings tenantSettings = JsonConverter.convertFromJson(json);
 
-    //then
+    // then
     assertThat(tenantSettings, notNullValue());
     assertThat(tenantSettings.isFeatureStatisticsEnabled(), is(true));
     assertThat(tenantSettings.isFeatureTopicsEnabled(), is(true));
@@ -84,13 +84,13 @@ class JsonConverterTest {
 
   @Test
   void convertMapFromJson_Should_returnCorrectMap() {
-    //given
+    // given
     final String json = "{\"en\":\"en translation\", \"de\":\"de translation\"}";
 
-    //when
+    // when
     final Map<String, String> translations = JsonConverter.convertMapFromJson(json);
 
-    //then
+    // then
     assertThat(translations.size(), is(2));
     assertThat(translations, hasEntry("en", "en translation"));
     assertThat(translations, hasEntry("de", "de translation"));
@@ -98,11 +98,11 @@ class JsonConverterTest {
 
   @Test
   void convertMapFromJson_Should_returnEmptyMap_When_jsonIsNull() {
-    //given
-    //when
+    // given
+    // when
     final Map<String, String> translations = JsonConverter.convertMapFromJson(null);
 
-    //then
+    // then
     assertThat(translations.size(), is(0));
   }
 }

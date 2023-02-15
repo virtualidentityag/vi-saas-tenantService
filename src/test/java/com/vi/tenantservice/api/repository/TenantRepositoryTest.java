@@ -14,7 +14,6 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-
 @TestPropertySource(properties = "spring.profiles.active=testing")
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
 @ExtendWith(SpringExtension.class)
@@ -23,8 +22,7 @@ class TenantRepositoryTest {
 
   private static final long EXISTING_ID = 1L;
 
-  @Autowired
-  private TenantRepository tenantRepository;
+  @Autowired private TenantRepository tenantRepository;
 
   @Test
   void findById_Should_findTenantById() {
@@ -87,5 +85,4 @@ class TenantRepositoryTest {
     // then
     assertNotNull(tenant);
   }
-
 }

@@ -1,5 +1,7 @@
 package com.vi.tenantservice.api.converter;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
@@ -7,11 +9,8 @@ import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
-import org.junit.jupiter.api.Test;
-
 import java.util.Map;
-
-import static org.assertj.core.api.Assertions.assertThat;
+import org.junit.jupiter.api.Test;
 
 class TenantConverterTest {
 
@@ -20,9 +19,15 @@ class TenantConverterTest {
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {
     // given
-    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
-        .withContent().withTheming().withLicensing().withSettings().build();
-
+    MultilingualTenantDTO tenantDTO =
+        new MultilingualTenantTestDataBuilder()
+            .tenantDTO()
+            .withContent()
+            .withTheming()
+            .withLicensing()
+            .withSettings()
+            .build();
+    tenantDTO.getSettings().extendedSettings(null);
     // when
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
@@ -34,18 +39,26 @@ class TenantConverterTest {
     assertThat(converted.getLicensing()).isEqualTo(tenantDTO.getLicensing());
     assertThat(converted.getSettings()).isEqualTo(tenantDTO.getSettings());
     assertThat(converted.getTheming()).isEqualTo(tenantDTO.getTheming());
-    //content comparision is skipped, due to i18n feature, so the structure is different
+    // content comparision is skipped, due to i18n feature, so the structure is different
   }
 
   @Test
   void toRestrictedTenantDTO_should_convertAttributesProperly() {
     // given
-    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
-        .withContent().withTheming().withLicensing().withSettings().build();
+    MultilingualTenantDTO tenantDTO =
+        new MultilingualTenantTestDataBuilder()
+            .tenantDTO()
+            .withContent()
+            .withTheming()
+            .withLicensing()
+            .withSettings()
+            .build();
+    tenantDTO.getSettings().extendedSettings(null);
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
+    RestrictedTenantDTO restrictedTenantDTO =
+        tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
 
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
@@ -59,12 +72,18 @@ class TenantConverterTest {
   @Test
   void toRestrictedTenantDTO_should_convertDefaultValuesForSettingsInCaseOfNull() {
     // given
-    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
-        .withContent().withTheming().withLicensing().build();
+    MultilingualTenantDTO tenantDTO =
+        new MultilingualTenantTestDataBuilder()
+            .tenantDTO()
+            .withContent()
+            .withTheming()
+            .withLicensing()
+            .build();
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    RestrictedTenantDTO restrictedTenantDTO = tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
+    RestrictedTenantDTO restrictedTenantDTO =
+        tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
 
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
@@ -75,11 +94,16 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getSettings()).isEqualTo(new Settings());
   }
 
-  private static void assertContentIsProperlyConverted(MultilingualTenantDTO tenantDTO, RestrictedTenantDTO restrictedTenantDTO) {
-    assertThat(restrictedTenantDTO.getContent().getClaim()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getClaim()));
-    assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
-    assertThat(restrictedTenantDTO.getContent().getTermsAndConditions()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getTermsAndConditions()));
-    assertThat(restrictedTenantDTO.getContent().getImpressum()).isEqualTo(getGermanTranslation(tenantDTO.getContent().getImpressum()));
+  private static void assertContentIsProperlyConverted(
+      MultilingualTenantDTO tenantDTO, RestrictedTenantDTO restrictedTenantDTO) {
+    assertThat(restrictedTenantDTO.getContent().getClaim())
+        .isEqualTo(getGermanTranslation(tenantDTO.getContent().getClaim()));
+    assertThat(restrictedTenantDTO.getContent().getPrivacy())
+        .isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
+    assertThat(restrictedTenantDTO.getContent().getTermsAndConditions())
+        .isEqualTo(getGermanTranslation(tenantDTO.getContent().getTermsAndConditions()));
+    assertThat(restrictedTenantDTO.getContent().getImpressum())
+        .isEqualTo(getGermanTranslation(tenantDTO.getContent().getImpressum()));
   }
 
   private static String getGermanTranslation(Map<String, String> translations) {
@@ -89,13 +113,18 @@ class TenantConverterTest {
   @Test
   void toBasicLicensingTenantDTO_should_convertAttributesProperly() {
     // given
-    MultilingualTenantDTO tenantDTO = new MultilingualTenantTestDataBuilder().tenantDTO()
-        .withContent().withTheming().withLicensing().build();
+    MultilingualTenantDTO tenantDTO =
+        new MultilingualTenantTestDataBuilder()
+            .tenantDTO()
+            .withContent()
+            .withTheming()
+            .withLicensing()
+            .build();
     TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
     // when
-    BasicTenantLicensingDTO basicTenantLicensingDTO = tenantConverter.toBasicLicensingTenantDTO(
-        entity);
+    BasicTenantLicensingDTO basicTenantLicensingDTO =
+        tenantConverter.toBasicLicensingTenantDTO(entity);
 
     // then
     assertThat(basicTenantLicensingDTO.getId()).isEqualTo(tenantDTO.getId());

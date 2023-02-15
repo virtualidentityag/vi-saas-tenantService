@@ -74,6 +74,10 @@
             <artifactId>spring-boot-starter-cache</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-hateoas</artifactId>
+        </dependency>
         <!-- Persistence -->
 
         <dependency>
@@ -289,6 +293,36 @@
                         </configuration>
                     </execution>
                     <execution>
+                        <id>consulting-type-service-client-model</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <configOptions>
+                                <sourceFolder>/</sourceFolder>
+                                <library>resttemplate</library>
+                                <dateLibrary>java8</dateLibrary>
+                            </configOptions>
+                            <inputSpec>${project.basedir}/services/consultingtypeservice.yaml</inputSpec>
+                            <generatorName>java</generatorName>
+                            <generateApis>true</generateApis>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <apiPackage>
+                                ${project.groupId}.${project.artifactId}.consultingtypeservice.generated.web
+                            </apiPackage>
+                            <modelPackage>
+                                ${project.groupId}.${project.artifactId}.consultingtypeservice.generated.web.model
+                            </modelPackage>
+                            <typeMappings>
+                                <typeMapping>
+                                    RoleConsultantDTO=${project.groupId}.${project.artifactId}.api.manager.consultingtype.roles.Consultant
+                                </typeMapping>
+                            </typeMappings>
+                        </configuration>
+                    </execution>
+                    <execution>
                         <id>application-settings-service-client-model</id>
                         <phase>generate-sources</phase>
                         <goals>
@@ -310,6 +344,31 @@
                             </apiPackage>
                             <modelPackage>
                                 ${project.groupId}.${project.artifactId}.applicationsettingsservice.generated.web.model
+                            </modelPackage>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>useradmin-settings-service-client-model</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>generate</goal>
+                        </goals>
+                        <configuration>
+                            <configOptions>
+                                <sourceFolder>/</sourceFolder>
+                                <library>resttemplate</library>
+                                <dateLibrary>java8</dateLibrary>
+                            </configOptions>
+                            <inputSpec>${project.basedir}/services/useradminservice.yaml</inputSpec>
+                            <generatorName>java</generatorName>
+                            <generateApis>true</generateApis>
+                            <generateApiTests>false</generateApiTests>
+                            <generateModelTests>false</generateModelTests>
+                            <apiPackage>
+                                ${project.groupId}.${project.artifactId}.useradminservice.generated.web
+                            </apiPackage>
+                            <modelPackage>
+                                ${project.groupId}.${project.artifactId}.useradminservice.generated.web.model
                             </modelPackage>
                         </configuration>
                     </execution>
@@ -384,6 +443,29 @@
                 <configuration>
                     <propertyFile>src/main/resources/liquibase.properties</propertyFile>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <version>2.23.0</version>
+                <configuration>
+                    <java>
+                        <toggleOffOn />
+                        <googleJavaFormat>
+                            <version>1.15.0</version>
+                            <style>GOOGLE</style>
+                        </googleJavaFormat>
+                    </java>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>check</goal>
+                        </goals>
+                        <phase>compile</phase>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>

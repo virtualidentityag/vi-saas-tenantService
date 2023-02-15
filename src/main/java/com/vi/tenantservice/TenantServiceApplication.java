@@ -3,9 +3,7 @@ package com.vi.tenantservice;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-/**
- * Starter class for the application.
- */
+/** Starter class for the application. */
 @SpringBootApplication
 public class TenantServiceApplication {
 
@@ -17,5 +15,4 @@ public class TenantServiceApplication {
   public static void main(String[] args) {
     SpringApplication.run(TenantServiceApplication.class, args);
   }
-
 }

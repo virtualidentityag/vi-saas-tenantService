@@ -1,7 +1,7 @@
 package com.vi.tenantservice.api.tenant;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Optional;
+import javax.servlet.http.HttpServletRequest;
 
 public interface TenantResolver {
 

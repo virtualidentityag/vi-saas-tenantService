@@ -41,7 +41,7 @@ class ApplicationSettingsServiceTest {
   }
 
   @Test
-  public void getApplicationSettings_Should_TryResolveTenantAndCallApplicationSettingsService() {
+  void getApplicationSettings_Should_TryResolveTenantAndCallApplicationSettingsService() {
     // when
     Mockito.when(applicationSettingsApiControllerFactory.createControllerApi())
         .thenReturn(applicationsettingsControllerApi);
@@ -51,7 +51,7 @@ class ApplicationSettingsServiceTest {
     applicationSettingsService.getApplicationSettings();
 
     // then
-    Mockito.verify(tenantResolverService).tryResolve(httpServletRequest);
+    Mockito.verify(tenantResolverService).tryResolve();
     Mockito.verify(applicationsettingsControllerApi).getApplicationSettings();
   }
 

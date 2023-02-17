@@ -11,7 +11,6 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsul
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.InternalServerErrorException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -19,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Service
 @RequiredArgsConstructor
@@ -76,9 +73,8 @@ public class ConsultingTypeService {
   private void addDefaultHeaders(
       com.vi.tenantservice.consultingtypeservice.generated.ApiClient apiClient) {
     var headers = this.securityHeaderSupplier.getKeycloakAndCsrfHttpHeaders();
-    HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    Optional<Long> optionalTenant = tenantResolverService.tryResolve(request);
+
+    Optional<Long> optionalTenant = tenantResolverService.tryResolve();
     optionalTenant.ifPresent(aLong -> headers.add("tenantId", aLong.toString()));
     headers.forEach((key, value) -> apiClient.addDefaultHeader(key, value.iterator().next()));
   }

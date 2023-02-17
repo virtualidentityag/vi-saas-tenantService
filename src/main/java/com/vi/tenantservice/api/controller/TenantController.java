@@ -1,6 +1,5 @@
 package com.vi.tenantservice.api.controller;
 
-import com.vi.tenantservice.api.authorisation.Authority;
 import com.vi.tenantservice.api.facade.TenantServiceFacade;
 import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
@@ -70,7 +69,6 @@ public class TenantController implements TenantApi, TenantadminApi {
   @PreAuthorize("hasAuthority('AUTHORIZATION_CREATE_TENANT')")
   public ResponseEntity<MultilingualTenantDTO> createTenant(
       @Valid MultilingualTenantDTO tenantMultilingualDTO) {
-    String createTenant = Authority.AuthorityValue.CREATE_TENANT;
     log.info("Creating tenant with by user {} ", authorisationService.getUsername());
     var tenant = tenantServiceFacade.createTenant(tenantMultilingualDTO);
     return new ResponseEntity<>(tenant, HttpStatus.OK);
@@ -103,11 +101,17 @@ public class TenantController implements TenantApi, TenantadminApi {
   }
 
   @Override
-  public ResponseEntity<RestrictedTenantDTO> getRestrictedSingleTenantData() {
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedSingleTenancyTenantData() {
     var singleTenant = tenantServiceFacade.getSingleTenant();
     return singleTenant.isEmpty()
         ? new ResponseEntity<>(HttpStatus.BAD_REQUEST)
         : new ResponseEntity<>(singleTenant.get(), HttpStatus.OK);
+  }
+
+  @Override
+  public ResponseEntity<RestrictedTenantDTO> getRestrictedTenantData() {
+    var tenantData = tenantServiceFacade.getRestrictedTenantDataDeterminingTenantContext();
+    return new ResponseEntity<>(tenantData, HttpStatus.OK);
   }
 
   @Override

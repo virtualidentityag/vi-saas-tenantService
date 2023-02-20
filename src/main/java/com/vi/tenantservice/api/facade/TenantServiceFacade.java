@@ -370,7 +370,7 @@ public class TenantServiceFacade {
   private Optional<Long> resolveFromRequestOrCookie(Long optionalTenantIdOverride) {
     return optionalTenantIdOverride != null
         ? Optional.of(optionalTenantIdOverride)
-        : tenantResolverService.tryResolveFromCookie();
+        : tenantResolverService.tryResolveForNonAuthUsers();
   }
 
   public RestrictedTenantDTO getRestrictedTenantDataDeterminingTenantContext() {

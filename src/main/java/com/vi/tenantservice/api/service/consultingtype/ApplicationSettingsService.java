@@ -9,13 +9,10 @@ import com.vi.tenantservice.applicationsettingsservice.generated.web.model.Appli
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMainTenantSubdomainForSingleDomainMultitenancy;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsPatchDTO;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /** Service class to communicate with the ConsultingTypeService. */
 @Component
@@ -56,9 +53,7 @@ public class ApplicationSettingsService {
   }
 
   private void addHeaders(ApiClient apiClient, HttpHeaders headers) {
-    HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    Optional<Long> optionalTenant = tenantResolverService.tryResolve(request);
+    Optional<Long> optionalTenant = tenantResolverService.tryResolve();
     if (optionalTenant.isPresent()) {
       headers.add("tenantId", optionalTenant.get().toString());
     }

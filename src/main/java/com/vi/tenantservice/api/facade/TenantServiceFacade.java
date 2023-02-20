@@ -22,12 +22,14 @@ import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantBase;
+import com.vi.tenantservice.api.service.SingleDomainTenantOverrideService;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
+import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
@@ -76,6 +78,10 @@ public class TenantServiceFacade {
 
   private final @NonNull TenantFacadeDependentSettingsOverrideService
       tenantFacadeDependentSettingsOverrideService;
+
+  private final @NonNull TenantResolverService tenantResolverService;
+
+  private final @NonNull SingleDomainTenantOverrideService singleDomainTenantOverrideService;
 
   @Value("${feature.multitenancy.with.single.domain.enabled}")
   private boolean multitenancyWithSingleDomain;
@@ -196,7 +202,7 @@ public class TenantServiceFacade {
     if (translatedMap == null) {
       return Lists.newArrayList();
     }
-    return translatedMap.keySet().stream().map(s -> s.toLowerCase()).collect(Collectors.toList());
+    return translatedMap.keySet().stream().map(String::toLowerCase).collect(Collectors.toList());
   }
 
   private MultilingualTenantDTO updateWithSanitizedInput(
@@ -215,7 +221,7 @@ public class TenantServiceFacade {
         consultingTypeService.getConsultingTypesByTenantId(tenantId.intValue());
 
     if (sanitizedTenantDTO.getSettings() != null
-        && sanitizedTenantDTO.getSettings().getExtendedSettings() != null)
+        && sanitizedTenantDTO.getSettings().getExtendedSettings() != null) {
       if (extendedTenantSettingsChanged(
           consultingTypesByTenantId, sanitizedTenantDTO.getSettings().getExtendedSettings())) {
         consultingTypeService.patchConsultingType(
@@ -226,6 +232,7 @@ public class TenantServiceFacade {
         log.debug(
             "Skipping consulting types update during tenant update, these settings did not change");
       }
+    }
   }
 
   private boolean extendedTenantSettingsChanged(
@@ -347,12 +354,11 @@ public class TenantServiceFacade {
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(
       String subdomain, Long optionalTenantIdOverride) {
     var tenantBySubdomain = tenantService.findTenantBySubdomain(subdomain);
-
     Optional<Long> tenantIdFromRequestOrCookie =
-        authorisationService.resolveTenantFromRequest(optionalTenantIdOverride);
+        resolveFromRequestOrCookie(optionalTenantIdOverride);
+
     if (multitenancyWithSingleDomain && tenantIdFromRequestOrCookie.isPresent()) {
-      return getTenantDataWithOverridenPrivacy(
-          tenantBySubdomain, tenantIdFromRequestOrCookie.get());
+      return getTenantDataWithOverride(tenantBySubdomain, tenantIdFromRequestOrCookie.get());
     }
 
     String lang = translationService.getCurrentLanguageContext();
@@ -361,25 +367,45 @@ public class TenantServiceFacade {
         : Optional.of(tenantConverter.toRestrictedTenantDTO(tenantBySubdomain.get(), lang));
   }
 
-  public Optional<RestrictedTenantDTO> getTenantDataWithOverridenPrivacy(
+  private Optional<Long> resolveFromRequestOrCookie(Long optionalTenantIdOverride) {
+    return optionalTenantIdOverride != null
+        ? Optional.of(optionalTenantIdOverride)
+        : tenantResolverService.tryResolveFromCookie();
+  }
+
+  public RestrictedTenantDTO getRestrictedTenantDataDeterminingTenantContext() {
+    if (multitenancyWithSingleDomain) {
+      return getRestrictedTenantDataWithOverrideForSingleDomainTenancy();
+    } else {
+      var tenantId = tenantResolverService.tryResolve().orElseThrow();
+      return findRestrictedTenantById(tenantId).orElseThrow();
+    }
+  }
+
+  private RestrictedTenantDTO getRestrictedTenantDataWithOverrideForSingleDomainTenancy() {
+    String mainTenantSubdomain =
+        applicationSettingsService
+            .getApplicationSettings()
+            .getMainTenantSubdomainForSingleDomainMultitenancy()
+            .getValue();
+    var mainTenant = tenantService.findTenantBySubdomain(mainTenantSubdomain).orElseThrow();
+    Long actualTenantId = tenantResolverService.tryResolve().orElseThrow();
+    TenantEntity actualTenant = tenantService.findTenantById(actualTenantId).orElseThrow();
+    return singleDomainTenantOverrideService.overridePrivacyAndCertainSettings(
+        mainTenant, actualTenant);
+  }
+
+  public Optional<RestrictedTenantDTO> getTenantDataWithOverride(
       Optional<TenantEntity> mainTenantForSingleDomainMultitenancy, Long resolvedTenantId) {
 
     Optional<TenantEntity> tenantToOverridePrivacy = tenantService.findTenantById(resolvedTenantId);
     if (tenantToOverridePrivacy.isEmpty()) {
       throw new BadRequestException("Tenant not found for id " + resolvedTenantId);
     }
-    String lang = translationService.getCurrentLanguageContext();
-    RestrictedTenantDTO restrictedTenantDTO =
-        tenantConverter.toRestrictedTenantDTO(mainTenantForSingleDomainMultitenancy.get(), lang);
-    RestrictedTenantDTO overridingRestrictedTenantDTO =
-        tenantConverter.toRestrictedTenantDTO(tenantToOverridePrivacy.get(), lang);
-
-    if (overridingRestrictedTenantDTO.getContent() != null) {
-      restrictedTenantDTO
-          .getContent()
-          .setPrivacy(overridingRestrictedTenantDTO.getContent().getPrivacy());
-    }
-    return Optional.of(restrictedTenantDTO);
+    return Optional.of(
+        singleDomainTenantOverrideService.overridePrivacyAndCertainSettings(
+            mainTenantForSingleDomainMultitenancy.orElseThrow(),
+            tenantToOverridePrivacy.orElseThrow()));
   }
 
   public Optional<RestrictedTenantDTO> getSingleTenant() {
@@ -463,9 +489,8 @@ public class TenantServiceFacade {
         "createDate",
         nonNull(fullTenant.getCreateDate()) ? fullTenant.getCreateDate().toString() : null);
     map.put(
-        "createDate",
+        "updateDate",
         nonNull(fullTenant.getUpdateDate()) ? fullTenant.getUpdateDate().toString() : null);
-
     return map;
   }
 }

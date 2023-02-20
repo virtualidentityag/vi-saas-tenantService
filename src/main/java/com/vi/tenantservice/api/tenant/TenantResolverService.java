@@ -6,6 +6,8 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -14,7 +16,31 @@ public class TenantResolverService {
 
   @NonNull AccessTokenTenantResolver accessTokenTenantResolver;
 
-  public Optional<Long> tryResolve(HttpServletRequest request) {
-    return accessTokenTenantResolver.resolve(request);
+  @NonNull CookieTenantResolver cookieTenantResolver;
+
+  public Optional<Long> tryResolve() {
+    HttpServletRequest request = getHttpServletRequest();
+    if (userIsAuthenticated(request)) {
+      return accessTokenTenantResolver.resolve(request);
+    } else {
+      return tryResolveFromCookie(request);
+    }
+  }
+
+  private static HttpServletRequest getHttpServletRequest() {
+    return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes())
+        .getRequest();
+  }
+
+  public Optional<Long> tryResolveFromCookie() {
+    return tryResolveFromCookie(getHttpServletRequest());
+  }
+
+  private Optional<Long> tryResolveFromCookie(HttpServletRequest request) {
+    return cookieTenantResolver.resolveTenantFromRequest(request);
+  }
+
+  private boolean userIsAuthenticated(HttpServletRequest request) {
+    return request.getUserPrincipal() != null;
   }
 }

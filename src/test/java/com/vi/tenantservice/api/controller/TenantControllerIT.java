@@ -544,6 +544,23 @@ class TenantControllerIT {
   }
 
   @Test
+  void getRestrictedTenantData_Should_determineTenantContextFromRequestAndReturnStatusOk()
+      throws Exception {
+
+    when(tenantResolverService.tryResolve()).thenReturn(Optional.of(2L));
+    mockMvc
+        .perform(get(PUBLIC_TENANT_RESOURCE).contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(2))
+        .andExpect(jsonPath("$.name").exists())
+        .andExpect(jsonPath("$.subdomain").exists())
+        .andExpect(jsonPath("$.licensing").doesNotExist())
+        .andExpect(jsonPath("$.theming").exists())
+        .andExpect(jsonPath("$.content").exists())
+        .andExpect(jsonPath("$.settings").exists());
+  }
+
+  @Test
   void
       getRestrictedTenantDataByTenantId_Should_returnStatusOk_When_calledWithExistingTenantIdAndNoAuthentication()
           throws Exception {

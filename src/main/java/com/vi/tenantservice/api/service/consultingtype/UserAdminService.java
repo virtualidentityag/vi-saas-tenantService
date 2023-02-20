@@ -7,13 +7,10 @@ import com.vi.tenantservice.useradminservice.generated.ApiClient;
 import com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO;
 import java.util.List;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Component;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 /** Service class to communicate with the ConsultingTypeService. */
 @Component
@@ -36,9 +33,7 @@ public class UserAdminService {
   }
 
   private void addHeaders(ApiClient apiClient, HttpHeaders headers) {
-    HttpServletRequest request =
-        ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-    Optional<Long> optionalTenant = tenantResolverService.tryResolve(request);
+    Optional<Long> optionalTenant = tenantResolverService.tryResolve();
     if (optionalTenant.isPresent()) {
       headers.add("tenantId", optionalTenant.get().toString());
     }

@@ -4,7 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.when;
 
 import com.vi.tenantservice.api.model.TenantEntity;
-import com.vi.tenantservice.api.service.TenantService;
+import com.vi.tenantservice.api.repository.TenantRepository;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.Test;
@@ -18,7 +18,7 @@ class SubdomainTenantResolverTest {
 
   @Mock SubdomainExtractor subdomainExtractor;
 
-  @Mock TenantService tenantService;
+  @Mock TenantRepository tenantRepository;
 
   @Mock HttpServletRequest httpServletRequest;
 
@@ -30,8 +30,7 @@ class SubdomainTenantResolverTest {
     when(subdomainExtractor.getCurrentSubdomain()).thenReturn(Optional.of("mucoviscidose"));
     TenantEntity tenantEntity = new TenantEntity();
     tenantEntity.setId(1L);
-    when(tenantService.findTenantBySubdomain("mucoviscidose"))
-        .thenReturn(Optional.of(tenantEntity));
+    when(tenantRepository.findBySubdomain("mucoviscidose")).thenReturn(tenantEntity);
 
     // when
     Optional<Long> resolve = subdomainTenantResolver.resolve(httpServletRequest);

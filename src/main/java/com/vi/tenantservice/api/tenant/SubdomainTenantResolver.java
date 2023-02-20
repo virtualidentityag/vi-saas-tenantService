@@ -1,9 +1,8 @@
 package com.vi.tenantservice.api.tenant;
 
-import static java.util.Optional.empty;
 import static java.util.Optional.of;
 
-import com.vi.tenantservice.api.service.TenantService;
+import com.vi.tenantservice.api.repository.TenantRepository;
 import java.util.Optional;
 import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
@@ -16,7 +15,7 @@ public class SubdomainTenantResolver implements TenantResolver {
 
   private final @NonNull SubdomainExtractor subdomainExtractor;
 
-  private final @NonNull TenantService tenantService;
+  private final @NonNull TenantRepository tenantRepository;
 
   @Override
   public Optional<Long> resolve(HttpServletRequest request) {
@@ -26,14 +25,12 @@ public class SubdomainTenantResolver implements TenantResolver {
   private Optional<Long> resolveTenantFromSubdomain() {
     Optional<String> currentSubdomain = subdomainExtractor.getCurrentSubdomain();
     if (currentSubdomain.isPresent()) {
-      return of(getTenantIdBySubdomain(currentSubdomain.get()));
-    } else {
-      return empty();
+      var tenant = tenantRepository.findBySubdomain(currentSubdomain.get());
+      if (tenant != null) {
+        return of(tenant.getId());
+      }
     }
-  }
-
-  private Long getTenantIdBySubdomain(String currentSubdomain) {
-    return tenantService.findTenantBySubdomain(currentSubdomain).orElseThrow().getId();
+    return Optional.empty();
   }
 
   @Override

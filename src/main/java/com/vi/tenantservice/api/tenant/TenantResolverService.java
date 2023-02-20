@@ -18,12 +18,14 @@ public class TenantResolverService {
 
   @NonNull CookieTenantResolver cookieTenantResolver;
 
+  @NonNull SubdomainTenantResolver subdomainTenantResolver;
+
   public Optional<Long> tryResolve() {
     HttpServletRequest request = getHttpServletRequest();
     if (userIsAuthenticated(request)) {
       return accessTokenTenantResolver.resolve(request);
     } else {
-      return tryResolveFromCookie(request);
+      return tryResolveForNonAuthUsers(request);
     }
   }
 
@@ -32,12 +34,18 @@ public class TenantResolverService {
         .getRequest();
   }
 
-  public Optional<Long> tryResolveFromCookie() {
-    return tryResolveFromCookie(getHttpServletRequest());
+  public Optional<Long> tryResolveForNonAuthUsers() {
+    return tryResolveForNonAuthUsers(getHttpServletRequest());
   }
 
-  private Optional<Long> tryResolveFromCookie(HttpServletRequest request) {
-    return cookieTenantResolver.resolveTenantFromRequest(request);
+  private Optional<Long> tryResolveForNonAuthUsers(HttpServletRequest request) {
+    var resolvedFromCookie = cookieTenantResolver.resolveTenantFromRequest(request);
+
+    if (resolvedFromCookie.isEmpty()) {
+      return subdomainTenantResolver.resolve(request);
+    } else {
+      return resolvedFromCookie;
+    }
   }
 
   private boolean userIsAuthenticated(HttpServletRequest request) {

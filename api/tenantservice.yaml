@@ -311,7 +311,8 @@ paths:
         500:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
   /tenant/public/:
-    summary: 'Represents a publicly allowed tenant data. Tenant is retrieved from Context. For single domain multitenancy it overerrides some of the attributes from main tenant and the current tenant like privacy or some tenant settings'
+    summary: 'Represents a publicly allowed tenant data. Tenant is resolved based on the request context.
+     For single domain multitenancy it overerrides some of the attributes from main tenant and the current tenant like privacy or some tenant settings'
     description: This resource represents the tenant.
     get:
       tags:

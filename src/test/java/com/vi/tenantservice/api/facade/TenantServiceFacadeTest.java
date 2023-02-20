@@ -486,7 +486,7 @@ class TenantServiceFacadeTest {
 
     when(tenantService.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME))
         .thenReturn(defaultTenant);
-    when(tenantResolverService.tryResolveFromCookie()).thenReturn(Optional.of(2L));
+    when(tenantResolverService.tryResolveForNonAuthUsers()).thenReturn(Optional.of(2L));
     when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
 
     RestrictedTenantDTO overriddenDTO =

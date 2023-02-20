@@ -48,7 +48,8 @@ class TenantResolverServiceTest {
   void tryResolve_Should_Call_CookieTokenResolver_ForNonAuthUsers() {
     // given
     httpServletRequest.setUserPrincipal(null);
-    when(cookieTenantResolver.resolve(httpServletRequest)).thenReturn(Optional.of(1L));
+    when(cookieTenantResolver.resolveTenantFromRequest(httpServletRequest))
+        .thenReturn(Optional.of(1L));
     // when
     tenantResolverService.tryResolve();
     // then
@@ -59,7 +60,8 @@ class TenantResolverServiceTest {
   void tryResolve_Should_Call_SubdomainResolver_ForNonAuthUsersIfCookieNotResolved() {
     // given
     httpServletRequest.setUserPrincipal(null);
-    when(cookieTenantResolver.resolve(httpServletRequest)).thenReturn(Optional.empty());
+    when(cookieTenantResolver.resolveTenantFromRequest(httpServletRequest))
+        .thenReturn(Optional.empty());
     // when
     tenantResolverService.tryResolve();
     // then

@@ -44,7 +44,8 @@ class SingleDomainTenantOverrideServiceTest {
 
     // then
     assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo("actual privacy");
-    assertThat(restrictedTenantDTO.getContent().getDataPrivacyConfirmation()).isEqualTo(actualPrivacyChangedDate);
+    assertThat(restrictedTenantDTO.getContent().getDataPrivacyConfirmation())
+        .isEqualTo(actualPrivacyChangedDate);
     assertThat(restrictedTenantDTO.getSettings().getFeatureAttachmentUploadDisabled()).isTrue();
   }
 

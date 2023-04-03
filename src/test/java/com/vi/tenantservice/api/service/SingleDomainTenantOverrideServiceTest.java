@@ -8,6 +8,7 @@ import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantEntity;
+import java.time.LocalDateTime;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -31,9 +32,10 @@ class SingleDomainTenantOverrideServiceTest {
     var actualTenant = new TenantEntity();
     when(translationService.getCurrentLanguageContext()).thenReturn("de");
     when(tenantConverter.toRestrictedTenantDTO(mainTenant, "de"))
-        .thenReturn(restrictedDTO("main privacy", false));
+        .thenReturn(restrictedDTO("main privacy", LocalDateTime.now().minusDays(1), false));
+    LocalDateTime actualPrivacyChangedDate = LocalDateTime.now();
     when(tenantConverter.toRestrictedTenantDTO(actualTenant, "de"))
-        .thenReturn(restrictedDTO("actual privacy", true));
+        .thenReturn(restrictedDTO("actual privacy", actualPrivacyChangedDate, true));
 
     // when
     RestrictedTenantDTO restrictedTenantDTO =
@@ -42,13 +44,14 @@ class SingleDomainTenantOverrideServiceTest {
 
     // then
     assertThat(restrictedTenantDTO.getContent().getPrivacy()).isEqualTo("actual privacy");
+    assertThat(restrictedTenantDTO.getContent().getDataPrivacyConfirmation()).isEqualTo(actualPrivacyChangedDate);
     assertThat(restrictedTenantDTO.getSettings().getFeatureAttachmentUploadDisabled()).isTrue();
   }
 
   private static RestrictedTenantDTO restrictedDTO(
-      String privacy, boolean featureAttachmentUploadDisabled) {
+      String privacy, LocalDateTime privacyChangedDate, boolean featureAttachmentUploadDisabled) {
     return new RestrictedTenantDTO()
-        .content(new Content().privacy(privacy))
+        .content(new Content().privacy(privacy).dataPrivacyConfirmation(privacyChangedDate))
         .settings(new Settings().featureAttachmentUploadDisabled(featureAttachmentUploadDisabled));
   }
 }

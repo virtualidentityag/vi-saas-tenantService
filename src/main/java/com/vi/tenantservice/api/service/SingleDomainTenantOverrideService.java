@@ -44,6 +44,8 @@ public class SingleDomainTenantOverrideService {
     if (overridingRestrictedTenantDTO.getContent() != null) {
       restrictedTenantDTO
           .getContent()
+          .dataPrivacyConfirmation(overridingRestrictedTenantDTO.getContent()
+              .getDataPrivacyConfirmation())
           .setPrivacy(overridingRestrictedTenantDTO.getContent().getPrivacy());
     }
   }

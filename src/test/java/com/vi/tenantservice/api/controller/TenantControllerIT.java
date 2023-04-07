@@ -474,6 +474,14 @@ class TenantControllerIT {
   }
 
   @Test
+  void getHealtcheck_Should_returnHealtcheck() throws Exception {
+    mockMvc
+        .perform(get("/actuator/health").contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("status", is("UP")));
+  }
+
+  @Test
   void
       getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
           throws Exception {

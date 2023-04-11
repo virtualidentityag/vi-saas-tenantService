@@ -23,7 +23,7 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 /** Configuration class to provide the keycloak security configuration. */
 @KeycloakConfiguration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@EnableWebSecurity(debug = true)
+@EnableWebSecurity
 public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
 
   @Override
@@ -79,6 +79,7 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
     auth.authenticationProvider(keycloakAuthenticationProvider);
   }
 
+  @Override
   protected KeycloakAuthenticationProvider keycloakAuthenticationProvider() {
     var provider = new KeycloakAuthenticationProvider();
     provider.setGrantedAuthoritiesMapper(new RoleAuthorizationAuthorityMapper());

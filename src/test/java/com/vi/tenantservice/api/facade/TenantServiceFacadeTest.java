@@ -18,18 +18,21 @@ import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
+import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.service.SingleDomainTenantOverrideService;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
+import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.api.validation.TenantInputSanitizer;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
@@ -92,8 +95,12 @@ class TenantServiceFacadeTest {
 
   @Mock private UserAdminService userAdminService;
 
+  @Mock private TenantResolverService tenantResolverService;
+
   @Mock
   private TenantFacadeDependentSettingsOverrideService tenantFacadeDependentSettingsOverrideService;
+
+  @Mock private SingleDomainTenantOverrideService singleDomainTenantOverrideService;
 
   @InjectMocks private TenantServiceFacade tenantServiceFacade;
 
@@ -479,9 +486,14 @@ class TenantServiceFacadeTest {
 
     when(tenantService.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME))
         .thenReturn(defaultTenant);
-    when(authorisationService.resolveTenantFromRequest(null)).thenReturn(Optional.of(2L));
+    when(tenantResolverService.tryResolveForNonAuthUsers()).thenReturn(Optional.of(2L));
     when(tenantService.findTenantById(2L)).thenReturn(accessTokenTenantData);
 
+    RestrictedTenantDTO overriddenDTO =
+        new RestrictedTenantDTO().content(new Content().privacy("content2"));
+    when(singleDomainTenantOverrideService.overridePrivacyAndCertainSettings(
+            defaultTenant.get(), accessTokenTenantData.get()))
+        .thenReturn(overriddenDTO);
     // when
     Optional<RestrictedTenantDTO> tenantDTO =
         tenantServiceFacade.findTenantBySubdomain(SINGLE_DOMAIN_SUBDOMAIN_NAME, null);

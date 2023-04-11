@@ -296,7 +296,29 @@ paths:
       tags:
         - tenant-controller
       summary: 'Gets a tenant public information [Authorization: no-auth]'
-      operationId: getRestrictedSingleTenantData
+      operationId: getRestrictedSingleTenancyTenantData
+      responses:
+        200:
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RestrictedTenantDTO'
+        404:
+          description: Not found
+        400:
+          description: BAD REQUEST - invalid/incomplete request or body object
+        500:
+          description: INTERNAL SERVER ERROR - server encountered unexpected condition
+  /tenant/public/:
+    summary: 'Represents a publicly allowed tenant data. Tenant is resolved based on the request context.
+     For single domain multitenancy it overerrides some of the attributes from main tenant and the current tenant like privacy or some tenant settings'
+    description: This resource represents the tenant.
+    get:
+      tags:
+        - tenant-controller
+      summary: 'Gets a tenant public information [Authorization: no-auth]'
+      operationId: getRestrictedTenantData
       responses:
         200:
           description: Successful operation

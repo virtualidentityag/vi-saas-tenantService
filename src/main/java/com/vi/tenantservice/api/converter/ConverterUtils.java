@@ -5,8 +5,7 @@ import java.util.List;
 
 public class ConverterUtils {
 
-  private ConverterUtils() {
-  }
+  private ConverterUtils() {}
 
   public static final String DE = "de";
 

@@ -37,13 +37,23 @@ public class CookieTenantResolver implements TenantResolver {
       return Optional.empty();
     }
 
-    Cookie token = WebUtils.getCookie(request, "keycloak");
+    Cookie tokenCookie = WebUtils.getCookie(request, "keycloak");
 
-    if (token == null) {
+    if (tokenCookie == null) {
+      return tryResolveFromTenantIdCookie(request);
+    } else {
+      return resolveFromCookieValue(tokenCookie);
+    }
+  }
+
+  private Optional<Long> tryResolveFromTenantIdCookie(HttpServletRequest request) {
+    Cookie tenantId = WebUtils.getCookie(request, TENANT_ID);
+
+    if (tenantId != null && tenantId.getValue() != null) {
+      return Optional.of(Long.valueOf(tenantId.getValue()));
+    } else {
       return Optional.empty();
     }
-
-    return resolveFromCookieValue(token);
   }
 
   private Optional<Long> resolveFromCookieValue(Cookie token) {

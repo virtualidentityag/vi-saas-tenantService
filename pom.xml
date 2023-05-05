@@ -24,7 +24,7 @@
         <java.version>11</java.version>
         <swagger.version>3.0.0</swagger.version>
         <h2.version>2.1.214</h2.version>
-        <spring.security>5.7.5</spring.security>
+        <spring.security>5.7.8</spring.security>
         <owasp.java.html.sanitizer>20211018.1</owasp.java.html.sanitizer>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
         <liquibase.maven.plugin.version>4.1.1</liquibase.maven.plugin.version>

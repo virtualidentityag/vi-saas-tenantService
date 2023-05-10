@@ -1,1 +1,1 @@
-alter sequence sequence_tenant start with 3;
+alter sequence sequence_tenant start with 1;

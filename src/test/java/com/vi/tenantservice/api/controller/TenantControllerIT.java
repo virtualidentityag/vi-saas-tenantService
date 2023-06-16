@@ -26,6 +26,7 @@ import com.vi.tenantservice.api.authorisation.Authority;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
+import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
@@ -44,6 +45,7 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMes
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -92,6 +94,8 @@ class TenantControllerIT {
   private static final int CONSULTING_TYPE_ID = 2;
 
   @Autowired private WebApplicationContext context;
+
+  @Autowired private ObjectMapper objectMapper;
 
   @MockBean AuthorisationService authorisationService;
 
@@ -296,7 +300,8 @@ class TenantControllerIT {
         .andExpect(
             jsonPath(
                 "settings.extendedSettings.notifications.teamSessions.newMessage.allTeamConsultants",
-                is(true)));
+                is(true)))
+        .andExpect(jsonPath("$.isVideoCallAllowed").value(false));
   }
 
   private com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO
@@ -577,7 +582,7 @@ class TenantControllerIT {
     aMap.put("de", "de transl");
     aMap.put("en", "en transl");
 
-    String s = new ObjectMapper().writeValueAsString(aMap);
+    String s = objectMapper.writeValueAsString(aMap);
     mockMvc
         .perform(get(EXISTING_PUBLIC_TENANT).contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -758,10 +763,14 @@ class TenantControllerIT {
   @Sql(value = "/database/SingleTenantData.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = "/database/MultiTenantData.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void getRestrictedSingleTenantData_Should_returnOkAndTheRequestedTenantData() throws Exception {
-    mockMvc
-        .perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(1));
+    val resultActions =
+        mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE)).andExpect(status().isOk());
+    val tenantDTO =
+        objectMapper.readValue(
+            resultActions.andReturn().getResponse().getContentAsString(), TenantDTO.class);
+    resultActions
+        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.isVideoCallAllowed").value(true));
   }
 
   @Test

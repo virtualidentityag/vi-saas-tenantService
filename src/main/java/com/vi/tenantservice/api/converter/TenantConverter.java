@@ -36,6 +36,9 @@ public class TenantConverter {
             .id(tenantDTO.getId())
             .name(tenantDTO.getName())
             .subdomain(tenantDTO.getSubdomain());
+    if (tenantDTO.getIsVideoCallAllowed() != null) {
+      builder.isVideoCallAllowed(tenantDTO.getIsVideoCallAllowed());
+    }
     contentToEntity(tenantDTO, builder);
     licensingToEntity(tenantDTO, builder);
     themingToEntity(tenantDTO, builder);
@@ -117,6 +120,9 @@ public class TenantConverter {
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
             .settings(getSettings(tenant));
+    if (tenant.getIsVideoCallAllowed() != null) {
+      tenantDTO.setIsVideoCallAllowed(tenant.getIsVideoCallAllowed());
+    }
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
     }
@@ -135,6 +141,7 @@ public class TenantConverter {
             .content(toContentDTO(tenant, lang))
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
+            .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
             .settings(getSettings(tenant));
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
@@ -175,7 +182,8 @@ public class TenantConverter {
         .content(toContentDTO(tenant, lang))
         .theming(toThemingDTO(tenant))
         .subdomain(tenant.getSubdomain())
-        .settings(getSettings(tenant));
+        .settings(getSettings(tenant))
+        .isVideoCallAllowed(tenant.getIsVideoCallAllowed());
   }
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
@@ -184,6 +192,7 @@ public class TenantConverter {
             .id(tenant.getId())
             .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
+            .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
             .licensing(toLicensingDTO(tenant));
 
     if (tenant.getCreateDate() != null) {
@@ -245,6 +254,7 @@ public class TenantConverter {
             .id(tenant.getId())
             .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
+            .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
             .beraterCount(tenant.getLicensingAllowedNumberOfUsers());
     if (tenant.getCreateDate() != null) {
       adminTenantDTO.setCreateDate(tenant.getCreateDate().toString());

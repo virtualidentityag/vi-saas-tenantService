@@ -1,0 +1,1 @@
+ALTER TABLE `tenantservice`.`tenant` DROP IF EXISTS show_asker_profile;

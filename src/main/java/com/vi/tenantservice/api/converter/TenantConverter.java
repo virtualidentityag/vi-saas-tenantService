@@ -39,6 +39,9 @@ public class TenantConverter {
     if (tenantDTO.getIsVideoCallAllowed() != null) {
       builder.isVideoCallAllowed(tenantDTO.getIsVideoCallAllowed());
     }
+    if (tenantDTO.getShowAskerProfile() != null) {
+      builder.showAskerProfile(tenantDTO.getShowAskerProfile());
+    }
     contentToEntity(tenantDTO, builder);
     licensingToEntity(tenantDTO, builder);
     themingToEntity(tenantDTO, builder);
@@ -123,6 +126,9 @@ public class TenantConverter {
     if (tenant.getIsVideoCallAllowed() != null) {
       tenantDTO.setIsVideoCallAllowed(tenant.getIsVideoCallAllowed());
     }
+    if (tenant.getShowAskerProfile() != null) {
+      tenantDTO.setShowAskerProfile(tenant.getShowAskerProfile());
+    }
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
     }
@@ -142,6 +148,7 @@ public class TenantConverter {
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
             .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
+            .showAskerProfile(tenant.getShowAskerProfile())
             .settings(getSettings(tenant));
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
@@ -183,6 +190,7 @@ public class TenantConverter {
         .theming(toThemingDTO(tenant))
         .subdomain(tenant.getSubdomain())
         .settings(getSettings(tenant))
+        .showAskerProfile(tenant.getShowAskerProfile())
         .isVideoCallAllowed(tenant.getIsVideoCallAllowed());
   }
 
@@ -193,6 +201,7 @@ public class TenantConverter {
             .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
             .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
+            .showAskerProfile(tenant.getShowAskerProfile())
             .licensing(toLicensingDTO(tenant));
 
     if (tenant.getCreateDate() != null) {
@@ -255,6 +264,7 @@ public class TenantConverter {
             .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
             .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
+            .showAskerProfile(tenant.getShowAskerProfile())
             .beraterCount(tenant.getLicensingAllowedNumberOfUsers());
     if (tenant.getCreateDate() != null) {
       adminTenantDTO.setCreateDate(tenant.getCreateDate().toString());

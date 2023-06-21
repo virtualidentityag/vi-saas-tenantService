@@ -770,7 +770,8 @@ class TenantControllerIT {
             resultActions.andReturn().getResponse().getContentAsString(), TenantDTO.class);
     resultActions
         .andExpect(jsonPath("$.id").value(1))
-        .andExpect(jsonPath("$.isVideoCallAllowed").value(true));
+        .andExpect(jsonPath("$.isVideoCallAllowed").value(true))
+        .andExpect(jsonPath("$.showAskerProfile").value(true));
   }
 
   @Test

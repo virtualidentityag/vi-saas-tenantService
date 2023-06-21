@@ -353,6 +353,10 @@ paths:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
 components:
   schemas:
+    ShowAskerProfile:
+      type: boolean
+      example: true
+      default: false
     IsVideoCallAllowed:
       type: boolean
       example: true
@@ -393,6 +397,9 @@ components:
         isVideoCallAllowed:
           $ref:
             '#/components/schemas/IsVideoCallAllowed'
+        showAskerProfile:
+          $ref:
+            '#/components/schemas/ShowAskerProfile'
 
     MultilingualTenantDTO:
           type: object
@@ -434,6 +441,9 @@ components:
             isVideoCallAllowed:
               $ref:
                 '#/components/schemas/IsVideoCallAllowed'
+            showAskerProfile:
+              $ref:
+                '#/components/schemas/ShowAskerProfile'
     BasicTenantLicensingDTO:
       type: object
       required:
@@ -455,6 +465,9 @@ components:
         isVideoCallAllowed:
           $ref:
             '#/components/schemas/IsVideoCallAllowed'
+        showAskerProfile:
+          $ref:
+            '#/components/schemas/ShowAskerProfile'
         createDate:
           type: string
         updateDate:
@@ -490,6 +503,9 @@ components:
         isVideoCallAllowed:
           $ref:
             '#/components/schemas/IsVideoCallAllowed'
+        showAskerProfile:
+          $ref:
+            '#/components/schemas/ShowAskerProfile'
     Licensing:
       type: object
       required:
@@ -635,6 +651,9 @@ components:
         isVideoCallAllowed:
           $ref:
             '#/components/schemas/IsVideoCallAllowed'
+        showAskerProfile:
+          $ref:
+            '#/components/schemas/ShowAskerProfile'
         createDate:
           type: string
         updateDate:

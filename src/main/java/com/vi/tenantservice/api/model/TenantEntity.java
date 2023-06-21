@@ -78,8 +78,12 @@ public class TenantEntity {
   private LocalDateTime updateDate;
 
   @Builder.Default
-  @Column(name = "isVideoCallAllowed")
+  @Column(name = "is_video_call_allowed")
   private Boolean isVideoCallAllowed = Boolean.FALSE;
+
+  @Builder.Default
+  @Column(name = "show_asker_profile")
+  private Boolean showAskerProfile = Boolean.FALSE;
 
   public interface TenantBase {
 

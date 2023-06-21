@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS TENANT
     privacy_activation_date datetime,
     termsandconditions_activation_date datetime,
     `is_video_call_allowed` BOOLEAN NOT NULL DEFAULT FALSE,
+    `show_asker_profile` BOOLEAN NOT NULL DEFAULT FALSE,
     PRIMARY KEY (ID)
 );
 

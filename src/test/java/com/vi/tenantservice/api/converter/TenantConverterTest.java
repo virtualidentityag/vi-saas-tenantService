@@ -39,6 +39,8 @@ class TenantConverterTest {
     assertThat(converted.getLicensing()).isEqualTo(tenantDTO.getLicensing());
     assertThat(converted.getSettings()).isEqualTo(tenantDTO.getSettings());
     assertThat(converted.getTheming()).isEqualTo(tenantDTO.getTheming());
+    assertThat(converted.getSettings().getIsVideoCallAllowed()).isTrue();
+    assertThat(converted.getSettings().getShowAskerProfile()).isTrue();
     // content comparision is skipped, due to i18n feature, so the structure is different
   }
 

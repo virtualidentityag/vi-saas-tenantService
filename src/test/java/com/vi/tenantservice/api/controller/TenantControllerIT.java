@@ -1,23 +1,16 @@
 package com.vi.tenantservice.api.controller;
 
-import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
-import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.*;
 import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.Matchers.is;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -37,11 +30,7 @@ import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -301,7 +290,7 @@ class TenantControllerIT {
             jsonPath(
                 "settings.extendedSettings.notifications.teamSessions.newMessage.allTeamConsultants",
                 is(true)))
-        .andExpect(jsonPath("$.isVideoCallAllowed").value(false));
+        .andExpect(jsonPath("$.settings.isVideoCallAllowed").value(true));
   }
 
   private com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO
@@ -768,10 +757,10 @@ class TenantControllerIT {
     val tenantDTO =
         objectMapper.readValue(
             resultActions.andReturn().getResponse().getContentAsString(), TenantDTO.class);
-    resultActions
-        .andExpect(jsonPath("$.id").value(1))
-        .andExpect(jsonPath("$.isVideoCallAllowed").value(true))
-        .andExpect(jsonPath("$.showAskerProfile").value(true));
+    val settings = tenantDTO.getSettings();
+    assertThat(tenantDTO.getId()).isEqualTo(1L);
+    assertThat(settings.getIsVideoCallAllowed()).isFalse();
+    assertThat(settings.getShowAskerProfile()).isFalse();
   }
 
   @Test

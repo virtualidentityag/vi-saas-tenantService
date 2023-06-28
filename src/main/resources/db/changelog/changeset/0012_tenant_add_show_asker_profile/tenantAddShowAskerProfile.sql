@@ -1,1 +1,0 @@
-ALTER TABLE `tenantservice`.`tenant` ADD show_asker_profile BOOLEAN not null default false;

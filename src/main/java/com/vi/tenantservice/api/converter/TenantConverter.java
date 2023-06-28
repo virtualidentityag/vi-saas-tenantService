@@ -5,19 +5,8 @@ import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsGerman;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
-import com.vi.tenantservice.api.model.AdminTenantDTO;
-import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
-import com.vi.tenantservice.api.model.Content;
-import com.vi.tenantservice.api.model.Licensing;
-import com.vi.tenantservice.api.model.MultilingualContent;
-import com.vi.tenantservice.api.model.MultilingualTenantDTO;
-import com.vi.tenantservice.api.model.RestrictedTenantDTO;
-import com.vi.tenantservice.api.model.Settings;
-import com.vi.tenantservice.api.model.TenantDTO;
-import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.model.*;
 import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
-import com.vi.tenantservice.api.model.TenantSettings;
-import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.util.JsonConverter;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
@@ -36,12 +25,6 @@ public class TenantConverter {
             .id(tenantDTO.getId())
             .name(tenantDTO.getName())
             .subdomain(tenantDTO.getSubdomain());
-    if (tenantDTO.getIsVideoCallAllowed() != null) {
-      builder.isVideoCallAllowed(tenantDTO.getIsVideoCallAllowed());
-    }
-    if (tenantDTO.getShowAskerProfile() != null) {
-      builder.showAskerProfile(tenantDTO.getShowAskerProfile());
-    }
     contentToEntity(tenantDTO, builder);
     licensingToEntity(tenantDTO, builder);
     themingToEntity(tenantDTO, builder);
@@ -68,6 +51,8 @@ public class TenantConverter {
         .featureToolsOIDCToken(settings.getFeatureToolsOICDToken())
         .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
         .activeLanguages(nullAsGerman(settings.getActiveLanguages()))
+        .isVideoCallAllowed(nullAsFalse(settings.getIsVideoCallAllowed()))
+        .showAskerProfile(nullAsFalse(settings.getShowAskerProfile()))
         .build();
   }
 
@@ -123,12 +108,6 @@ public class TenantConverter {
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
             .settings(getSettings(tenant));
-    if (tenant.getIsVideoCallAllowed() != null) {
-      tenantDTO.setIsVideoCallAllowed(tenant.getIsVideoCallAllowed());
-    }
-    if (tenant.getShowAskerProfile() != null) {
-      tenantDTO.setShowAskerProfile(tenant.getShowAskerProfile());
-    }
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
     }
@@ -147,8 +126,6 @@ public class TenantConverter {
             .content(toContentDTO(tenant, lang))
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
-            .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
-            .showAskerProfile(tenant.getShowAskerProfile())
             .settings(getSettings(tenant));
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
@@ -179,6 +156,8 @@ public class TenantConverter {
         .featureToolsOICDToken(tenantSettings.getFeatureToolsOIDCToken())
         .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled())
         .featureAttachmentUploadDisabled(tenantSettings.isFeatureAttachmentUploadDisabled())
+        .isVideoCallAllowed(tenantSettings.isVideoCallAllowed())
+        .showAskerProfile(tenantSettings.isShowAskerProfile())
         .activeLanguages(nullAsGerman(tenantSettings.getActiveLanguages()));
   }
 
@@ -189,9 +168,7 @@ public class TenantConverter {
         .content(toContentDTO(tenant, lang))
         .theming(toThemingDTO(tenant))
         .subdomain(tenant.getSubdomain())
-        .settings(getSettings(tenant))
-        .showAskerProfile(tenant.getShowAskerProfile())
-        .isVideoCallAllowed(tenant.getIsVideoCallAllowed());
+        .settings(getSettings(tenant));
   }
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
@@ -200,8 +177,6 @@ public class TenantConverter {
             .id(tenant.getId())
             .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
-            .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
-            .showAskerProfile(tenant.getShowAskerProfile())
             .licensing(toLicensingDTO(tenant));
 
     if (tenant.getCreateDate() != null) {
@@ -263,8 +238,6 @@ public class TenantConverter {
             .id(tenant.getId())
             .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
-            .isVideoCallAllowed(tenant.getIsVideoCallAllowed())
-            .showAskerProfile(tenant.getShowAskerProfile())
             .beraterCount(tenant.getLicensingAllowedNumberOfUsers());
     if (tenant.getCreateDate() != null) {
       adminTenantDTO.setCreateDate(tenant.getCreateDate().toString());

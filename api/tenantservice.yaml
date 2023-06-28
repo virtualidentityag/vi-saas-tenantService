@@ -353,14 +353,6 @@ paths:
           description: INTERNAL SERVER ERROR - server encountered unexpected condition
 components:
   schemas:
-    ShowAskerProfile:
-      type: boolean
-      example: true
-      default: false
-    IsVideoCallAllowed:
-      type: boolean
-      example: true
-      default: false
     TenantDTO:
       type: object
       required:
@@ -394,13 +386,6 @@ components:
         settings:
           $ref:
             '#/components/schemas/Settings'
-        isVideoCallAllowed:
-          $ref:
-            '#/components/schemas/IsVideoCallAllowed'
-        showAskerProfile:
-          $ref:
-            '#/components/schemas/ShowAskerProfile'
-
     MultilingualTenantDTO:
           type: object
           required:
@@ -438,12 +423,6 @@ components:
             settings:
               $ref:
                 '#/components/schemas/Settings'
-            isVideoCallAllowed:
-              $ref:
-                '#/components/schemas/IsVideoCallAllowed'
-            showAskerProfile:
-              $ref:
-                '#/components/schemas/ShowAskerProfile'
     BasicTenantLicensingDTO:
       type: object
       required:
@@ -462,12 +441,6 @@ components:
           type: string
           example: "companyname"
           maxLength: 100
-        isVideoCallAllowed:
-          $ref:
-            '#/components/schemas/IsVideoCallAllowed'
-        showAskerProfile:
-          $ref:
-            '#/components/schemas/ShowAskerProfile'
         createDate:
           type: string
         updateDate:
@@ -500,12 +473,6 @@ components:
         settings:
           $ref:
             '#/components/schemas/Settings'
-        isVideoCallAllowed:
-          $ref:
-            '#/components/schemas/IsVideoCallAllowed'
-        showAskerProfile:
-          $ref:
-            '#/components/schemas/ShowAskerProfile'
     Licensing:
       type: object
       required:
@@ -593,6 +560,14 @@ components:
           items:
             type: string
           example: "[en, de, fr]"
+        showAskerProfile:
+          type: boolean
+          default: false
+          example: "false"
+        isVideoCallAllowed:
+          type: boolean
+          default: false
+          example: "false"
         extendedSettings:
           $ref: './../services/consultingtypeservice.yaml#/components/schemas/ConsultingTypePatchDTO'
 
@@ -648,12 +623,6 @@ components:
           items:
             type: string
           example: "[admin1@ob.de, admin2@ob.de]"
-        isVideoCallAllowed:
-          $ref:
-            '#/components/schemas/IsVideoCallAllowed'
-        showAskerProfile:
-          $ref:
-            '#/components/schemas/ShowAskerProfile'
         createDate:
           type: string
         updateDate:

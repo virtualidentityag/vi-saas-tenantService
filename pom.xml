@@ -21,7 +21,7 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>11</java.version>
+        <java.version>17</java.version>
         <swagger.version>3.0.0</swagger.version>
         <h2.version>2.1.214</h2.version>
         <spring.security>5.7.5</spring.security>

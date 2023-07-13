@@ -1,22 +1,13 @@
 package com.vi.tenantservice.config.security;
 
-import com.vi.tenantservice.api.authorisation.RoleAuthorizationAuthorityMapper;
 import com.vi.tenantservice.api.config.SpringFoxConfig;
-import org.keycloak.adapters.KeycloakConfigResolver;
-import org.keycloak.adapters.springboot.KeycloakSpringBootConfigResolver;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
-import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
@@ -24,17 +15,15 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @KeycloakConfiguration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
-public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
+public class WebSecurityConfig {
 
-  @Override
-  protected void configure(HttpSecurity http) throws Exception {
+  @Bean
+  public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
     http.csrf()
         .disable()
-        .authenticationProvider(keycloakAuthenticationProvider())
-        .addFilterBefore(keycloakAuthenticationProcessingFilter(), BasicAuthenticationFilter.class)
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
+        //        .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
         .and()
         .authorizeRequests()
         .requestMatchers(new AntPathRequestMatcher("/tenant"))
@@ -47,7 +36,7 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         .authenticated()
         .requestMatchers(new AntPathRequestMatcher("/tenant/public/**"))
         .permitAll()
-        .antMatchers(SpringFoxConfig.WHITE_LIST)
+        .requestMatchers(SpringFoxConfig.WHITE_LIST)
         .permitAll()
         .requestMatchers(new NegatedRequestMatcher(new AntPathRequestMatcher("/tenant")))
         .permitAll()
@@ -58,31 +47,8 @@ public class WebSecurityConfig extends KeycloakWebSecurityConfigurerAdapter {
         .xssProtection()
         .and()
         .contentSecurityPolicy("script-src 'self'");
-  }
+    http.oauth2ResourceServer(oauth2 -> oauth2.jwt());
 
-  @Override
-  protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-    return new NullAuthenticatedSessionStrategy();
-  }
-
-  @Bean
-  public KeycloakConfigResolver keycloakConfigResolver() {
-    return new KeycloakSpringBootConfigResolver();
-  }
-
-  @Autowired
-  public void configureGlobal(
-      AuthenticationManagerBuilder auth, RoleAuthorizationAuthorityMapper authorityMapper) {
-    KeycloakAuthenticationProvider keycloakAuthenticationProvider =
-        keycloakAuthenticationProvider();
-    keycloakAuthenticationProvider.setGrantedAuthoritiesMapper(authorityMapper);
-    auth.authenticationProvider(keycloakAuthenticationProvider);
-  }
-
-  @Override
-  protected KeycloakAuthenticationProvider keycloakAuthenticationProvider() {
-    var provider = new KeycloakAuthenticationProvider();
-    provider.setGrantedAuthoritiesMapper(new RoleAuthorizationAuthorityMapper());
-    return provider;
+    return http.build();
   }
 }

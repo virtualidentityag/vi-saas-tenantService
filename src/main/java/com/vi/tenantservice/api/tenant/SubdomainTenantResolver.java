@@ -3,8 +3,8 @@ package com.vi.tenantservice.api.tenant;
 import static java.util.Optional.of;
 
 import com.vi.tenantservice.api.repository.TenantRepository;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.NonNull;
 import org.springframework.stereotype.Component;

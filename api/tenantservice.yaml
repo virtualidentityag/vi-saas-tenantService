@@ -390,7 +390,6 @@ components:
     MultilingualTenantDTO:
           type: object
           required:
-            - id
             - name
           properties:
             id:

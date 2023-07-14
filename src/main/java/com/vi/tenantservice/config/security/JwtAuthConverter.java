@@ -38,13 +38,13 @@ public class JwtAuthConverter implements Converter<Jwt, AbstractAuthenticationTo
   }
 
   private Collection<GrantedAuthority> getGrantedAuthorities(Jwt jwt) {
-    Collection<GrantedAuthority> convertedGrantedAuthorities = jwtGrantedAuthoritiesConverter.convert(
-        jwt);
+    Collection<GrantedAuthority> convertedGrantedAuthorities =
+        jwtGrantedAuthoritiesConverter.convert(jwt);
     if (convertedGrantedAuthorities != null) {
       return Stream.concat(
-                  convertedGrantedAuthorities.stream(),
-                  authorisationService.extractRealmAuthorities(jwt).stream())
-              .collect(Collectors.toSet());
+              convertedGrantedAuthorities.stream(),
+              authorisationService.extractRealmAuthorities(jwt).stream())
+          .collect(Collectors.toSet());
     } else {
       return authorisationService.extractRealmAuthorities(jwt);
     }

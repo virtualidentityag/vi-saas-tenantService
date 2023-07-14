@@ -2,7 +2,7 @@ package com.vi.tenantservice.api.facade;
 
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 import static java.util.Objects.nonNull;
-import static liquibase.repackaged.org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 import com.google.common.collect.Lists;

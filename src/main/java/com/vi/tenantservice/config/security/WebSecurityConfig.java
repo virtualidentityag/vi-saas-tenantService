@@ -1,7 +1,9 @@
 package com.vi.tenantservice.config.security;
 
 import com.vi.tenantservice.api.config.SpringFoxConfig;
+import lombok.RequiredArgsConstructor;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -15,7 +17,17 @@ import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 @KeycloakConfiguration
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class WebSecurityConfig {
+
+  @Autowired JwtAuthConverterProperties jwtAuthConverterProperties;
+
+  @Autowired AuthorisationService authorisationService;
+
+  @Bean
+  public JwtAuthConverter jwtAuthConverter() {
+    return new JwtAuthConverter(jwtAuthConverterProperties, authorisationService);
+  }
 
   @Bean
   public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -47,7 +59,7 @@ public class WebSecurityConfig {
         .xssProtection()
         .and()
         .contentSecurityPolicy("script-src 'self'");
-    http.oauth2ResourceServer(oauth2 -> oauth2.jwt());
+    http.oauth2ResourceServer().jwt().jwtAuthenticationConverter(jwtAuthConverter());
 
     return http.build();
   }

@@ -7,11 +7,11 @@
   <persistence directory="spring-boot-ehcache/cache" />
   <cache-template name="default">
     <expiry>
-      <ttl unit="seconds">30</ttl>
+      <ttl unit="seconds">60</ttl>
     </expiry>
     <listeners>
       <listener>
-        <class>guru.springframework.ehcache.config.CacheLogger</class>
+        <class>com.vi.tenantservice.api.cache.CacheEventLogger</class>
         <event-firing-mode>ASYNCHRONOUS</event-firing-mode>
         <event-ordering-mode>UNORDERED</event-ordering-mode>
         <events-to-fire-on>CREATED</events-to-fire-on>

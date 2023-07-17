@@ -28,11 +28,15 @@ public class AccessTokenTenantResolver implements TenantResolver {
 
   private Optional<Long> getUserTenantIdAttribute(Map<String, Object> claimMap) {
     if (claimMap.containsKey(TENANT_ID)) {
-      Long tenantId = (Long) claimMap.get(TENANT_ID);
-      return Optional.of(tenantId);
-    } else {
-      return Optional.empty();
+      var tenantId = claimMap.get(TENANT_ID);
+      return switch (tenantId) {
+        case Integer i -> Optional.of(Long.valueOf(i));
+        case Long l -> Optional.of(l);
+        case String s -> Optional.of(Long.parseLong(s));
+        default -> throw new IllegalStateException("Unexpected value: " + tenantId);
+      };
     }
+    return Optional.empty();
   }
 
   private Map<String, Object> getClaimMap(HttpServletRequest request) {

@@ -28,8 +28,8 @@ public class AccessTokenTenantResolver implements TenantResolver {
 
   private Optional<Long> getUserTenantIdAttribute(Map<String, Object> claimMap) {
     if (claimMap.containsKey(TENANT_ID)) {
-      Integer tenantId = (Integer) claimMap.get(TENANT_ID);
-      return Optional.of(Long.valueOf(tenantId));
+      Long tenantId = (Long) claimMap.get(TENANT_ID);
+      return Optional.of(tenantId);
     } else {
       return Optional.empty();
     }

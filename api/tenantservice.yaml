@@ -67,7 +67,6 @@ paths:
           required: true
           schema:
             type: string
-            minLength: 1
         - name: page
           in: query
           description: Page number (first page = 1)

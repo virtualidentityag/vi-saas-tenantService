@@ -1,15 +1,24 @@
 package com.vi.tenantservice.config.security;
 
+import com.google.common.collect.Lists;
+import com.vi.tenantservice.api.authorisation.RoleAuthorizationAuthorityMapper;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
-import org.keycloak.KeycloakPrincipal;
+import java.util.stream.Collectors;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 
 @Service
 public class AuthorisationService {
+
+  private final RoleAuthorizationAuthorityMapper roleAuthorizationAuthorityMapper =
+      new RoleAuthorizationAuthorityMapper();
 
   public boolean hasAuthority(String authorityName) {
     return getAuthentication().getAuthorities().stream()
@@ -17,30 +26,46 @@ public class AuthorisationService {
   }
 
   public boolean hasRole(String roleName) {
-    Set<String> roles =
-        getPrincipal().getKeycloakSecurityContext().getToken().getRealmAccess().getRoles();
+    var roles = extractRealmRoles(getPrincipal());
     return roles != null && roles.contains(roleName);
   }
 
   public Optional<Long> findTenantIdInAccessToken() {
-    Integer tenantId =
-        (Integer)
-            getPrincipal().getKeycloakSecurityContext().getToken().getOtherClaims().get("tenantId");
+    Jwt principal = getPrincipal();
+    Long tenantId = (Long) principal.getClaims().get("tenantId");
+
     if (tenantId == null) {
       throw new AccessDeniedException("tenantId attribute not found in the access token");
     }
-    return Optional.of(Long.valueOf(tenantId));
+    return Optional.of(tenantId);
   }
 
   public Object getUsername() {
-    return getPrincipal().getName();
+    return getPrincipal().getClaims().get("username");
   }
 
   private Authentication getAuthentication() {
     return SecurityContextHolder.getContext().getAuthentication();
   }
 
-  private KeycloakPrincipal<?> getPrincipal() {
-    return (KeycloakPrincipal) getAuthentication().getPrincipal();
+  private Jwt getPrincipal() {
+    return (Jwt) getAuthentication().getPrincipal();
+  }
+
+  public Collection<GrantedAuthority> extractRealmAuthorities(Jwt jwt) {
+    var roles = extractRealmRoles(jwt);
+    return roleAuthorizationAuthorityMapper.mapAuthorities(
+        roles.stream().collect(Collectors.toSet()));
+  }
+
+  public Collection<String> extractRealmRoles(Jwt jwt) {
+    Map<String, Object> realmAccess = (Map<String, Object>) jwt.getClaims().get("realm_access");
+    if (realmAccess != null) {
+      var roles = (List<String>) realmAccess.get("roles");
+      if (roles != null) {
+        return roles;
+      }
+    }
+    return Lists.newArrayList();
   }
 }

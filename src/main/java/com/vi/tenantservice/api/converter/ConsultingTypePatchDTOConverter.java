@@ -6,7 +6,6 @@ import com.vi.tenantservice.api.model.ConsultingTypePatchDTOWelcomeMessage;
 import com.vi.tenantservice.api.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.api.model.TeamSessionsDTONewMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
@@ -44,7 +43,7 @@ public class ConsultingTypePatchDTOConverter {
   private void convertNotifications(
       FullConsultingTypeResponseDTO consultingTypeResponseDTO,
       ConsultingTypePatchDTO consultingTypePatchDTO) {
-    NotificationsDTO notifications = consultingTypeResponseDTO.getNotifications();
+    var notifications = consultingTypeResponseDTO.getNotifications();
     if (notifications != null
         && notifications.getTeamSessions() != null
         && notifications.getTeamSessions().getNewMessage() != null) {
@@ -106,7 +105,7 @@ public class ConsultingTypePatchDTOConverter {
           targetDTO) {
     targetDTO.notifications(
         new com.vi.tenantservice.consultingtypeservice.generated.web.model
-                .ConsultingTypeDTONotifications()
+                .ExtendedConsultingTypeResponseDTOAllOfNotifications()
             .teamSessions(
                 new com.vi.tenantservice.consultingtypeservice.generated.web.model
                         .NotificationsDTOTeamSessions()
@@ -122,7 +121,7 @@ public class ConsultingTypePatchDTOConverter {
     if (extendedSettings.getWelcomeMessage() != null) {
       targetDTO.setWelcomeMessage(
           new com.vi.tenantservice.consultingtypeservice.generated.web.model
-              .ConsultingTypeDTOWelcomeMessage());
+              .ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage());
       BeanUtils.copyProperties(extendedSettings.getWelcomeMessage(), targetDTO.getWelcomeMessage());
     }
   }

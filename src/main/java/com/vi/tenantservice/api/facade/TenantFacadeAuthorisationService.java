@@ -116,8 +116,7 @@ public class TenantFacadeAuthorisationService {
         legalContentChangesBySingleTenantAdminsAllowed =
             applicationSettings.getLegalContentChangesBySingleTenantAdminsAllowed();
 
-    if (legalContentChangesBySingleTenantAdminsAllowed != null
-        && legalContentChangesBySingleTenantAdminsAllowed.getValue() != null) {
+    if (legalContentChangesBySingleTenantAdminsAllowed != null) {
       return legalContentChangesBySingleTenantAdminsAllowed.getValue();
     } else {
       log.warn(

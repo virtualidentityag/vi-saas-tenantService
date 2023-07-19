@@ -2,8 +2,8 @@ package com.vi.tenantservice.api.tenant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.servlet.http.Cookie;
 import java.util.Optional;
-import javax.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;

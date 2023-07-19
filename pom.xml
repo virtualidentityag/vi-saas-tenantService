@@ -23,7 +23,7 @@
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <java.version>17</java.version>
         <swagger.version>3.0.0</swagger.version>
-        <h2.version>2.1.214</h2.version>
+        <h2.version>2.2.220</h2.version>
         <spring.security>6.0.4</spring.security>
         <owasp.java.html.sanitizer>20211018.1</owasp.java.html.sanitizer>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>

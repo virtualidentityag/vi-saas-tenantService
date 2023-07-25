@@ -1,19 +1,27 @@
 package com.vi.tenantservice.api.config;
 
+import java.lang.reflect.Field;
 import java.time.LocalTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.config.BeanPostProcessor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.util.ReflectionUtils;
+import org.springframework.web.servlet.mvc.method.RequestMappingInfoHandlerMapping;
 import springfox.bean.validators.configuration.BeanValidatorPluginsConfiguration;
 import springfox.documentation.builders.RequestHandlerSelectors;
 import springfox.documentation.service.ApiInfo;
 import springfox.documentation.service.Contact;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
+import springfox.documentation.spring.web.plugins.WebFluxRequestHandlerProvider;
+import springfox.documentation.spring.web.plugins.WebMvcRequestHandlerProvider;
 
 /** Provides the SpringFox (API documentation generation) configuration. */
 @Configuration
@@ -109,5 +117,45 @@ public class SpringFoxConfig {
         docuLicense,
         docuLicenseUrl,
         Collections.emptyList());
+  }
+
+  @Bean
+  /* workaround needed for springfox and actuator to work together with Spring Boot 3.0*/
+  public static BeanPostProcessor springfoxHandlerProviderBeanPostProcessor() {
+    return new BeanPostProcessor() {
+
+      @Override
+      public Object postProcessAfterInitialization(Object bean, String beanName)
+          throws BeansException {
+        if (bean instanceof WebMvcRequestHandlerProvider
+            || bean instanceof WebFluxRequestHandlerProvider) {
+          customizeSpringfoxHandlerMappings(getHandlerMappings(bean));
+        }
+        return bean;
+      }
+
+      private <T extends RequestMappingInfoHandlerMapping> void customizeSpringfoxHandlerMappings(
+          List<T> mappings) {
+        List<T> copy =
+            mappings.stream().filter(mapping -> mapping.getPatternParser() == null).toList();
+        mappings.clear();
+        mappings.addAll(copy);
+      }
+
+      @SuppressWarnings("unchecked")
+      private List<RequestMappingInfoHandlerMapping> getHandlerMappings(Object bean) {
+        try {
+          Field field = ReflectionUtils.findField(bean.getClass(), "handlerMappings");
+          if (field != null) {
+            field.setAccessible(true);
+            return (List<RequestMappingInfoHandlerMapping>) field.get(bean);
+          } else {
+            return Collections.emptyList();
+          }
+        } catch (IllegalArgumentException | IllegalAccessException e) {
+          throw new IllegalStateException(e);
+        }
+      }
+    };
   }
 }

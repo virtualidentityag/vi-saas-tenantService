@@ -3,11 +3,11 @@ package com.vi.tenantservice.api.tenant;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
-import javax.servlet.http.Cookie;
-import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -37,13 +37,23 @@ public class CookieTenantResolver implements TenantResolver {
       return Optional.empty();
     }
 
-    Cookie token = WebUtils.getCookie(request, "keycloak");
+    Cookie tokenCookie = WebUtils.getCookie(request, "keycloak");
 
-    if (token == null) {
+    if (tokenCookie == null) {
+      return tryResolveFromTenantIdCookie(request);
+    } else {
+      return resolveFromCookieValue(tokenCookie);
+    }
+  }
+
+  private Optional<Long> tryResolveFromTenantIdCookie(HttpServletRequest request) {
+    Cookie tenantId = WebUtils.getCookie(request, TENANT_ID);
+
+    if (tenantId != null && tenantId.getValue() != null) {
+      return Optional.of(Long.valueOf(tenantId.getValue()));
+    } else {
       return Optional.empty();
     }
-
-    return resolveFromCookieValue(token);
   }
 
   private Optional<Long> resolveFromCookieValue(Cookie token) {

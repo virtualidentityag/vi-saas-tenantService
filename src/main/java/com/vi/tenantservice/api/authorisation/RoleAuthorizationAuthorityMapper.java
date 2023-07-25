@@ -25,7 +25,7 @@ public class RoleAuthorizationAuthorityMapper implements GrantedAuthoritiesMappe
     return mapAuthorities(roleNames);
   }
 
-  private Set<GrantedAuthority> mapAuthorities(Set<String> roleNames) {
+  public Set<GrantedAuthority> mapAuthorities(Set<String> roleNames) {
     return roleNames.parallelStream()
         .map(UserRole::getRoleByValue)
         .filter(Optional::isPresent)

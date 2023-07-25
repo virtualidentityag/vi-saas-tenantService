@@ -2,7 +2,7 @@ package com.vi.tenantservice.api.facade;
 
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 import static java.util.Objects.nonNull;
-import static liquibase.repackaged.org.apache.commons.collections4.ListUtils.emptyIfNull;
+import static org.apache.commons.collections4.ListUtils.emptyIfNull;
 import static org.springframework.util.ObjectUtils.nullSafeEquals;
 
 import com.google.common.collect.Lists;
@@ -145,7 +145,7 @@ public class TenantServiceFacade {
   }
 
   private void validateTenantInput(MultilingualTenantDTO tenantDTO) {
-    var isoCountries = Arrays.stream(Locale.getISOLanguages()).collect(Collectors.toList());
+    var isoCountries = Arrays.stream(Locale.getISOLanguages()).toList();
     validateContent(tenantDTO, isoCountries);
     validateSettings(tenantDTO.getSettings());
   }
@@ -160,7 +160,7 @@ public class TenantServiceFacade {
     List<String> invalidLanguages =
         activeLanguages.stream()
             .filter(language -> language == null || language.length() != 2)
-            .collect(Collectors.toList());
+            .toList();
     if (!invalidLanguages.isEmpty()) {
       throw new TenantValidationException(
           HttpStatusExceptionReason.ID_MUST_BE_NULL_WHEN_CREATING_TENANT);
@@ -202,7 +202,7 @@ public class TenantServiceFacade {
     if (translatedMap == null) {
       return Lists.newArrayList();
     }
-    return translatedMap.keySet().stream().map(String::toLowerCase).collect(Collectors.toList());
+    return translatedMap.keySet().stream().map(String::toLowerCase).toList();
   }
 
   private MultilingualTenantDTO updateWithSanitizedInput(
@@ -324,7 +324,7 @@ public class TenantServiceFacade {
   private List<String> getAdminEmails(List<AdminResponseDTO> tenantAdmins) {
     return tenantAdmins.stream()
         .map(admin -> admin.getEmbedded() != null ? admin.getEmbedded().getEmail() : "")
-        .collect(Collectors.toList());
+        .toList();
   }
 
   public Optional<MultilingualTenantDTO> findMultilingualTenantById(Long id) {
@@ -346,9 +346,7 @@ public class TenantServiceFacade {
 
   public List<BasicTenantLicensingDTO> getAllTenants() {
     var tenantEntities = tenantService.getAllTenants();
-    return tenantEntities.stream()
-        .map(tenantConverter::toBasicLicensingTenantDTO)
-        .collect(Collectors.toList());
+    return tenantEntities.stream().map(tenantConverter::toBasicLicensingTenantDTO).toList();
   }
 
   public Optional<RestrictedTenantDTO> findTenantBySubdomain(
@@ -433,7 +431,7 @@ public class TenantServiceFacade {
     var direction = isAscending ? Direction.ASC : Direction.DESC;
     var pageRequest = PageRequest.of(pageNumber, pageSize, direction, fieldName);
     Page<TenantBase> tenantPage = tenantService.findAllExceptTechnicalByInfix(infix, pageRequest);
-    var tenantIds = tenantPage.stream().map(TenantBase::getId).collect(Collectors.toList());
+    var tenantIds = tenantPage.stream().map(TenantBase::getId).toList();
     var fullTenants = tenantService.findAllByIds(tenantIds);
     return mapOf(tenantPage, fullTenants);
   }
@@ -442,7 +440,7 @@ public class TenantServiceFacade {
     var tenantEntities = tenantService.getAllTenants();
     excludeTechnicalTenantFrom(tenantEntities);
     List<AdminTenantDTO> adminTenantDTOS =
-        tenantEntities.stream().map(tenantConverter::toAdminTenantDTO).collect(Collectors.toList());
+        tenantEntities.stream().map(tenantConverter::toAdminTenantDTO).toList();
     adminTenantDTOS.forEach(
         adminTenantDTO ->
             enrichWithAdminData(adminTenantDTO.getId().intValue(), adminTenantDTO::setAdminEmails));

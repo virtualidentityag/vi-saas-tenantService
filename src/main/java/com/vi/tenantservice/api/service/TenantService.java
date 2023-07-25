@@ -55,10 +55,9 @@ public class TenantService {
   }
 
   private void overrideSubdomainIfNeededForSingleDomainMultitenancy(TenantEntity tenantEntity) {
-    if (multitenancyWithSingleDomain) {
-      if (shouldOverrideSubdomain(tenantEntity, getMainTenantSubdomain())) {
-        tenantEntity.setSubdomain(StringUtils.EMPTY);
-      }
+    if (multitenancyWithSingleDomain
+        && shouldOverrideSubdomain(tenantEntity, getMainTenantSubdomain())) {
+      tenantEntity.setSubdomain(StringUtils.EMPTY);
     }
   }
 

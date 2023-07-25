@@ -1,9 +1,10 @@
 package com.vi.tenantservice.api.converter;
 
+import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsFalse;
+import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsGerman;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
-import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
@@ -18,7 +19,6 @@ import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.util.JsonConverter;
-import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -63,17 +63,6 @@ public class TenantConverter {
         .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
         .activeLanguages(nullAsGerman(settings.getActiveLanguages()))
         .build();
-  }
-
-  private List<String> nullAsGerman(List<String> activeLanguages) {
-    if (activeLanguages == null) {
-      return Lists.newArrayList(DE);
-    }
-    return activeLanguages;
-  }
-
-  private boolean nullAsFalse(Boolean topicsInRegistrationEnabled) {
-    return Boolean.TRUE.equals(topicsInRegistrationEnabled);
   }
 
   public TenantEntity toEntity(TenantEntity targetEntity, MultilingualTenantDTO tenantDTO) {
@@ -252,10 +241,7 @@ public class TenantConverter {
 
   public AdminTenantDTO toAdminTenantDTO(TenantEntity tenant) {
     var adminTenantDTO =
-        new AdminTenantDTO()
-            .id(tenant.getId())
-            .name(tenant.getName())
-            .subdomain(tenant.getSubdomain())
+        new AdminTenantDTO(tenant.getId(), tenant.getName(), tenant.getSubdomain())
             .beraterCount(tenant.getLicensingAllowedNumberOfUsers());
     if (tenant.getCreateDate() != null) {
       adminTenantDTO.setCreateDate(tenant.getCreateDate().toString());

@@ -3,12 +3,12 @@ package com.vi.tenantservice.api.controller;
 import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
@@ -36,11 +36,11 @@ import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ExtendedConsultingTypeResponseDTOAllOfNotifications;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -268,9 +268,11 @@ class TenantControllerIT {
                 .sendFurtherStepsMessage(true)
                 .sendSaveSessionDataMessage(true)
                 .welcomeMessage(
-                    new WelcomeMessageDTO().welcomeMessageText("welcome").sendWelcomeMessage(true))
+                    new ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
+                        .welcomeMessageText("welcome")
+                        .sendWelcomeMessage(true))
                 .notifications(
-                    new NotificationsDTO()
+                    new ExtendedConsultingTypeResponseDTOAllOfNotifications()
                         .teamSessions(
                             new NotificationsDTOTeamSessions()
                                 .newMessage(
@@ -471,6 +473,14 @@ class TenantControllerIT {
         .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(true)))
         .andExpect(jsonPath("settings.featureAttachmentUploadDisabled", is(false)))
         .andExpect(jsonPath("settings.activeLanguages", is(Lists.newArrayList("de"))));
+  }
+
+  @Test
+  void getHealtcheck_Should_returnHealtcheck() throws Exception {
+    mockMvc
+        .perform(get("/actuator/health").contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("status", is("UP")));
   }
 
   @Test
@@ -739,11 +749,11 @@ class TenantControllerIT {
   }
 
   @Test
-  void getTenant_Should_returnStatusForbidden_When_calledWithoutAnyAuthorization()
+  void getTenant_Should_returnStatusUnauthorized_When_calledWithoutAnyAuthorization()
       throws Exception {
     mockMvc
         .perform(get(EXISTING_TENANT).contentType(APPLICATION_JSON))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
@@ -826,12 +836,12 @@ class TenantControllerIT {
   }
 
   @Test
-  void searchTenants_Should_returnForbidden_When_attemptedToGetTenantWithoutTenantAuthority()
+  void searchTenants_Should_returnUnauthorized_When_attemptedToGetTenantWithoutTenantAuthority()
       throws Exception {
     // when, then
     this.mockMvc
         .perform(get(TENANTADMIN_SEARCH + "?query=*&page=1&perPage=10&field=NAME&order=ASC"))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isUnauthorized());
   }
 
   @Test

@@ -2,8 +2,8 @@ package com.vi.tenantservice.api.tenant;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import jakarta.servlet.http.Cookie;
 import java.util.Optional;
-import javax.servlet.http.Cookie;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +17,25 @@ class CookieTenantResolverTest {
   @InjectMocks CookieTenantResolver cookieTenantResolver;
 
   @Test
-  void resolve_Should_returnTenantId_When_tenantIdInCookie() {
+  void resolve_Should_returnEmptyTenant_When_NoCookieSet() {
+    ReflectionTestUtils.setField(cookieTenantResolver, "multitenancyWithSingleDomain", true);
+
+    Optional<Long> tenantId =
+        cookieTenantResolver.resolveTenantFromRequest(new MockHttpServletRequest());
+    assertThat(tenantId).isEmpty();
+  }
+
+  @Test
+  void resolve_Should_returnTenantId_When_tenantIdSetInTenantIdCookie() {
+    ReflectionTestUtils.setField(cookieTenantResolver, "multitenancyWithSingleDomain", true);
+
+    Optional<Long> tenantId =
+        cookieTenantResolver.resolveTenantFromRequest(requestWithTenantIdCookie("43"));
+    assertThat(tenantId).contains(43L);
+  }
+
+  @Test
+  void resolve_Should_returnTenantId_When_tenantIdInKeycloakCookie() {
     ReflectionTestUtils.setField(cookieTenantResolver, "multitenancyWithSingleDomain", true);
     String jwt =
         "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9."
@@ -38,6 +56,13 @@ class CookieTenantResolverTest {
 
     Optional<Long> tenantId = cookieTenantResolver.resolveTenantFromRequest(request(jwt));
     assertThat(tenantId).isEmpty();
+  }
+
+  private MockHttpServletRequest requestWithTenantIdCookie(String tenantId) {
+    var request = new MockHttpServletRequest();
+    Cookie cookie = new Cookie("tenantId", tenantId);
+    request.setCookies(cookie);
+    return request;
   }
 
   private MockHttpServletRequest request(String jwt) {

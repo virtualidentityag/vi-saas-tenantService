@@ -130,4 +130,8 @@ public class TenantService {
       throw new InternalServerErrorException();
     }
   }
+
+  public void delete(TenantEntity createdTenant) {
+    tenantRepository.delete(createdTenant);
+  }
 }

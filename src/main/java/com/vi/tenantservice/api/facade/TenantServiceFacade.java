@@ -9,6 +9,7 @@ import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
 import com.vi.tenantservice.api.converter.ConsultingTypePatchDTOConverter;
 import com.vi.tenantservice.api.converter.TenantConverter;
+import com.vi.tenantservice.api.exception.ConsultingTypeCreationException;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
 import com.vi.tenantservice.api.exception.httpresponse.HttpStatusExceptionReason;
@@ -54,6 +55,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
 
 /** Facade to encapsulate services and logic needed to manage tenants */
 @Service
@@ -95,8 +97,20 @@ public class TenantServiceFacade {
     var entity = tenantConverter.toEntity(sanitizedTenantDTO);
     populateTenantSettingsAndActivationDates(entity, tenantDTO);
     TenantEntity createdTenant = tenantService.create(entity);
-    createDefaultConsultingTypeSettings(createdTenant);
+    try {
+      createDefaultConsultingTypeSettings(createdTenant);
+    } catch (ConsultingTypeCreationException ex) {
+      performRollback(createdTenant);
+      log.error(
+          "Error while creating consulting types for tenant with id {}", createdTenant.getId(), ex);
+      throw new BadRequestException(
+          "Error while creating consulting types for tenant with id " + createdTenant.getId());
+    }
     return tenantConverter.toMultilingualDTO(createdTenant);
+  }
+
+  private void performRollback(TenantEntity createdTenant) {
+    tenantService.delete(createdTenant);
   }
 
   private void populateTenantSettingsAndActivationDates(
@@ -110,11 +124,23 @@ public class TenantServiceFacade {
     tenant.setSettings(convertToJson(defaultTenantSettings));
   }
 
-  private void createDefaultConsultingTypeSettings(TenantEntity createdTenant) {
-    consultingTypeService.createDefaultConsultingTypes(createdTenant.getId());
+  private void createDefaultConsultingTypeSettings(TenantEntity createdTenant)
+      throws ConsultingTypeCreationException {
+    try {
+      consultingTypeService.createDefaultConsultingTypes(createdTenant.getId());
+    } catch (RestClientException ex) {
+      throw new ConsultingTypeCreationException(
+          "Consulting types could not be created for tenant with id " + createdTenant.getId(), ex);
+    }
     if (isAttemptToCreateFirstNonTechnicalTenant(createdTenant.getId())) {
       validateSubDomain(createdTenant.getSubdomain());
-      applicationSettingsService.saveMainTenantSubDomain(createdTenant.getSubdomain());
+      try {
+        applicationSettingsService.saveMainTenantSubDomain(createdTenant.getSubdomain());
+      } catch (RestClientException ex) {
+        throw new ConsultingTypeCreationException(
+            "Main tenant subdomain could not be saved for tenant with id " + createdTenant.getId(),
+            ex);
+      }
     }
   }
 

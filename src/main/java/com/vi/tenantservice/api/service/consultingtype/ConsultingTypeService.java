@@ -11,7 +11,6 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsul
 import java.io.File;
 import java.io.IOException;
 import java.util.Optional;
-import javax.ws.rs.InternalServerErrorException;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,7 +41,7 @@ public class ConsultingTypeService {
       createConsultingType(consultingTypeDTO);
     } catch (IOException ioException) {
       log.error("Error while reading default consulting types configuration file", ioException);
-      throw new InternalServerErrorException();
+      throw new IllegalStateException(ioException);
     }
   }
 

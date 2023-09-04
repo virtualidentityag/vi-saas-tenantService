@@ -42,7 +42,7 @@
         <easy-random-core.version>5.0.0</easy-random-core.version>
         <assertj-core.version>3.23.1</assertj-core.version>
         <spring-security-oauth2-test-webmvc-addons.version>3.0.1</spring-security-oauth2-test-webmvc-addons.version>
-        <liquibase-core.version>4.9.1</liquibase-core.version>
+        <liquibase-core.version>4.23.1</liquibase-core.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
@@ -127,6 +127,18 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-maven-plugin</artifactId>
             <version>${liquibase.maven.plugin.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.liquibase</groupId>
+                    <artifactId>liquibase-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase-core.version}</version>
         </dependency>
 
         <dependency>

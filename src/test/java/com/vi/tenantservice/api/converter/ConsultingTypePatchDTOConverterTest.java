@@ -3,11 +3,11 @@ package com.vi.tenantservice.api.converter;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ExtendedConsultingTypeResponseDTOAllOfNotifications;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
 import org.jeasy.random.EasyRandom;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,11 +28,13 @@ class ConsultingTypePatchDTOConverterTest {
     fullConsultingTypeResponseDTO.languageFormal(true);
     fullConsultingTypeResponseDTO.setIsVideoCallAllowed(true);
     fullConsultingTypeResponseDTO.setWelcomeMessage(
-        new WelcomeMessageDTO().sendWelcomeMessage(true).welcomeMessageText("welcome"));
+        new ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
+            .sendWelcomeMessage(true)
+            .welcomeMessageText("welcome"));
     fullConsultingTypeResponseDTO.setSendFurtherStepsMessage(true);
     fullConsultingTypeResponseDTO.sendSaveSessionDataMessage(true);
     fullConsultingTypeResponseDTO.setNotifications(
-        new NotificationsDTO()
+        new ExtendedConsultingTypeResponseDTOAllOfNotifications()
             .teamSessions(
                 new NotificationsDTOTeamSessions()
                     .newMessage(new TeamSessionsDTONewMessage().allTeamConsultants(true))));
@@ -68,7 +70,9 @@ class ConsultingTypePatchDTOConverterTest {
     fullConsultingTypeResponseDTO.languageFormal(true);
     fullConsultingTypeResponseDTO.setIsVideoCallAllowed(true);
     fullConsultingTypeResponseDTO.setWelcomeMessage(
-        new WelcomeMessageDTO().sendWelcomeMessage(true).welcomeMessageText("welcome"));
+        new ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
+            .sendWelcomeMessage(true)
+            .welcomeMessageText("welcome"));
     fullConsultingTypeResponseDTO.setSendFurtherStepsMessage(true);
     fullConsultingTypeResponseDTO.sendSaveSessionDataMessage(true);
 
@@ -95,7 +99,7 @@ class ConsultingTypePatchDTOConverterTest {
   }
 
   @Test
-  public void convertToConsultingTypeServiceModel_Should_ConvertAllSettings() {
+  void convertToConsultingTypeServiceModel_Should_ConvertAllSettings() {
 
     // given
     ConsultingTypePatchDTO source = new EasyRandom().nextObject(ConsultingTypePatchDTO.class);

@@ -37,15 +37,6 @@
     <property name="eachLine" value="true"/>
   </module>
 
-  <!--
-  <module name="LineLength">
-    <property name="fileExtensions" value="java"/>
-    <property name="max" value="100"/>
-    <property name="ignorePattern"
-      value="^package.*|^import.*|a href|href|http://|https://|ftp://"/>
-  </module>
-  -->
-
   <module name="TreeWalker">
     <module name="OuterTypeFilename"/>
     <module name="IllegalTokenText">
@@ -131,7 +122,6 @@
     <module name="MissingSwitchDefault"/>
     <module name="FallThrough"/>
     <module name="UpperEll"/>
-    <!-- <module name="ModifierOrder"/>  -->
     <module name="EmptyLineSeparator">
       <property name="tokens"
         value="PACKAGE_DEF, IMPORT, STATIC_IMPORT, CLASS_DEF, INTERFACE_DEF, ENUM_DEF,
@@ -175,13 +165,6 @@
       <message key="name.invalidPattern"
         value="Type name ''{0}'' must match pattern ''{1}''."/>
     </module>
-    <!--
-    <module name="MemberName">
-        <property name="format" value="^[a-z][a-z0-9][a-zA-Z0-9]*$"/>
-        <message key="name.invalidPattern"
-         value="Member name ''{0}'' must match pattern ''{1}''."/>
-    </module>
-     -->
     <module name="ParameterName">
       <property name="format" value="^[a-z]([a-z0-9][a-zA-Z0-9]*)?$"/>
       <message key="name.invalidPattern"
@@ -301,7 +284,6 @@
     </module>
     -->
     <module name="JavadocMethod">
-      <property name="scope" value="public"/>
       <property name="allowMissingParamTags" value="true"/>
       <property name="allowMissingReturnTag" value="true"/>
       <property name="allowedAnnotations" value="Override, Test"/>

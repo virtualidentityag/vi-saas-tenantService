@@ -29,12 +29,11 @@ public class TenantFacadeDependentSettingsOverrideService {
 
   private void turnOffTopicsInRegistrationEnabledWhenTopicFeatureIsOff(
       MultilingualTenantDTO sanitizedTenantDTO) {
-    if (sanitizedTenantDTO.getSettings() != null) {
-      if (sanitizedTenantDTO.getSettings().getFeatureTopicsEnabled() == null
-          || sanitizedTenantDTO.getSettings().getFeatureTopicsEnabled() == false) {
-        sanitizedTenantDTO.getSettings().setTopicsInRegistrationEnabled(false);
-        log.info("Setting TopicsInRegistrationEnabled feature to false");
-      }
+    if (sanitizedTenantDTO.getSettings() != null
+        && (sanitizedTenantDTO.getSettings().getFeatureTopicsEnabled() == null
+            || !sanitizedTenantDTO.getSettings().getFeatureTopicsEnabled())) {
+      sanitizedTenantDTO.getSettings().setTopicsInRegistrationEnabled(false);
+      log.info("Setting TopicsInRegistrationEnabled feature to false");
     }
   }
 

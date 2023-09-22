@@ -234,10 +234,7 @@ public class TenantConverter {
 
   public AdminTenantDTO toAdminTenantDTO(TenantEntity tenant) {
     var adminTenantDTO =
-        new AdminTenantDTO()
-            .id(tenant.getId())
-            .name(tenant.getName())
-            .subdomain(tenant.getSubdomain())
+        new AdminTenantDTO(tenant.getId(), tenant.getName(), tenant.getSubdomain())
             .beraterCount(tenant.getLicensingAllowedNumberOfUsers());
     if (tenant.getCreateDate() != null) {
       adminTenantDTO.setCreateDate(tenant.getCreateDate().toString());

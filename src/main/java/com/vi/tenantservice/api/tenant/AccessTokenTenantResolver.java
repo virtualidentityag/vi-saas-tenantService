@@ -1,12 +1,11 @@
 package com.vi.tenantservice.api.tenant;
 
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.Map;
 import java.util.Optional;
-import javax.servlet.http.HttpServletRequest;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 @AllArgsConstructor
@@ -29,19 +28,20 @@ public class AccessTokenTenantResolver implements TenantResolver {
 
   private Optional<Long> getUserTenantIdAttribute(Map<String, Object> claimMap) {
     if (claimMap.containsKey(TENANT_ID)) {
-      Integer tenantId = (Integer) claimMap.get(TENANT_ID);
-      return Optional.of(Long.valueOf(tenantId));
-    } else {
-      return Optional.empty();
+      var tenantId = claimMap.get(TENANT_ID);
+      return switch (tenantId) {
+        case Integer i -> Optional.of(Long.valueOf(i));
+        case Long l -> Optional.of(l);
+        case String s -> Optional.of(Long.parseLong(s));
+        default -> throw new IllegalStateException("Unexpected value: " + tenantId);
+      };
     }
+    return Optional.empty();
   }
 
   private Map<String, Object> getClaimMap(HttpServletRequest request) {
-    KeycloakSecurityContext keycloakSecContext =
-        ((KeycloakAuthenticationToken) request.getUserPrincipal())
-            .getAccount()
-            .getKeycloakSecurityContext();
-    return keycloakSecContext.getToken().getOtherClaims();
+    var jwt = ((JwtAuthenticationToken) request.getUserPrincipal()).getToken();
+    return jwt.getClaims();
   }
 
   @Override

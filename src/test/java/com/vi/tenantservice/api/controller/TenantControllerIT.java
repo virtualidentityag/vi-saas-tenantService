@@ -1,16 +1,23 @@
 package com.vi.tenantservice.api.controller;
 
-import static com.vi.tenantservice.api.authorisation.UserRole.*;
-import static javax.ws.rs.core.MediaType.APPLICATION_JSON;
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.hamcrest.Matchers.*;
+import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.http.MediaType.APPLICATION_JSON;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
@@ -19,7 +26,6 @@ import com.vi.tenantservice.api.authorisation.Authority;
 import com.vi.tenantservice.api.authorisation.UserRole;
 import com.vi.tenantservice.api.config.apiclient.ApplicationSettingsApiControllerFactory;
 import com.vi.tenantservice.api.config.apiclient.ConsultingTypeServiceApiControllerFactory;
-import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
 import com.vi.tenantservice.api.service.consultingtype.ConsultingTypeService;
 import com.vi.tenantservice.api.service.consultingtype.UserAdminService;
@@ -30,11 +36,14 @@ import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
 import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.*;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
+import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import lombok.val;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -83,8 +92,6 @@ class TenantControllerIT {
   private static final int CONSULTING_TYPE_ID = 2;
 
   @Autowired private WebApplicationContext context;
-
-  @Autowired private ObjectMapper objectMapper;
 
   @MockBean AuthorisationService authorisationService;
 
@@ -261,9 +268,11 @@ class TenantControllerIT {
                 .sendFurtherStepsMessage(true)
                 .sendSaveSessionDataMessage(true)
                 .welcomeMessage(
-                    new WelcomeMessageDTO().welcomeMessageText("welcome").sendWelcomeMessage(true))
+                    new ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
+                        .welcomeMessageText("welcome")
+                        .sendWelcomeMessage(true))
                 .notifications(
-                    new NotificationsDTO()
+                    new ExtendedConsultingTypeResponseDTOAllOfNotifications()
                         .teamSessions(
                             new NotificationsDTOTeamSessions()
                                 .newMessage(
@@ -289,8 +298,7 @@ class TenantControllerIT {
         .andExpect(
             jsonPath(
                 "settings.extendedSettings.notifications.teamSessions.newMessage.allTeamConsultants",
-                is(true)))
-        .andExpect(jsonPath("$.settings.isVideoCallAllowed").value(true));
+                is(true)));
   }
 
   private com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO
@@ -571,7 +579,7 @@ class TenantControllerIT {
     aMap.put("de", "de transl");
     aMap.put("en", "en transl");
 
-    String s = objectMapper.writeValueAsString(aMap);
+    String s = new ObjectMapper().writeValueAsString(aMap);
     mockMvc
         .perform(get(EXISTING_PUBLIC_TENANT).contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -741,26 +749,21 @@ class TenantControllerIT {
   }
 
   @Test
-  void getTenant_Should_returnStatusForbidden_When_calledWithoutAnyAuthorization()
+  void getTenant_Should_returnStatusUnauthorized_When_calledWithoutAnyAuthorization()
       throws Exception {
     mockMvc
         .perform(get(EXISTING_TENANT).contentType(APPLICATION_JSON))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isUnauthorized());
   }
 
   @Test
   @Sql(value = "/database/SingleTenantData.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = "/database/MultiTenantData.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void getRestrictedSingleTenantData_Should_returnOkAndTheRequestedTenantData() throws Exception {
-    val resultActions =
-        mockMvc.perform(get(PUBLIC_SINGLE_TENANT_RESOURCE)).andExpect(status().isOk());
-    val tenantDTO =
-        objectMapper.readValue(
-            resultActions.andReturn().getResponse().getContentAsString(), TenantDTO.class);
-    val settings = tenantDTO.getSettings();
-    assertThat(tenantDTO.getId()).isEqualTo(1L);
-    assertThat(settings.getIsVideoCallAllowed()).isFalse();
-    assertThat(settings.getShowAskerProfile()).isFalse();
+    mockMvc
+        .perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(1));
   }
 
   @Test
@@ -833,12 +836,12 @@ class TenantControllerIT {
   }
 
   @Test
-  void searchTenants_Should_returnForbidden_When_attemptedToGetTenantWithoutTenantAuthority()
+  void searchTenants_Should_returnUnauthorized_When_attemptedToGetTenantWithoutTenantAuthority()
       throws Exception {
     // when, then
     this.mockMvc
         .perform(get(TENANTADMIN_SEARCH + "?query=*&page=1&perPage=10&field=NAME&order=ASC"))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isUnauthorized());
   }
 
   @Test

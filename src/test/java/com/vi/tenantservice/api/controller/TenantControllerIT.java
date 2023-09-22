@@ -33,14 +33,7 @@ import com.vi.tenantservice.api.service.httpheader.SecurityHeaderSupplier;
 import com.vi.tenantservice.api.tenant.SubdomainExtractor;
 import com.vi.tenantservice.api.tenant.TenantResolverService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
-import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO;
-import com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled;
 import com.vi.tenantservice.config.security.AuthorisationService;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTO;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
-import com.vi.tenantservice.consultingtypeservice.generated.web.model.WelcomeMessageDTO;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
@@ -263,20 +256,26 @@ class TenantControllerIT {
                 adminResponseWithMail("admin1@admin.com")));
     when(consultingTypeService.getConsultingTypesByTenantId(1))
         .thenReturn(
-            new FullConsultingTypeResponseDTO()
+            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                    .FullConsultingTypeResponseDTO()
                 .languageFormal(true)
                 .sendFurtherStepsMessage(true)
                 .sendSaveSessionDataMessage(true)
                 .welcomeMessage(
-                    new ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
+                    new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                            .ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
                         .welcomeMessageText("welcome")
                         .sendWelcomeMessage(true))
                 .notifications(
-                    new ExtendedConsultingTypeResponseDTOAllOfNotifications()
+                    new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                            .ExtendedConsultingTypeResponseDTOAllOfNotifications()
                         .teamSessions(
-                            new NotificationsDTOTeamSessions()
+                            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                                    .NotificationsDTOTeamSessions()
                                 .newMessage(
-                                    new TeamSessionsDTONewMessage().allTeamConsultants(true))))
+                                    new com.vi.tenantservice.consultingtypeservice.generated.web
+                                            .model.TeamSessionsDTONewMessage()
+                                        .allTeamConsultants(true))))
                 .isVideoCallAllowed(true));
 
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
@@ -316,7 +315,10 @@ class TenantControllerIT {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     when(consultingTypeService.getConsultingTypesByTenantId(1))
-        .thenReturn(new FullConsultingTypeResponseDTO().id(2));
+        .thenReturn(
+            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                    .FullConsultingTypeResponseDTO()
+                .id(2));
     MvcResult mvcResult =
         mockMvc
             .perform(
@@ -353,7 +355,8 @@ class TenantControllerIT {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     when(consultingTypeService.getConsultingTypesByTenantId(1))
         .thenReturn(
-            new FullConsultingTypeResponseDTO()
+            new com.vi.tenantservice.consultingtypeservice.generated.web.model
+                    .FullConsultingTypeResponseDTO()
                 .id(CONSULTING_TYPE_ID)
                 .isVideoCallAllowed(true)
                 .languageFormal(true));
@@ -408,9 +411,14 @@ class TenantControllerIT {
   }
 
   private void givenSingleTenantAdminCanChangeLegalTexts(boolean value) {
-    ApplicationSettingsDTO settingsDTO = new ApplicationSettingsDTO();
+    com.vi.tenantservice.applicationsettingsservice.generated.web.model.ApplicationSettingsDTO
+        settingsDTO =
+            new com.vi.tenantservice.applicationsettingsservice.generated.web.model
+                .ApplicationSettingsDTO();
     settingsDTO.setLegalContentChangesBySingleTenantAdminsAllowed(
-        new ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled().value(value));
+        new com.vi.tenantservice.applicationsettingsservice.generated.web.model
+                .ApplicationSettingsDTOMultitenancyWithSingleDomainEnabled()
+            .value(value));
     when(applicationSettingsService.getApplicationSettings()).thenReturn(settingsDTO);
   }
 

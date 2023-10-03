@@ -587,6 +587,8 @@ components:
             type: string
         confirmTermsAndConditions:
           type: boolean
+        placeholders:
+          $ref: '#/components/schemas/MultilingualPlaceholdersDTO'
 
     AdminTenantDTO:
       type: object
@@ -618,6 +620,16 @@ components:
           type: string
         updateDate:
           type: string
+
+    MultilingualPlaceholdersDTO:
+      type: object
+      additionalProperties:
+         type: object
+         properties:
+           key:
+             type: string
+           value:
+             type: string
 
     TenantsSearchResultDTO:
       type: object

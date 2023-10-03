@@ -5,11 +5,13 @@ import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsGerman;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
+import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
+import com.vi.tenantservice.api.model.MultilingualPlaceholdersDTOValue;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
@@ -85,7 +87,8 @@ public class TenantConverter {
           .contentClaim(convertToJson(tenantDTO.getContent().getClaim()))
           .contentImpressum(convertToJson(tenantDTO.getContent().getImpressum()))
           .contentPrivacy(convertToJson(tenantDTO.getContent().getPrivacy()))
-          .contentTermsAndConditions(convertToJson(tenantDTO.getContent().getTermsAndConditions()));
+          .contentTermsAndConditions(convertToJson(tenantDTO.getContent().getTermsAndConditions()))
+          .contentPlaceholders(convertToJson(tenantDTO.getContent().getPlaceholders()));
     }
   }
 
@@ -117,6 +120,7 @@ public class TenantConverter {
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
             .settings(getSettings(tenant));
+
     if (tenant.getCreateDate() != null) {
       tenantDTO.setCreateDate(tenant.getCreateDate().toString());
     }
@@ -236,7 +240,15 @@ public class TenantConverter {
         .claim(convertMapFromJson(tenant.getContentClaim()))
         .impressum(convertMapFromJson(tenant.getContentImpressum()))
         .privacy(convertMapFromJson(tenant.getContentPrivacy()))
+        .placeholders(convertPlaceholdersFromJson(tenant.getContentPlaceholders()))
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
+
+  }
+
+  private Map<String, MultilingualPlaceholdersDTOValue> convertPlaceholdersFromJson(
+      String contentPlaceholders) {
+    //TODO implement
+    return Maps.newHashMap();
   }
 
   public AdminTenantDTO toAdminTenantDTO(TenantEntity tenant) {

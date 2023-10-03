@@ -65,8 +65,13 @@ public class TenantEntity {
   @Column(name = "content_termsandconditions")
   private String contentTermsAndConditions;
 
+  @Column(name = "content_placeholders")
+  private String contentPlaceholders;
+
   @Column(name = "termsandconditions_activation_date")
   private LocalDateTime contentTermsAndConditionsActivationDate;
+
+
 
   @Column(name = "settings")
   private String settings;

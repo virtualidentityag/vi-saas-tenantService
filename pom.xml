@@ -24,10 +24,10 @@
         <java.version>17</java.version>
         <swagger.version>3.0.0</swagger.version>
         <h2.version>2.1.214</h2.version>
-        <spring.security>6.0.4</spring.security>
+        <spring.security>6.0.5</spring.security>
         <owasp.java.html.sanitizer>20211018.1</owasp.java.html.sanitizer>
         <hibernate.validator.version>8.0.0.Final</hibernate.validator.version>
-        <liquibase.maven.plugin.version>4.1.1</liquibase.maven.plugin.version>
+        <liquibase.maven.plugin.version>4.23.1</liquibase.maven.plugin.version>
         <openapi.generator.maven.version>6.6.0</openapi.generator.maven.version>
         <jackson.databind.nullable.version>0.2.3</jackson.databind.nullable.version>
         <springfox.boot.starter.version>3.0.0</springfox.boot.starter.version>
@@ -42,7 +42,7 @@
         <easy-random-core.version>5.0.0</easy-random-core.version>
         <assertj-core.version>3.23.1</assertj-core.version>
         <spring-security-oauth2-test-webmvc-addons.version>3.0.1</spring-security-oauth2-test-webmvc-addons.version>
-        <liquibase-core.version>4.9.1</liquibase-core.version>
+        <liquibase-core.version>4.23.1</liquibase-core.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
 
@@ -127,6 +127,18 @@
             <groupId>org.liquibase</groupId>
             <artifactId>liquibase-maven-plugin</artifactId>
             <version>${liquibase.maven.plugin.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.liquibase</groupId>
+                    <artifactId>liquibase-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>org.liquibase</groupId>
+            <artifactId>liquibase-core</artifactId>
+            <version>${liquibase-core.version}</version>
         </dependency>
 
         <dependency>
@@ -145,6 +157,12 @@
             <groupId>org.openapitools</groupId>
             <artifactId>openapi-generator-maven-plugin</artifactId>
             <version>${openapi.generator.maven.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.codehaus.plexus</groupId>
+                    <artifactId>plexus-utils</artifactId>
+                </exclusion>
+            </exclusions>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -453,7 +471,6 @@
                         <phase>validate</phase>
                         <configuration>
                             <configLocation>google_checks_light.xml</configLocation>
-                            <encoding>UTF-8</encoding>
                             <failsOnError>false</failsOnError>
                             <consoleOutput>true</consoleOutput>
                             <failOnViolation>false</failOnViolation>
@@ -508,7 +525,7 @@
             <plugin>
                 <groupId>org.liquibase</groupId>
                 <artifactId>liquibase-maven-plugin</artifactId>
-                <version>4.1.1</version>
+                <version>4.23.1</version>
                 <configuration>
                     <propertyFile>src/main/resources/liquibase.properties</propertyFile>
                 </configuration>

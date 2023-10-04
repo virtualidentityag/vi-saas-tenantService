@@ -17,6 +17,7 @@ CREATE TABLE IF NOT EXISTS TENANT
     settings VARCHAR(4000) default NULL,
     privacy_activation_date datetime,
     termsandconditions_activation_date datetime,
+    content_placeholders longtext,
     PRIMARY KEY (ID)
 );
 

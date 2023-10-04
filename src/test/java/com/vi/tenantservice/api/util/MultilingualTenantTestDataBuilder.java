@@ -1,10 +1,12 @@
 package com.vi.tenantservice.api.util;
 
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.PlaceholderDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.Theming;
 import java.util.HashMap;
@@ -133,7 +135,22 @@ public class MultilingualTenantTestDataBuilder {
     content.setClaim(defaultTranslations(CLAIM));
     content.setPrivacy(defaultTranslations(PRIVACY));
     content.setTermsAndConditions(defaultTranslations(TERMS_AND_CONDITIONS));
+    content.setPlaceholders(getPlaceholders());
     return content;
+  }
+
+  private static Map<String, List<PlaceholderDTO>> getPlaceholders() {
+    Map<String, List<PlaceholderDTO>> translatedPlaceholders = Maps.newHashMap();
+    translatedPlaceholders.put("en", Lists.newArrayList(placeholderDTO("name", "value")));
+    translatedPlaceholders.put("de", Lists.newArrayList(placeholderDTO("de name", "de value")));
+    return translatedPlaceholders;
+  }
+
+  private static PlaceholderDTO placeholderDTO(String key, String value) {
+    PlaceholderDTO placeholdersDTOValue = new PlaceholderDTO();
+    placeholdersDTOValue.setKey(key);
+    placeholdersDTOValue.setValue(value);
+    return placeholdersDTOValue;
   }
 
   private Map<String, String> defaultTranslations(String content) {

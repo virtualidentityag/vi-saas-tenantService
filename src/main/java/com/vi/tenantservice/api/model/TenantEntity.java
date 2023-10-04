@@ -71,8 +71,6 @@ public class TenantEntity {
   @Column(name = "termsandconditions_activation_date")
   private LocalDateTime contentTermsAndConditionsActivationDate;
 
-
-
   @Column(name = "settings")
   private String settings;
 

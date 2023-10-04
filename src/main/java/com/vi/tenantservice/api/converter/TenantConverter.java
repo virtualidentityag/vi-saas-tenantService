@@ -4,15 +4,17 @@ import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsFalse;
 import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsGerman;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
+import static com.vi.tenantservice.api.util.JsonConverter.deserializeMapFromJsonString;
 
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
-import com.vi.tenantservice.api.model.MultilingualPlaceholdersDTOValue;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.PlaceholderDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
@@ -21,6 +23,7 @@ import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.util.JsonConverter;
+import java.util.List;
 import java.util.Map;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -242,13 +245,22 @@ public class TenantConverter {
         .privacy(convertMapFromJson(tenant.getContentPrivacy()))
         .placeholders(convertPlaceholdersFromJson(tenant.getContentPlaceholders()))
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
-
   }
 
-  private Map<String, MultilingualPlaceholdersDTOValue> convertPlaceholdersFromJson(
+  private Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(
       String contentPlaceholders) {
-    //TODO implement
-    return Maps.newHashMap();
+
+    if (contentPlaceholders == null) {
+      return Maps.newHashMap();
+    }
+    var result =
+        deserializeMapFromJsonString(
+            contentPlaceholders, new TypeReference<Map<String, List<PlaceholderDTO>>>() {});
+    if (result == null) {
+      log.warn("Could not deserialize map from json.");
+      return Maps.newHashMap();
+    }
+    return result;
   }
 
   public AdminTenantDTO toAdminTenantDTO(TenantEntity tenant) {

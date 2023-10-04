@@ -523,6 +523,10 @@ components:
           format: date-time
           example: 2022-12-07T11:51:01
           description: "Datetime stamp when new privacy defined"
+        placeholders:
+          type: array
+          items:
+            $ref: '#/components/schemas/PlaceholderDTO'
 
     Settings:
       type: object
@@ -624,6 +628,11 @@ components:
     MultilingualPlaceholdersDTO:
       type: object
       additionalProperties:
+        type: array
+        items:
+          $ref: '#/components/schemas/PlaceholderDTO'
+
+    PlaceholderDTO:
          type: object
          properties:
            key:

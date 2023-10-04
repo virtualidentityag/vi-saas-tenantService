@@ -50,7 +50,7 @@ public class JsonConverter {
     }
   }
 
-  private static <T, Y> Map<T, Y> deserializeMapFromJsonString(
+  public static <T, Y> Map<T, Y> deserializeMapFromJsonString(
       String jsonString, TypeReference<Map<T, Y>> typeReference) {
     try {
       var objectMapper =

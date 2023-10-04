@@ -221,7 +221,13 @@ public class TenantConverter {
         .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
         .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
         .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
-        .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate());
+        .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate())
+        .placeholders(getTranslatedPlaceholders(tenant, lang));
+  }
+
+  private static List<PlaceholderDTO> getTranslatedPlaceholders(TenantEntity tenant, String lang) {
+    var placeholders = convertPlaceholdersFromJson(tenant.getContentPlaceholders());
+    return placeholders.get(lang);
   }
 
   private static String getTranslatedStringFromMap(String jsonValue, String lang) {
@@ -247,7 +253,7 @@ public class TenantConverter {
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
   }
 
-  private Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(
+  private static Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(
       String contentPlaceholders) {
 
     if (contentPlaceholders == null) {

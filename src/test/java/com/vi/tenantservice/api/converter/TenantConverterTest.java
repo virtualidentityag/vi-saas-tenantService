@@ -39,7 +39,8 @@ class TenantConverterTest {
     assertThat(converted.getLicensing()).isEqualTo(tenantDTO.getLicensing());
     assertThat(converted.getSettings()).isEqualTo(tenantDTO.getSettings());
     assertThat(converted.getTheming()).isEqualTo(tenantDTO.getTheming());
-    assertThat(converted.getContent()).isEqualTo(tenantDTO.getContent());
+    assertThat(converted.getContent().getPlaceholders())
+        .isEqualTo(tenantDTO.getContent().getPlaceholders().get("de"));
     // content comparision is skipped, due to i18n feature, so the structure is different
   }
 

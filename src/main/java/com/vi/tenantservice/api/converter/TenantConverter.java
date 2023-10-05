@@ -115,9 +115,8 @@ public class TenantConverter {
 
   public MultilingualTenantDTO toMultilingualDTO(TenantEntity tenant) {
     var tenantDTO =
-        new MultilingualTenantDTO()
+        new MultilingualTenantDTO(tenant.getName())
             .id(tenant.getId())
-            .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
             .content(toMultilingualContentDTO(tenant))
             .theming(toThemingDTO(tenant))
@@ -135,10 +134,7 @@ public class TenantConverter {
 
   public TenantDTO toDTO(TenantEntity tenant, String lang) {
     var tenantDTO =
-        new TenantDTO()
-            .id(tenant.getId())
-            .name(tenant.getName())
-            .subdomain(tenant.getSubdomain())
+        new TenantDTO(tenant.getId(), tenant.getName(), tenant.getSubdomain())
             .content(toContentDTO(tenant, lang))
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
@@ -176,9 +172,7 @@ public class TenantConverter {
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant, String lang) {
-    return new RestrictedTenantDTO()
-        .id(tenant.getId())
-        .name(tenant.getName())
+    return new RestrictedTenantDTO(tenant.getId(), tenant.getName())
         .content(toContentDTO(tenant, lang))
         .theming(toThemingDTO(tenant))
         .subdomain(tenant.getSubdomain())
@@ -187,10 +181,7 @@ public class TenantConverter {
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
     var basicTenantLicensingDTO =
-        new BasicTenantLicensingDTO()
-            .id(tenant.getId())
-            .name(tenant.getName())
-            .subdomain(tenant.getSubdomain())
+        new BasicTenantLicensingDTO(tenant.getId(), tenant.getName(), tenant.getSubdomain())
             .licensing(toLicensingDTO(tenant));
 
     if (tenant.getCreateDate() != null) {
@@ -203,7 +194,7 @@ public class TenantConverter {
   }
 
   public Licensing toLicensingDTO(TenantEntity tenant) {
-    return new Licensing().allowedNumberOfUsers(tenant.getLicensingAllowedNumberOfUsers());
+    return new Licensing(tenant.getLicensingAllowedNumberOfUsers());
   }
 
   private Theming toThemingDTO(TenantEntity tenant) {
@@ -215,9 +206,8 @@ public class TenantConverter {
   }
 
   private Content toContentDTO(TenantEntity tenant, String lang) {
-    return new Content()
+    return new Content(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
         .claim(getTranslatedStringFromMap(tenant.getContentClaim(), lang))
-        .impressum(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
         .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
         .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
         .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
@@ -245,15 +235,14 @@ public class TenantConverter {
   }
 
   private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {
-    return new MultilingualContent()
+    return new MultilingualContent(convertMapFromJson(tenant.getContentImpressum()))
         .claim(convertMapFromJson(tenant.getContentClaim()))
-        .impressum(convertMapFromJson(tenant.getContentImpressum()))
         .privacy(convertMapFromJson(tenant.getContentPrivacy()))
         .placeholders(convertPlaceholdersFromJson(tenant.getContentPlaceholders()))
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
   }
 
-  private static Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(
+  static Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(
       String contentPlaceholders) {
 
     if (contentPlaceholders == null) {

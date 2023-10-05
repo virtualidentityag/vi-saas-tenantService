@@ -2,13 +2,18 @@ package com.vi.tenantservice.api.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.PlaceholderDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
@@ -16,6 +21,14 @@ class TenantConverterTest {
 
   TenantConverter tenantConverter = new TenantConverter();
 
+  @Test
+  void shouldSerializeToJson() throws JsonProcessingException {
+    Map<String, List<PlaceholderDTO>> map = Maps.newHashMap();
+    map.put("de", List.of(new PlaceholderDTO().key("a key").value("a value")));
+    map.put("en", List.of(new PlaceholderDTO().key("a key en").value("a value en")));
+    var result = new ObjectMapper().writeValueAsString(map);
+    assertThat(result).isEqualTo("{\"de\":[{\"key\":\"a key\",\"value\":\"a value\"}],\"en\":[{\"key\":\"a key en\",\"value\":\"a value en\"}]}");
+  }
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {
     // given

@@ -58,6 +58,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -760,10 +761,14 @@ class TenantControllerIT {
   @Sql(value = "/database/SingleTenantData.sql", executionPhase = ExecutionPhase.BEFORE_TEST_METHOD)
   @Sql(value = "/database/MultiTenantData.sql", executionPhase = ExecutionPhase.AFTER_TEST_METHOD)
   void getRestrictedSingleTenantData_Should_returnOkAndTheRequestedTenantData() throws Exception {
-    mockMvc
+    ResultActions resultActions = mockMvc
         .perform(get(PUBLIC_SINGLE_TENANT_RESOURCE))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.id").value(1));
+        .andExpect(jsonPath("$.id").value(1))
+        .andExpect(jsonPath("$.name").value("Happylife Gmbh"))
+        .andExpect(jsonPath("$.subdomain").value("happylife"))
+        .andExpect(jsonPath("$.content.placeholders[0].key").value("placeholder key"))
+        .andExpect(jsonPath("$.content.placeholders[0].value").value("placeholder value"));
   }
 
   @Test

@@ -27,8 +27,11 @@ class TenantConverterTest {
     map.put("de", List.of(new PlaceholderDTO().key("a key").value("a value")));
     map.put("en", List.of(new PlaceholderDTO().key("a key en").value("a value en")));
     var result = new ObjectMapper().writeValueAsString(map);
-    assertThat(result).isEqualTo("{\"de\":[{\"key\":\"a key\",\"value\":\"a value\"}],\"en\":[{\"key\":\"a key en\",\"value\":\"a value en\"}]}");
+    assertThat(result)
+        .isEqualTo(
+            "{\"de\":[{\"key\":\"a key\",\"value\":\"a value\"}],\"en\":[{\"key\":\"a key en\",\"value\":\"a value en\"}]}");
   }
+
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {
     // given

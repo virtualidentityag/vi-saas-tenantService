@@ -242,8 +242,7 @@ public class TenantConverter {
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
   }
 
-  static Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(
-      String contentPlaceholders) {
+  static Map<String, List<PlaceholderDTO>> convertPlaceholdersFromJson(String contentPlaceholders) {
 
     if (contentPlaceholders == null) {
       return Maps.newHashMap();

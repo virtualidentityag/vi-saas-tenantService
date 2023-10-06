@@ -15,11 +15,11 @@ import org.springframework.test.context.TestPropertySource;
 @TestPropertySource(properties = "spring.profiles.active=testing")
 class TemplateServiceIT {
 
-  @Autowired
-  private TemplateService templateService;
+  @Autowired private TemplateService templateService;
 
   @Test
-  void processInMemoryTemplate_ShouldProcessTemplateAndReplacePlaceholders() throws TemplateException, IOException {
+  void processInMemoryTemplate_ShouldProcessTemplateAndReplacePlaceholders()
+      throws TemplateException, IOException {
     // given
     String template = "<p>Hello, ${name}!</p>";
     String expectedOutput = "<p>Hello, James!</p>";
@@ -33,7 +33,8 @@ class TemplateServiceIT {
   }
 
   @Test
-  void processInMemoryTemplate_ShouldProcessTemplateAndLeaveEmptyString() throws TemplateException, IOException {
+  void processInMemoryTemplate_ShouldProcessTemplateAndLeaveEmptyString()
+      throws TemplateException, IOException {
     // given
     String template = "<p>Hello, ${name} ${surname}!</p>";
     String expectedOutput = "<p>Hello, James!</p>";
@@ -52,9 +53,8 @@ class TemplateServiceIT {
     Map<String, Object> dataModel = Map.of("name", "James");
 
     // when, then
-    assertThrows(IllegalArgumentException.class,
+    assertThrows(
+        IllegalArgumentException.class,
         () -> templateService.processInMemoryTemplate(null, dataModel));
   }
-
-
 }

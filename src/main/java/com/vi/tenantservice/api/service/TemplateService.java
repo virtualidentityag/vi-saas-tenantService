@@ -1,6 +1,5 @@
 package com.vi.tenantservice.api.service;
 
-
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -11,18 +10,17 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
-
 @Service
 @RequiredArgsConstructor
 public class TemplateService {
-
 
   private final @NonNull freemarker.template.Configuration freemarkerConfiguration;
 
   public String processInMemoryTemplate(String templateContent, Map<String, Object> dataModel)
       throws IOException, TemplateException {
 
-    StringTemplateLoader templateLoader = (StringTemplateLoader) freemarkerConfiguration.getTemplateLoader();
+    StringTemplateLoader templateLoader =
+        (StringTemplateLoader) freemarkerConfiguration.getTemplateLoader();
     templateLoader.putTemplate("in-memory-template", templateContent);
     // Process the template into a string
     Template template = freemarkerConfiguration.getTemplate("in-memory-template");
@@ -30,5 +28,4 @@ public class TemplateService {
     template.process(dataModel, stringWriter);
     return stringWriter.toString();
   }
-
 }

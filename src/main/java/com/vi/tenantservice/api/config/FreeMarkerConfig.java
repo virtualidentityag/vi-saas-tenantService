@@ -15,7 +15,8 @@ public class FreeMarkerConfig {
   public freemarker.template.Configuration freemarkerConfiguration()
       throws TemplateException, IOException {
     Configuration configuration = new FreeMarkerConfigurationFactoryBean().createConfiguration();
-    configuration.setTemplateExceptionHandler(TemplateExceptionHandler.IGNORE_HANDLER); // Set to ignore missing variables
+    configuration.setTemplateExceptionHandler(
+        TemplateExceptionHandler.IGNORE_HANDLER); // Set to ignore missing variables
 
     StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
     configuration.setTemplateLoader(stringTemplateLoader);

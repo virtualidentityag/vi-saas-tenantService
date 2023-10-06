@@ -14,6 +14,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.authorisation.Authority.AuthorityValue;
 import com.vi.tenantservice.api.converter.ConsultingTypePatchDTOConverter;
+import com.vi.tenantservice.api.converter.ContentRenderer;
 import com.vi.tenantservice.api.converter.TenantConverter;
 import com.vi.tenantservice.api.exception.TenantNotFoundException;
 import com.vi.tenantservice.api.exception.TenantValidationException;
@@ -101,6 +102,8 @@ class TenantServiceFacadeTest {
   private TenantFacadeDependentSettingsOverrideService tenantFacadeDependentSettingsOverrideService;
 
   @Mock private SingleDomainTenantOverrideService singleDomainTenantOverrideService;
+
+  @Mock private ContentRenderer contentRenderer;
 
   @InjectMocks private TenantServiceFacade tenantServiceFacade;
 
@@ -479,7 +482,8 @@ class TenantServiceFacadeTest {
     // given
 
     ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
-    ReflectionTestUtils.setField(tenantServiceFacade, "tenantConverter", new TenantConverter());
+    ReflectionTestUtils.setField(
+        tenantServiceFacade, "tenantConverter", new TenantConverter(contentRenderer));
 
     Optional<TenantEntity> defaultTenant = getTenantWithPrivacy("{\"de\":\"content1\"}");
     Optional<TenantEntity> accessTokenTenantData = getTenantWithPrivacy("{\"de\":\"content2\"}");

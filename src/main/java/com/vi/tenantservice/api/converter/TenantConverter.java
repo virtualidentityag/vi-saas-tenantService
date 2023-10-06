@@ -25,15 +25,20 @@ import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.util.JsonConverter;
 import java.util.List;
 import java.util.Map;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class TenantConverter {
 
   public static final String DE = "de";
+
+  private final @NonNull ContentRenderer contentRenderer;
 
   public TenantEntity toEntity(MultilingualTenantDTO tenantDTO) {
     var builder =
@@ -206,13 +211,16 @@ public class TenantConverter {
   }
 
   private Content toContentDTO(TenantEntity tenant, String lang) {
+    String translatedPrivacy = getTranslatedStringFromMap(tenant.getContentPrivacy(), lang);
+    List<PlaceholderDTO> translatedPlaceholders = getTranslatedPlaceholders(tenant, lang);
+    var renderedPrivacy = contentRenderer.renderContent(translatedPrivacy, translatedPlaceholders);
     return new Content(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
         .claim(getTranslatedStringFromMap(tenant.getContentClaim(), lang))
-        .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
+        .privacy(renderedPrivacy)
         .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
         .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
         .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate())
-        .placeholders(getTranslatedPlaceholders(tenant, lang));
+        .placeholders(translatedPlaceholders);
   }
 
   private static List<PlaceholderDTO> getTranslatedPlaceholders(TenantEntity tenant, String lang) {
@@ -235,10 +243,14 @@ public class TenantConverter {
   }
 
   private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {
+    Map<String, String> privacy = convertMapFromJson(tenant.getContentPrivacy());
+    Map<String, List<PlaceholderDTO>> placeholders =
+        convertPlaceholdersFromJson(tenant.getContentPlaceholders());
     return new MultilingualContent(convertMapFromJson(tenant.getContentImpressum()))
         .claim(convertMapFromJson(tenant.getContentClaim()))
-        .privacy(convertMapFromJson(tenant.getContentPrivacy()))
-        .placeholders(convertPlaceholdersFromJson(tenant.getContentPlaceholders()))
+        .privacy(privacy)
+        .renderedPrivacy(contentRenderer.renderContentForAllLanguages(privacy, placeholders))
+        .placeholders(placeholders)
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
   }
 

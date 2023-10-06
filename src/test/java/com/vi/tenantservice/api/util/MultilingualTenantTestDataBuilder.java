@@ -25,7 +25,7 @@ public class MultilingualTenantTestDataBuilder {
   private static final String FAVICON = "favicon";
   private static final String LOGO = "logo";
   private static final int ALLOWED_NUMBER_OF_CONSULTANTS = 2000;
-  private static final String PRIVACY = "privacy";
+  private static final String PRIVACY_TEMPLATE = "privacy ${name}";
   private static final String TERMS_AND_CONDITIONS = "termsandconditions";
 
   MultilingualTenantDTO tenantMultilingualDTO = new MultilingualTenantDTO();
@@ -133,7 +133,7 @@ public class MultilingualTenantTestDataBuilder {
     MultilingualContent content = new MultilingualContent();
     content.setImpressum(defaultTranslations(IMPRESSUM));
     content.setClaim(defaultTranslations(CLAIM));
-    content.setPrivacy(defaultTranslations(PRIVACY));
+    content.setPrivacy(defaultTranslations(PRIVACY_TEMPLATE));
     content.setTermsAndConditions(defaultTranslations(TERMS_AND_CONDITIONS));
     content.setPlaceholders(getPlaceholders());
     return content;

@@ -12,11 +12,11 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-public class TemplateService {
+public class TemplateRenderer {
 
   private final @NonNull freemarker.template.Configuration freemarkerConfiguration;
 
-  public String processInMemoryTemplate(String templateContent, Map<String, Object> dataModel)
+  public String renderTemplate(String templateContent, Map<String, Object> dataModel)
       throws IOException, TemplateException {
 
     StringTemplateLoader templateLoader =

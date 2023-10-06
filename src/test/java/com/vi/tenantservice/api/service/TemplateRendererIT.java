@@ -13,9 +13,9 @@ import org.springframework.test.context.TestPropertySource;
 
 @SpringBootTest
 @TestPropertySource(properties = "spring.profiles.active=testing")
-class TemplateServiceIT {
+class TemplateRendererIT {
 
-  @Autowired private TemplateService templateService;
+  @Autowired private TemplateRenderer templateRenderer;
 
   @Test
   void processInMemoryTemplate_ShouldProcessTemplateAndReplacePlaceholders()
@@ -26,7 +26,7 @@ class TemplateServiceIT {
     Map<String, Object> dataModel = Map.of("name", "James");
 
     // when
-    String processedTemplate = templateService.processInMemoryTemplate(template, dataModel);
+    String processedTemplate = templateRenderer.renderTemplate(template, dataModel);
 
     // then
     assertThat(processedTemplate).isEqualTo(expectedOutput);
@@ -41,7 +41,7 @@ class TemplateServiceIT {
     Map<String, Object> dataModel = Map.of("name", "James");
 
     // when
-    String processedTemplate = templateService.processInMemoryTemplate(template, dataModel);
+    String processedTemplate = templateRenderer.renderTemplate(template, dataModel);
 
     // then
     assertThat(processedTemplate).isEqualTo(expectedOutput);
@@ -54,7 +54,6 @@ class TemplateServiceIT {
 
     // when, then
     assertThrows(
-        IllegalArgumentException.class,
-        () -> templateService.processInMemoryTemplate(null, dataModel));
+        IllegalArgumentException.class, () -> templateRenderer.renderTemplate(null, dataModel));
   }
 }

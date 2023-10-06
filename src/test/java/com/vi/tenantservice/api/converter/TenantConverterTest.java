@@ -12,14 +12,37 @@ import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.service.TemplateRenderer;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateExceptionHandler;
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
 class TenantConverterTest {
 
-  TenantConverter tenantConverter = new TenantConverter();
+  TenantConverterTest() throws TemplateException, IOException {}
+
+  private Configuration freeMarkerConfiguration() throws TemplateException, IOException {
+    Configuration configuration = new FreeMarkerConfigurationFactoryBean().createConfiguration();
+    configuration.setTemplateExceptionHandler(
+        TemplateExceptionHandler.IGNORE_HANDLER); // to ignore missing placeholder variables
+
+    StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
+    configuration.setTemplateLoader(stringTemplateLoader);
+    return configuration;
+  }
+
+  Configuration fremarkerConfiguration = freeMarkerConfiguration();
+
+  TemplateRenderer templateRenderer = new TemplateRenderer(fremarkerConfiguration);
+  ContentRenderer contentRenderer = new ContentRenderer(templateRenderer);
+  TenantConverter tenantConverter = new TenantConverter(contentRenderer);
 
   @Test
   void shouldSerializeToJson() throws JsonProcessingException {

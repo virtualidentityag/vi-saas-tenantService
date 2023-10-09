@@ -161,13 +161,14 @@ class TenantControllerIT {
                             .jsonify())
                     .contentType(APPLICATION_JSON))
             .andExpect(status().isOk());
-    // TODO investigate why placeholders are not persisted
     String contentAsString = resultActions.andReturn().getResponse().getContentAsString();
     resultActions
         .andExpect(jsonPath("id").exists())
         .andExpect(jsonPath("name", is("tenant")))
         .andExpect(jsonPath("subdomain", is("subdomain")))
-        // .andExpect(jsonPath("content.renderedPrivacy", is(false)))
+        .andExpect(jsonPath("content.renderedPrivacy.de", is("privacy de name value")))
+        .andExpect(jsonPath("content.placeholders.de[0].key", is("name")))
+        .andExpect(jsonPath("content.placeholders.de[0].value", is("de name value")))
         .andExpect(jsonPath("settings.featureStatisticsEnabled", is(false)))
         .andExpect(jsonPath("settings.featureTopicsEnabled", is(true)))
         .andExpect(jsonPath("settings.topicsInRegistrationEnabled", is(true)))

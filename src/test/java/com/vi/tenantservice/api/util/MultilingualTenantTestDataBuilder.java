@@ -142,7 +142,7 @@ public class MultilingualTenantTestDataBuilder {
   private static Map<String, List<PlaceholderDTO>> getPlaceholders() {
     Map<String, List<PlaceholderDTO>> translatedPlaceholders = Maps.newHashMap();
     translatedPlaceholders.put("en", Lists.newArrayList(placeholderDTO("name", "value")));
-    translatedPlaceholders.put("de", Lists.newArrayList(placeholderDTO("de name", "de value")));
+    translatedPlaceholders.put("de", Lists.newArrayList(placeholderDTO("name", "de name value")));
     return translatedPlaceholders;
   }
 

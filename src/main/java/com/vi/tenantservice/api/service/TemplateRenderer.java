@@ -22,10 +22,10 @@ public class TemplateRenderer {
     StringTemplateLoader templateLoader =
         (StringTemplateLoader) freemarkerConfiguration.getTemplateLoader();
     templateLoader.putTemplate("in-memory-template", templateContent);
-    // Process the template into a string
     Template template = freemarkerConfiguration.getTemplate("in-memory-template");
     StringWriter stringWriter = new StringWriter();
     template.process(dataModel, stringWriter);
     return stringWriter.toString();
+    // Process the template into a string
   }
 }

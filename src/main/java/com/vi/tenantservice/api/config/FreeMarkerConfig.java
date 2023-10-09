@@ -1,5 +1,6 @@
 package com.vi.tenantservice.api.config;
 
+import freemarker.cache.NullCacheStorage;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import freemarker.template.TemplateException;
@@ -17,6 +18,8 @@ public class FreeMarkerConfig {
     Configuration configuration = new FreeMarkerConfigurationFactoryBean().createConfiguration();
     configuration.setTemplateExceptionHandler(
         TemplateExceptionHandler.IGNORE_HANDLER); // Set to ignore missing variables
+    // do not use cache for templates, as template content is being changed at runtime
+    configuration.setCacheStorage(NullCacheStorage.INSTANCE);
 
     StringTemplateLoader stringTemplateLoader = new StringTemplateLoader();
     configuration.setTemplateLoader(stringTemplateLoader);

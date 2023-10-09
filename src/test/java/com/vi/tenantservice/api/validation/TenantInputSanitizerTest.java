@@ -3,7 +3,9 @@ package com.vi.tenantservice.api.validation;
 import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 import static org.mockito.Mockito.*;
 
+import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.PlaceholderDTO;
 import java.util.HashMap;
 import java.util.Map;
 import org.jeasy.random.EasyRandom;
@@ -36,6 +38,16 @@ class TenantInputSanitizerTest {
     tenantDTO.getContent().setPrivacy(getDefaultTranslationsAsMap("privacy"));
     tenantDTO
         .getContent()
+        .setPlaceholders(
+            Map.of(
+                "de",
+                Lists.newArrayList(
+                    new PlaceholderDTO()
+                        .key("<a href=\"malicious key\">")
+                        .value(
+                            "<a href=\"http://onlineberatung.net\">content</a>further content"))));
+    tenantDTO
+        .getContent()
         .setTermsAndConditions(getDefaultTranslationsAsMap("terms and conditions"));
     when(inputSanitizer.sanitizeAllowingFormattingAndLinks(Mockito.anyString())).thenReturn("");
     when(inputSanitizer.sanitizeAllowingFormatting(Mockito.anyString())).thenReturn("");
@@ -45,6 +57,8 @@ class TenantInputSanitizerTest {
 
     // then
     verifyNeededSanitizationsAreCalled(tenantDTO);
+    verify(inputSanitizer)
+        .sanitizeAllowingFormattingAndLinks(tenantDTO.getContent().getPlaceholders().get("de"));
     assertNonSanitizableFieldsHaveSameValues(tenantDTO, sanitized);
   }
 
@@ -108,7 +122,6 @@ class TenantInputSanitizerTest {
         .sanitizeAllowingFormattingAndLinks(Mockito.anyString());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getPrimaryColor());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getSecondaryColor());
-    verifyNoMoreInteractions(inputSanitizer);
   }
 
   private void assertNonSanitizableFieldsHaveSameValues(

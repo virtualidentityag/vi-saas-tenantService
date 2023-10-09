@@ -2,9 +2,12 @@ package com.vi.tenantservice.api.validation;
 
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.PlaceholderDTO;
 import com.vi.tenantservice.api.model.Theming;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
+import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -74,13 +77,32 @@ public class TenantInputSanitizer {
               sanitizeAllTranslations(
                   content.getTermsAndConditions(),
                   inputSanitizer::sanitizeAllowingFormattingAndLinks));
+      output
+          .getContent()
+          .setPlaceholders(
+              sanitizeAllPlaceholderTranslations(
+                  content.getPlaceholders(), inputSanitizer::sanitizeAllowingFormattingAndLinks));
+
       output.getContent().setConfirmPrivacy(content.getConfirmPrivacy());
       output.getContent().setConfirmTermsAndConditions(content.getConfirmTermsAndConditions());
     }
   }
 
+  private Map<String, List<PlaceholderDTO>> sanitizeAllPlaceholderTranslations(
+      Map<String, List<PlaceholderDTO>> placeholders,
+      UnaryOperator<List<PlaceholderDTO>> sanitizeFuntion) {
+    if (placeholders != null) {
+      return placeholders.entrySet().stream()
+          .filter(entry -> entry.getKey() != null)
+          .collect(
+              Collectors.toMap(
+                  Map.Entry::getKey, stringEntry -> sanitizeFuntion.apply(stringEntry.getValue())));
+    }
+    return placeholders;
+  }
+
   private Map<String, String> sanitizeAllTranslations(
-      Map<String, String> translations, Function<String, String> sanitizeFuntion) {
+      Map<String, String> translations, UnaryOperator<String> sanitizeFuntion) {
     if (translations != null) {
       return translations.entrySet().stream()
           .filter(entry -> entry.getKey() != null)

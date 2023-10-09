@@ -26,6 +26,7 @@ import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
 class TenantConverterTest {
 
+  private static final String TRANSLATED_AND_RENDERED_PRIVACY = "privacy de name value";
   TenantConverterTest() throws TemplateException, IOException {}
 
   private Configuration freeMarkerConfiguration() throws TemplateException, IOException {
@@ -140,7 +141,7 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getContent().getClaim())
         .isEqualTo(getGermanTranslation(tenantDTO.getContent().getClaim()));
     assertThat(restrictedTenantDTO.getContent().getPrivacy())
-        .isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
+        .isEqualTo(TRANSLATED_AND_RENDERED_PRIVACY);
     assertThat(restrictedTenantDTO.getContent().getTermsAndConditions())
         .isEqualTo(getGermanTranslation(tenantDTO.getContent().getTermsAndConditions()));
     assertThat(restrictedTenantDTO.getContent().getImpressum())

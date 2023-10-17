@@ -33,12 +33,27 @@ class TemplateRendererIT {
   }
 
   @Test
-  void processInMemoryTemplate_ShouldProcessTemplateAndLeaveEmptyString()
+  void processInMemoryTemplate_ShouldProcessTemplateAndLeaveEmptyStringForNonExistingVariables()
       throws TemplateException, IOException {
     // given
-    String template = "<p>Hello, ${name} ${surname}!</p>";
-    String expectedOutput = "<p>Hello, James!</p>";
+    String template = "<p>Hello, ${name!} ${surname}!</p>";
+    String expectedOutput = "<p>Hello, James !</p>";
     Map<String, Object> dataModel = Map.of("name", "James");
+
+    // when
+    String processedTemplate = templateRenderer.renderTemplate(template, dataModel);
+
+    // then
+    assertThat(processedTemplate).isEqualTo(expectedOutput);
+  }
+
+  @Test
+  void processInMemoryTemplate_ShouldProcessTemplateAndProcessVariableThatContainsAnotherVariableInside()
+      throws TemplateException, IOException {
+    // given
+    String template = "<p>Hello, ${name!} ${surname!}!</p>";
+    String expectedOutput = "<p>Hello, ${another_variable} and ${one_more_variable} !</p>";
+    Map<String, Object> dataModel = Map.of("name", "${another_variable} and ${one_more_variable}");
 
     // when
     String processedTemplate = templateRenderer.renderTemplate(template, dataModel);

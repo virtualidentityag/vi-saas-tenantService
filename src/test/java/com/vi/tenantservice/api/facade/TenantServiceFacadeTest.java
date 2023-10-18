@@ -26,6 +26,7 @@ import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.SingleDomainTenantOverrideService;
+import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
 import com.vi.tenantservice.api.service.consultingtype.ApplicationSettingsService;
@@ -479,7 +480,7 @@ class TenantServiceFacadeTest {
     // given
 
     ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
-    ReflectionTestUtils.setField(tenantServiceFacade, "tenantConverter", new TenantConverter());
+    ReflectionTestUtils.setField(tenantServiceFacade, "tenantConverter", new TenantConverter(new TemplateService()));
 
     Optional<TenantEntity> defaultTenant = getTenantWithPrivacy("{\"de\":\"content1\"}");
     Optional<TenantEntity> accessTokenTenantData = getTenantWithPrivacy("{\"de\":\"content2\"}");

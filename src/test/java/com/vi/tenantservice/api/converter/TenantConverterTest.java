@@ -8,13 +8,14 @@ import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 class TenantConverterTest {
 
-  TenantConverter tenantConverter = new TenantConverter();
+  TenantConverter tenantConverter = new TenantConverter(new TemplateService());
 
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {

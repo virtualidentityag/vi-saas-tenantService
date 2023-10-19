@@ -303,16 +303,20 @@ class TenantControllerIT {
                 is(true)))
         .andExpect(
             jsonPath(
-                "content.dataProtectionContactTemplate.de.agencyContext.responsibleContact", containsString("${name}")))
+                "content.dataProtectionContactTemplate.de.agencyContext.responsibleContact",
+                containsString("${name}")))
         .andExpect(
             jsonPath(
-                "content.dataProtectionContactTemplate.de.noAgencyContext.responsibleContact", notNullValue()))
+                "content.dataProtectionContactTemplate.de.noAgencyContext.responsibleContact",
+                notNullValue()))
         .andExpect(
             jsonPath(
-                "content.dataProtectionContactTemplate.en.agencyContext.responsibleContact", containsString("${name}")))
+                "content.dataProtectionContactTemplate.en.agencyContext.responsibleContact",
+                containsString("${name}")))
         .andExpect(
             jsonPath(
-                "content.dataProtectionContactTemplate.en.noAgencyContext.responsibleContact", notNullValue()));
+                "content.dataProtectionContactTemplate.en.noAgencyContext.responsibleContact",
+                notNullValue()));
   }
 
   private com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO

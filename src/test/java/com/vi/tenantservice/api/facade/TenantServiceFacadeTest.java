@@ -480,7 +480,8 @@ class TenantServiceFacadeTest {
     // given
 
     ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
-    ReflectionTestUtils.setField(tenantServiceFacade, "tenantConverter", new TenantConverter(new TemplateService()));
+    ReflectionTestUtils.setField(
+        tenantServiceFacade, "tenantConverter", new TenantConverter(new TemplateService()));
 
     Optional<TenantEntity> defaultTenant = getTenantWithPrivacy("{\"de\":\"content1\"}");
     Optional<TenantEntity> accessTokenTenantData = getTenantWithPrivacy("{\"de\":\"content2\"}");

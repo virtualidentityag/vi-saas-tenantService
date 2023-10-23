@@ -26,10 +26,7 @@ class TemplateServiceTest {
                 .getAgencyContext()
                 .getDataProtectionOfficer()
                 .getDataProtectionOfficerContact())
-        .contains("${name}\n"
-            + "${postCode} ${city}\n"
-            + "${phoneNumber}\n"
-            + "${email}");
+        .contains("${name}\n" + "${postCode} ${city}\n" + "${phoneNumber}\n" + "${email}");
     assertThat(
             template
                 .getAgencyContext()

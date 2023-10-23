@@ -26,7 +26,10 @@ class TemplateServiceTest {
                 .getAgencyContext()
                 .getDataProtectionOfficer()
                 .getDataProtectionOfficerContact())
-        .contains("Kontaktdaten des oder der Datenschutzbeauftragten");
+        .contains("${name}\n"
+            + "${postCode} ${city}\n"
+            + "${phoneNumber}\n"
+            + "${email}");
     assertThat(
             template
                 .getAgencyContext()
@@ -46,7 +49,7 @@ class TemplateServiceTest {
     // then
     assertThat(template.get("en")).isNotNull();
     assertThat(template.get("de")).isNotNull();
-    assertThat(template.get("de")).isEqualTo(templateService.getDefaultDataProtectionTemplate());
+    assertThat(template).containsEntry("de", templateService.getDefaultDataProtectionTemplate());
     assertThat(
             template
                 .get("en")

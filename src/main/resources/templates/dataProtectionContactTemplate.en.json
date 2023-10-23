@@ -1,14 +1,14 @@
 {
   "agencyContext": {
-    "responsibleContact": "${name}<br/>${postCode}<br/>${phoneNumber}<br/>${email}",
+      "responsibleContact": "${name}<br/>${postCode} ${city}<br/>${phoneNumber}<br/>${email}",
     "dataProtectionOfficer": {
-      "agencyResponsibleContact": "Die oder der Verantwortliche hat keine Datenschutzbeauftragte bzw. keinen Datenschutzbeauftragten bestellt. Für Anfragen zum Datenschutz nutzen Sie bitte die angegebenen Kontaktdaten der verantwortlichen Stelle.",
-      "alternativeRepresentativeContact": "Die oder der Verantwortliche hat keine Datenschutzbeauftragte bzw. keinen Datenschutzbeauftragten bestellt. Bitte nutzen Sie für Anfragen zum Datenschutz die nachfolgenden Kontaktdaten: \n${Telefonnummer – OPTIONAL}\n${E-Mail-Adresse für Datenschutzanfragen}",
-      "dataProtectionOfficerContact": "Kontaktdaten des oder der Datenschutzbeauftragten:\n${name}\n${postCode}\n${phoneNumber}\n${email}"
+      "agencyResponsibleContact": "The responsible party has not appointed a data protection officer. For enquiries regarding data protection, please use the contact details of the responsible provider.",
+      "alternativeRepresentativeContact": "The responsible party has not appointed a data protection officer. Please use the following contact data for inquiries regarding data protection: ${phoneNumber} ${email}",
+      "dataProtectionOfficerContact": "${name}\n${postCode} ${city}\n${phoneNumber}\n${email}"
     }
   },
   "noAgencyContext": {
-    "responsibleContact": "Der Verantwortliche kann erst angezeigt werden, wenn eine Beratungsstelle ausgewählt wurde. Bitte wählen Sie eine Beratungsstelle aus.",
-    "dataProtectionOfficerContact": "Kontaktdaten des oder der Datenschutzbeauftragten:\nDie Kontaktdaten der Datenschutzbeauftragten oder des Datenschutzbeauftragten können erst angezeigt werden, wenn eine Beratungsstelle ausgewählt wurde. Bitte wählen Sie eine Beratungsstelle aus."
+    "responsibleContact": "The responsible party can only be displayed once a counselling centre has been selected. Please select a counselling centre.",
+    "dataProtectionOfficerContact": "The contact details of the data protection office can only be displayed once counselling centre has been selected. Please select a counselling centre."
   }
 }

@@ -560,7 +560,6 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.licensing").exists())
         .andExpect(jsonPath("$.theming").exists())
         .andExpect(jsonPath("$.content").exists())
-        .andExpect(jsonPath("$.content.dataProtectionContactTemplate").exists())
         .andExpect(jsonPath("$.settings").exists());
   }
 

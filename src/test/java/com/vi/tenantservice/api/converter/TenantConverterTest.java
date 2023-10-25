@@ -12,10 +12,19 @@ import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TenantConverterTest {
 
-  TenantConverter tenantConverter = new TenantConverter(new TemplateService());
+  @InjectMocks
+  TenantConverter tenantConverter;
+
+  @Mock
+  TemplateService templateService;
 
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {

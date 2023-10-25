@@ -255,8 +255,6 @@ class TenantControllerIT {
   }
 
   @Test
-  /* due to classloader differences and not finding the data protection resource */
-  @Tag("SkipOnCI")
   void
       getMultilingualTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
           throws Exception {
@@ -303,7 +301,47 @@ class TenantControllerIT {
         .andExpect(
             jsonPath(
                 "settings.extendedSettings.notifications.teamSessions.newMessage.allTeamConsultants",
-                is(true)))
+                is(true)));
+  }
+
+  @Test
+  /* due to classloader differences and not finding the data protection resource */
+  @Tag("SkipOnCI")
+  void
+  getMultilingualTenant_Should_returnStatusOk_AndRenderDataProtectionTemplates_When_calledWithValidTenantCreateParamsAndValidAuthority()
+      throws Exception {
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    Mockito.when(userAdminService.getTenantAdmins(1))
+        .thenReturn(
+            Lists.newArrayList(
+                adminResponseWithMail("admin@admin.com"),
+                adminResponseWithMail("admin1@admin.com")));
+    when(consultingTypeService.getConsultingTypesByTenantId(1))
+        .thenReturn(
+            new FullConsultingTypeResponseDTO()
+                .languageFormal(true)
+                .sendFurtherStepsMessage(true)
+                .sendSaveSessionDataMessage(true)
+                .welcomeMessage(
+                    new ExtendedConsultingTypeResponseDTOAllOfWelcomeMessage()
+                        .welcomeMessageText("welcome")
+                        .sendWelcomeMessage(true))
+                .notifications(
+                    new ExtendedConsultingTypeResponseDTOAllOfNotifications()
+                        .teamSessions(
+                            new NotificationsDTOTeamSessions()
+                                .newMessage(
+                                    new TeamSessionsDTONewMessage().allTeamConsultants(true))))
+                .isVideoCallAllowed(true));
+
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    mockMvc
+        .perform(
+            get(TENANTADMIN_RESOURCE + "/1")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                .contentType(APPLICATION_JSON)
+                .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
         .andExpect(
             jsonPath(
                 "content.dataProtectionContactTemplate.de.agencyContext.responsibleContact",
@@ -505,8 +543,6 @@ class TenantControllerIT {
   }
 
   @Test
-  /* due to classloader differences and not finding the resource */
-  @Tag("SkipOnCI")
   void
       getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
           throws Exception {
@@ -526,6 +562,23 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.content").exists())
         .andExpect(jsonPath("$.content.dataProtectionContactTemplate").exists())
         .andExpect(jsonPath("$.settings").exists());
+  }
+
+  @Test
+  /* due to classloader differences and not finding the resource */
+  @Tag("SkipOnCI")
+  void
+  getTenant_Should_returnStatusOk_AndAssertDataProtectionTemplateExists_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
+      throws Exception {
+    var builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
+    mockMvc
+        .perform(
+            get(EXISTING_TENANT)
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.content.dataProtectionContactTemplate").exists());
   }
 
   @Test

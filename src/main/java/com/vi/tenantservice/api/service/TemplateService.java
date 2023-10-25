@@ -7,12 +7,14 @@ import java.io.FileNotFoundException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
 import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 /** Service for mail templates */
 @Service
+@Slf4j
 public class TemplateService {
 
   private static final String TEMPLATE_DIR = "/templates/";
@@ -71,6 +73,11 @@ public class TemplateService {
           useCustomResourcesPath
               ? buildStreamForExternalPath(templateName)
               : TemplateService.class.getResourceAsStream(getTemplateFilename(templateName));
+      log.info("useCustomResourcesPath: {}", useCustomResourcesPath);
+      if (inputStream == null) {
+        log.error("Template file could not be loaded, template name: {}", templateName);
+        return "";
+      }
       assert inputStream != null;
       final List<String> fileLines =
           IOUtils.readLines(inputStream, StandardCharsets.UTF_8.displayName());

@@ -47,6 +47,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -254,6 +255,8 @@ class TenantControllerIT {
   }
 
   @Test
+  /* due to classloader differences and not finding the data protection resource */
+  @Tag("SkipOnCI")
   void
       getMultilingualTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
           throws Exception {
@@ -502,6 +505,8 @@ class TenantControllerIT {
   }
 
   @Test
+  /* due to classloader differences and not finding the resource */
+  @Tag("SkipOnCI")
   void
       getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
           throws Exception {

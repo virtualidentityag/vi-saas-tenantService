@@ -491,6 +491,7 @@
                 <configuration>
                     <skipTests>false</skipTests>
                     <argLine>--enable-preview</argLine>
+                    <excludedGroups>SkipOnCI</excludedGroups>
                 </configuration>
                 <executions>
                     <execution>

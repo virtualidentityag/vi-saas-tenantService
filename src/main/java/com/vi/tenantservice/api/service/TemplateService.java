@@ -17,7 +17,7 @@ import org.springframework.stereotype.Service;
 @Slf4j
 public class TemplateService {
 
-  private static final String TEMPLATE_DIR = "templates/";
+  private static final String TEMPLATE_DIR = "/templates/";
   private static final String TEMPLATE_EXTENSION = ".json";
 
   @Value("${template.use.custom.resources.path}")

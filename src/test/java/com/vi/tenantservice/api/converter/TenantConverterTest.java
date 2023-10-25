@@ -20,11 +20,9 @@ import org.mockito.junit.jupiter.MockitoExtension;
 @ExtendWith(MockitoExtension.class)
 class TenantConverterTest {
 
-  @InjectMocks
-  TenantConverter tenantConverter;
+  @InjectMocks TenantConverter tenantConverter;
 
-  @Mock
-  TemplateService templateService;
+  @Mock TemplateService templateService;
 
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {

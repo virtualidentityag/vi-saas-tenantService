@@ -308,8 +308,8 @@ class TenantControllerIT {
   /* due to classloader differences and not finding the data protection resource */
   @Tag("SkipOnCI")
   void
-  getMultilingualTenant_Should_returnStatusOk_AndRenderDataProtectionTemplates_When_calledWithValidTenantCreateParamsAndValidAuthority()
-      throws Exception {
+      getMultilingualTenant_Should_returnStatusOk_AndRenderDataProtectionTemplates_When_calledWithValidTenantCreateParamsAndValidAuthority()
+          throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     Mockito.when(userAdminService.getTenantAdmins(1))
         .thenReturn(
@@ -568,8 +568,8 @@ class TenantControllerIT {
   /* due to classloader differences and not finding the resource */
   @Tag("SkipOnCI")
   void
-  getTenant_Should_returnStatusOk_AndAssertDataProtectionTemplateExists_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
-      throws Exception {
+      getTenant_Should_returnStatusOk_AndAssertDataProtectionTemplateExists_When_calledWithExistingTenantIdAndForAuthorityThatIsTenantAdmin()
+          throws Exception {
     var builder = new AuthenticationMockBuilder();
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     mockMvc

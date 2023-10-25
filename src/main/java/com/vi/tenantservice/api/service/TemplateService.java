@@ -93,8 +93,7 @@ public class TemplateService {
 
   private FileInputStream buildStreamForExternalPath(String templateName)
       throws FileNotFoundException {
-    return new FileInputStream(
-        customResourcePath + templateName + TEMPLATE_EXTENSION);
+    return new FileInputStream(customResourcePath + templateName + TEMPLATE_EXTENSION);
   }
 
   /**

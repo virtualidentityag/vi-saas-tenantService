@@ -94,7 +94,7 @@ public class TemplateService {
   private FileInputStream buildStreamForExternalPath(String templateName)
       throws FileNotFoundException {
     return new FileInputStream(
-        customResourcePath + templateName.toLowerCase() + TEMPLATE_EXTENSION);
+        customResourcePath + templateName + TEMPLATE_EXTENSION);
   }
 
   /**
@@ -104,6 +104,6 @@ public class TemplateService {
    * @return the filename with filepath of the template description file
    */
   private String getTemplateFilename(String templateName) {
-    return TEMPLATE_DIR + templateName.toLowerCase() + TEMPLATE_EXTENSION;
+    return TEMPLATE_DIR + templateName + TEMPLATE_EXTENSION;
   }
 }

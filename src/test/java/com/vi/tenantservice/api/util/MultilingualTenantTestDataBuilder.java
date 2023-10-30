@@ -104,6 +104,7 @@ public class MultilingualTenantTestDataBuilder {
         .featureToolsEnabled(true)
         .featureToolsOICDToken("1234")
         .featureAttachmentUploadDisabled(false)
+        .featureCentralDataProtectionTemplateEnabled(true)
         .extendedSettings(
             new ConsultingTypePatchDTO().isVideoCallAllowed(true).languageFormal(true));
   }

@@ -1,6 +1,7 @@
 package com.vi.tenantservice.api.controller;
 
 import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_ADMIN;
+import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_CONSULTANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static org.hamcrest.Matchers.contains;
@@ -641,6 +642,21 @@ class TenantControllerIT {
         .perform(
             get(EXISTING_TENANT)
                 .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.id").value(1));
+  }
+
+  @Test
+  void
+  getTenant_Should_returnStatusOk_When_calledWithExistingTenantIdAndForRestrictedConsultantAdminAuthority()
+      throws Exception {
+    var builder = new AuthenticationMockBuilder();
+    giveAuthorisationServiceReturnProperAuthoritiesForRole(RESTRICTED_CONSULTANT_ADMIN);
+    mockMvc
+        .perform(
+            get(EXISTING_TENANT)
+                .with(authentication(builder.withUserRole(RESTRICTED_CONSULTANT_ADMIN.getValue()).build()))
                 .contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(1));

@@ -29,7 +29,9 @@ public enum Authority {
   SINGLE_TENANT_ADMIN(
       UserRole.SINGLE_TENANT_ADMIN,
       Lists.newArrayList(AuthorityValue.UPDATE_TENANT, AuthorityValue.GET_TENANT)),
-  SINGLE_TENANT_READ(UserRole.RESTRICTED_AGENCY_ADMIN, singletonList(AuthorityValue.GET_TENANT));
+  READ_TENANT_AS_AGENCY_ADMIN(UserRole.RESTRICTED_AGENCY_ADMIN, singletonList(AuthorityValue.GET_TENANT)),
+
+  READ_TENANT_AS_CONSULTANT_ADMIN(UserRole.RESTRICTED_CONSULTANT_ADMIN, singletonList(AuthorityValue.GET_TENANT));
 
   private final UserRole userRole;
   private final List<String> grantedAuthorities;

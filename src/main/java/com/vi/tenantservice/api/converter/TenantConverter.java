@@ -5,9 +5,11 @@ import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsGerman;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
+import com.google.common.collect.Maps;
 import com.vi.tenantservice.api.model.AdminTenantDTO;
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
 import com.vi.tenantservice.api.model.Content;
+import com.vi.tenantservice.api.model.DataProtectionContactTemplateDTO;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
@@ -18,17 +20,24 @@ import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
+import com.vi.tenantservice.api.service.TemplateDescriptionServiceException;
+import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.util.JsonConverter;
 import java.util.Map;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
 
 @Component
 @Slf4j
+@RequiredArgsConstructor
 public class TenantConverter {
 
   public static final String DE = "de";
+
+  private final @NonNull TemplateService templateService;
 
   public TenantEntity toEntity(MultilingualTenantDTO tenantDTO) {
     var builder =
@@ -62,6 +71,8 @@ public class TenantConverter {
         .featureToolsOIDCToken(settings.getFeatureToolsOICDToken())
         .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
         .activeLanguages(nullAsGerman(settings.getActiveLanguages()))
+        .featureCentralDataProtectionTemplateEnabled(
+            nullAsFalse(settings.getFeatureCentralDataProtectionTemplateEnabled()))
         .build();
   }
 
@@ -165,6 +176,8 @@ public class TenantConverter {
         .featureToolsOICDToken(tenantSettings.getFeatureToolsOIDCToken())
         .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled())
         .featureAttachmentUploadDisabled(tenantSettings.isFeatureAttachmentUploadDisabled())
+        .featureCentralDataProtectionTemplateEnabled(
+            tenantSettings.isFeatureCentralDataProtectionTemplateEnabled())
         .activeLanguages(nullAsGerman(tenantSettings.getActiveLanguages()));
   }
 
@@ -214,7 +227,25 @@ public class TenantConverter {
         .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
         .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
         .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
-        .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate());
+        .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate())
+        .dataProtectionContactTemplate(getDataProtectionContactTemplate(lang));
+  }
+
+  private DataProtectionContactTemplateDTO getDataProtectionContactTemplate(String lang) {
+    var map = getMultilingualDataProtectionTemplate();
+    if (map.containsKey(lang)) {
+      return map.get(lang);
+    }
+    return null;
+  }
+
+  private Map<String, DataProtectionContactTemplateDTO> getMultilingualDataProtectionTemplate() {
+    try {
+      return templateService.getMultilingualDataProtectionTemplate();
+    } catch (TemplateDescriptionServiceException e) {
+      log.error("Error while loading data protection contact template", e);
+    }
+    return Maps.newHashMap();
   }
 
   private static String getTranslatedStringFromMap(String jsonValue, String lang) {
@@ -236,7 +267,8 @@ public class TenantConverter {
         .claim(convertMapFromJson(tenant.getContentClaim()))
         .impressum(convertMapFromJson(tenant.getContentImpressum()))
         .privacy(convertMapFromJson(tenant.getContentPrivacy()))
-        .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()));
+        .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()))
+        .dataProtectionContactTemplate(getMultilingualDataProtectionTemplate());
   }
 
   public AdminTenantDTO toAdminTenantDTO(TenantEntity tenant) {

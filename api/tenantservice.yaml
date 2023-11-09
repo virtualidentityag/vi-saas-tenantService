@@ -523,6 +523,9 @@ components:
           format: date-time
           example: 2022-12-07T11:51:01
           description: "Datetime stamp when new privacy defined"
+        dataProtectionContactTemplate:
+          type: object
+          $ref: '#/components/schemas/DataProtectionContactTemplateDTO'
 
     Settings:
       type: object
@@ -561,6 +564,9 @@ components:
           example: "[en, de, fr]"
         extendedSettings:
           $ref: './../services/consultingtypeservice.yaml#/components/schemas/ConsultingTypePatchDTO'
+        featureCentralDataProtectionTemplateEnabled:
+          type: boolean
+          example: "false"
 
     MultilingualContent:
       type: object
@@ -587,6 +593,48 @@ components:
             type: string
         confirmTermsAndConditions:
           type: boolean
+        dataProtectionContactTemplate:
+          type: object
+          additionalProperties:
+            type: object
+            $ref: '#/components/schemas/DataProtectionContactTemplateDTO'
+
+    DataProtectionContactTemplateDTO:
+        type: object
+        properties:
+            agencyContext:
+              type: object
+              $ref: '#/components/schemas/AgencyContextDTO'
+            noAgencyContext:
+              type: object
+              $ref: '#/components/schemas/NoAgencyContextDTO'
+
+    AgencyContextDTO:
+      type: object
+      properties:
+        responsibleContact:
+          type: string
+        dataProtectionOfficer:
+          $ref: '#/components/schemas/DataProtectionOfficerDTO'
+
+    NoAgencyContextDTO:
+      type: object
+      properties:
+        responsibleContact:
+          type: string
+        dataProtectionOfficerContact:
+          type: string
+
+    DataProtectionOfficerDTO:
+      type: object
+      properties:
+        agencyResponsibleContact:
+          type: string
+        alternativeRepresentativeContact:
+          type: string
+        dataProtectionOfficerContact:
+          type: string
+
 
     AdminTenantDTO:
       type: object

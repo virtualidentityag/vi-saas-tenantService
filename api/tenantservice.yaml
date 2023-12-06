@@ -510,6 +510,9 @@ components:
         privacy:
           type: string
           example: "Llorem ipsum..."
+        renderedPrivacy:
+          type: string
+          example: "Llorem ipsum..."
         termsAndConditions:
           type: string
           example: "Llorem ipsum..."

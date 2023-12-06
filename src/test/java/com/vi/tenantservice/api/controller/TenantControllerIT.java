@@ -21,7 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
 import com.vi.tenantservice.api.authorisation.Authority;
@@ -43,8 +42,6 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.ExtendedCo
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -355,10 +352,6 @@ class TenantControllerIT {
             .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
             .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")))
             .andReturn();
-
-    var response = mvcResult.getResponse().getContentAsString();
-    // .andExpect(jsonPath("$.settings.extendedSettings.languageFormal").value("true"));
-
   }
 
   @Test
@@ -594,11 +587,6 @@ class TenantControllerIT {
       getRestrictedTenantDataByTenantId_Should_returnStatusOk_When_calledWithExistingTenantIdAndNoAuthentication()
           throws Exception {
 
-    Map<String, String> aMap = new HashMap<String, String>();
-    aMap.put("de", "de transl");
-    aMap.put("en", "en transl");
-
-    String s = new ObjectMapper().writeValueAsString(aMap);
     mockMvc
         .perform(get(EXISTING_PUBLIC_TENANT).contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -608,7 +596,9 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.licensing").doesNotExist())
         .andExpect(jsonPath("$.theming").exists())
         .andExpect(jsonPath("$.content").exists())
-        .andExpect(jsonPath("$.settings").exists());
+        .andExpect(jsonPath("$.content.renderedPrivacy").exists())
+        .andExpect(jsonPath("$.settings").exists())
+        .andReturn();
   }
 
   @Test

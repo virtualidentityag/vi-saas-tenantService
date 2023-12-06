@@ -25,14 +25,17 @@ class TemplateRendererTest {
     String templateContent = "Hello ${name}";
 
     // when
-    String renderedTemplate = templateRenderer.renderTemplate(templateContent, Map.of("name", "there"));
+    String renderedTemplate =
+        templateRenderer.renderTemplate(templateContent, Map.of("name", "there"));
 
     // then
     assertThat(renderedTemplate).isEqualTo("Hello there");
   }
 
   @Test
-  void renderTemplate_shouldRenderTemplateWithEmptyPlaceholder_When_PlaceHolderKeyMissingInDataModel() throws TemplateException, IOException {
+  void
+      renderTemplate_shouldRenderTemplateWithEmptyPlaceholder_When_PlaceHolderKeyMissingInDataModel()
+          throws TemplateException, IOException {
     // given
     String templateContent = "Hello ${name}";
 
@@ -44,7 +47,9 @@ class TemplateRendererTest {
   }
 
   @Test
-  void renderTemplate_shouldRenderTemplateWithEmptyPlaceholder_When_PlaceHolderValueIsNullInDataModel() throws TemplateException, IOException {
+  void
+      renderTemplate_shouldRenderTemplateWithEmptyPlaceholder_When_PlaceHolderValueIsNullInDataModel()
+          throws TemplateException, IOException {
     // given
     String templateContent = "Hello ${name}";
     Map<String, Object> dataModel = Maps.newHashMap();

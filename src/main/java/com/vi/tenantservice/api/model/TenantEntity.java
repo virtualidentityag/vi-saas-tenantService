@@ -41,6 +41,9 @@ public class TenantEntity {
   @Column(name = "theming_logo")
   private String themingLogo;
 
+  @Column(name = "theming_association_logo")
+  private String themingAssociationLogo;
+
   @Column(name = "theming_favicon")
   private String themingFavicon;
 

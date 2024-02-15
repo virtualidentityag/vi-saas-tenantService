@@ -121,6 +121,7 @@ public class TenantConverter {
       builder
           .themingFavicon(tenantDTO.getTheming().getFavicon())
           .themingLogo(tenantDTO.getTheming().getLogo())
+          .themingAssociationLogo(tenantDTO.getTheming().getAssociationLogo())
           .themingPrimaryColor(tenantDTO.getTheming().getPrimaryColor())
           .themingSecondaryColor(tenantDTO.getTheming().getSecondaryColor());
     }
@@ -215,6 +216,7 @@ public class TenantConverter {
     return new Theming()
         .favicon(tenant.getThemingFavicon())
         .logo(tenant.getThemingLogo())
+        .associationLogo(tenant.getThemingAssociationLogo())
         .primaryColor(tenant.getThemingPrimaryColor())
         .secondaryColor(tenant.getThemingSecondaryColor());
   }

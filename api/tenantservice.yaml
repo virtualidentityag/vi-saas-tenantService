@@ -486,6 +486,9 @@ components:
         logo:
           type: string
           example: "base64 encoded image"
+        associationLogo:
+          type: string
+          example: "base64 encoded image"
         favicon:
           type: string
           example: "base64 encoded image"

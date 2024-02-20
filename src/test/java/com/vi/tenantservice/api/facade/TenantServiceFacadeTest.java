@@ -26,6 +26,7 @@ import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
 import com.vi.tenantservice.api.service.SingleDomainTenantOverrideService;
+import com.vi.tenantservice.api.service.TemplateRenderer;
 import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.service.TenantService;
 import com.vi.tenantservice.api.service.TranslationService;
@@ -60,6 +61,8 @@ class TenantServiceFacadeTest {
   public static final String SINGLE_DOMAIN_SUBDOMAIN_NAME = "app";
   public static final int CONSULTING_TYPE_ID = 2;
   private final MultilingualTenantDTO tenantMultilingualDTO = getMultilingualTenantDTO();
+
+  @Mock TemplateRenderer templateRenderer;
 
   private MultilingualTenantDTO getMultilingualTenantDTO() {
     var tenantDTO = new MultilingualTenantDTO();
@@ -481,7 +484,9 @@ class TenantServiceFacadeTest {
 
     ReflectionTestUtils.setField(tenantServiceFacade, "multitenancyWithSingleDomain", true);
     ReflectionTestUtils.setField(
-        tenantServiceFacade, "tenantConverter", new TenantConverter(new TemplateService()));
+        tenantServiceFacade,
+        "tenantConverter",
+        new TenantConverter(new TemplateService(), templateRenderer));
 
     Optional<TenantEntity> defaultTenant = getTenantWithPrivacy("{\"de\":\"content1\"}");
     Optional<TenantEntity> accessTokenTenantData = getTenantWithPrivacy("{\"de\":\"content2\"}");

@@ -2,6 +2,8 @@ package com.vi.tenantservice.api.converter;
 
 import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsFalse;
 import static com.vi.tenantservice.api.converter.ConverterUtils.nullAsGerman;
+import static com.vi.tenantservice.api.model.DataProtectionPlaceHolderType.DATA_PROTECTION_OFFICER;
+import static com.vi.tenantservice.api.model.DataProtectionPlaceHolderType.DATA_PROTECTION_RESPONSIBLE;
 import static com.vi.tenantservice.api.util.JsonConverter.convertMapFromJson;
 import static com.vi.tenantservice.api.util.JsonConverter.convertToJson;
 
@@ -13,6 +15,7 @@ import com.vi.tenantservice.api.model.DataProtectionContactTemplateDTO;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.NoAgencyContextDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
@@ -21,8 +24,11 @@ import com.vi.tenantservice.api.model.TenantEntity.TenantEntityBuilder;
 import com.vi.tenantservice.api.model.TenantSettings;
 import com.vi.tenantservice.api.model.Theming;
 import com.vi.tenantservice.api.service.TemplateDescriptionServiceException;
+import com.vi.tenantservice.api.service.TemplateRenderer;
 import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.util.JsonConverter;
+import freemarker.template.TemplateException;
+import java.io.IOException;
 import java.util.Map;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +44,8 @@ public class TenantConverter {
   public static final String DE = "de";
 
   private final @NonNull TemplateService templateService;
+
+  private final @NonNull TemplateRenderer templateRenderer;
 
   public TenantEntity toEntity(MultilingualTenantDTO tenantDTO) {
     var builder =
@@ -113,6 +121,7 @@ public class TenantConverter {
       builder
           .themingFavicon(tenantDTO.getTheming().getFavicon())
           .themingLogo(tenantDTO.getTheming().getLogo())
+          .themingAssociationLogo(tenantDTO.getTheming().getAssociationLogo())
           .themingPrimaryColor(tenantDTO.getTheming().getPrimaryColor())
           .themingSecondaryColor(tenantDTO.getTheming().getSecondaryColor());
     }
@@ -120,9 +129,8 @@ public class TenantConverter {
 
   public MultilingualTenantDTO toMultilingualDTO(TenantEntity tenant) {
     var tenantDTO =
-        new MultilingualTenantDTO()
+        new MultilingualTenantDTO(tenant.getName())
             .id(tenant.getId())
-            .name(tenant.getName())
             .subdomain(tenant.getSubdomain())
             .content(toMultilingualContentDTO(tenant))
             .theming(toThemingDTO(tenant))
@@ -139,10 +147,7 @@ public class TenantConverter {
 
   public TenantDTO toDTO(TenantEntity tenant, String lang) {
     var tenantDTO =
-        new TenantDTO()
-            .id(tenant.getId())
-            .name(tenant.getName())
-            .subdomain(tenant.getSubdomain())
+        new TenantDTO(tenant.getId(), tenant.getName(), tenant.getSubdomain())
             .content(toContentDTO(tenant, lang))
             .theming(toThemingDTO(tenant))
             .licensing(toLicensingDTO(tenant))
@@ -182,9 +187,7 @@ public class TenantConverter {
   }
 
   public RestrictedTenantDTO toRestrictedTenantDTO(TenantEntity tenant, String lang) {
-    return new RestrictedTenantDTO()
-        .id(tenant.getId())
-        .name(tenant.getName())
+    return new RestrictedTenantDTO(tenant.getId(), tenant.getName())
         .content(toContentDTO(tenant, lang))
         .theming(toThemingDTO(tenant))
         .subdomain(tenant.getSubdomain())
@@ -193,10 +196,7 @@ public class TenantConverter {
 
   public BasicTenantLicensingDTO toBasicLicensingTenantDTO(TenantEntity tenant) {
     var basicTenantLicensingDTO =
-        new BasicTenantLicensingDTO()
-            .id(tenant.getId())
-            .name(tenant.getName())
-            .subdomain(tenant.getSubdomain())
+        new BasicTenantLicensingDTO(tenant.getId(), tenant.getName(), tenant.getSubdomain())
             .licensing(toLicensingDTO(tenant));
 
     if (tenant.getCreateDate() != null) {
@@ -209,26 +209,68 @@ public class TenantConverter {
   }
 
   public Licensing toLicensingDTO(TenantEntity tenant) {
-    return new Licensing().allowedNumberOfUsers(tenant.getLicensingAllowedNumberOfUsers());
+    return new Licensing(tenant.getLicensingAllowedNumberOfUsers());
   }
 
   private Theming toThemingDTO(TenantEntity tenant) {
     return new Theming()
         .favicon(tenant.getThemingFavicon())
         .logo(tenant.getThemingLogo())
+        .associationLogo(tenant.getThemingAssociationLogo())
         .primaryColor(tenant.getThemingPrimaryColor())
         .secondaryColor(tenant.getThemingSecondaryColor());
   }
 
   private Content toContentDTO(TenantEntity tenant, String lang) {
-    return new Content()
+    String privacyPotentiallyWithPlaceholders =
+        getTranslatedStringFromMap(tenant.getContentPrivacy(), lang);
+    DataProtectionContactTemplateDTO dataProtectionContactTemplate =
+        getDataProtectionContactTemplate(lang);
+    return new Content(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
         .claim(getTranslatedStringFromMap(tenant.getContentClaim(), lang))
-        .impressum(getTranslatedStringFromMap(tenant.getContentImpressum(), lang))
-        .privacy(getTranslatedStringFromMap(tenant.getContentPrivacy(), lang))
+        .privacy(privacyPotentiallyWithPlaceholders)
         .termsAndConditions(getTranslatedStringFromMap(tenant.getContentTermsAndConditions(), lang))
         .dataPrivacyConfirmation(tenant.getContentPrivacyActivationDate())
         .termsAndConditionsConfirmation(tenant.getContentTermsAndConditionsActivationDate())
-        .dataProtectionContactTemplate(getDataProtectionContactTemplate(lang));
+        .dataProtectionContactTemplate(dataProtectionContactTemplate)
+        .renderedPrivacy(
+            renderPrivacyForNoAgencyContext(
+                privacyPotentiallyWithPlaceholders, dataProtectionContactTemplate));
+  }
+
+  private String renderPrivacyForNoAgencyContext(
+      String privacyPotentiallyWithPlaceholders,
+      DataProtectionContactTemplateDTO dataProtectionContactTemplate) {
+    if (dataProtectionContactTemplate == null
+        || dataProtectionContactTemplate.getNoAgencyContext() == null) {
+      log.info("No data protection contact template found. Skipping privacy rendering.");
+      return privacyPotentiallyWithPlaceholders;
+    }
+    return tryRenderTemplate(privacyPotentiallyWithPlaceholders, dataProtectionContactTemplate);
+  }
+
+  private String tryRenderTemplate(
+      String privacyPotentiallyWithPlaceholders,
+      DataProtectionContactTemplateDTO dataProtectionContactTemplate) {
+    try {
+      return templateRenderer.renderTemplate(
+          privacyPotentiallyWithPlaceholders,
+          placeHolderKeyValueMap(dataProtectionContactTemplate.getNoAgencyContext()));
+    } catch (IOException | TemplateException e) {
+      log.error("Error while rendering privacy template", e);
+      return privacyPotentiallyWithPlaceholders;
+    }
+  }
+
+  private Map<String, Object> placeHolderKeyValueMap(NoAgencyContextDTO noAgencyContext) {
+    Map<String, Object> dataModel = Maps.newHashMap();
+    dataModel.put(
+        DATA_PROTECTION_OFFICER.getPlaceholderVariable(),
+        noAgencyContext.getDataProtectionOfficerContact());
+    dataModel.put(
+        DATA_PROTECTION_RESPONSIBLE.getPlaceholderVariable(),
+        noAgencyContext.getResponsibleContact());
+    return dataModel;
   }
 
   private DataProtectionContactTemplateDTO getDataProtectionContactTemplate(String lang) {
@@ -263,9 +305,8 @@ public class TenantConverter {
   }
 
   private MultilingualContent toMultilingualContentDTO(TenantEntity tenant) {
-    return new MultilingualContent()
+    return new MultilingualContent(convertMapFromJson(tenant.getContentImpressum()))
         .claim(convertMapFromJson(tenant.getContentClaim()))
-        .impressum(convertMapFromJson(tenant.getContentImpressum()))
         .privacy(convertMapFromJson(tenant.getContentPrivacy()))
         .termsAndConditions(convertMapFromJson(tenant.getContentTermsAndConditions()))
         .dataProtectionContactTemplate(getMultilingualDataProtectionTemplate());

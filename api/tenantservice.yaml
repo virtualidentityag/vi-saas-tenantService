@@ -486,6 +486,9 @@ components:
         logo:
           type: string
           example: "base64 encoded image"
+        associationLogo:
+          type: string
+          example: "base64 encoded image"
         favicon:
           type: string
           example: "base64 encoded image"
@@ -508,6 +511,9 @@ components:
           example: "Llorem ipsum..."
           maxLength: 40
         privacy:
+          type: string
+          example: "Llorem ipsum..."
+        renderedPrivacy:
           type: string
           example: "Llorem ipsum..."
         termsAndConditions:

@@ -5,17 +5,20 @@ import lombok.RequiredArgsConstructor;
 import org.keycloak.adapters.springsecurity.KeycloakConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
 
 /** Configuration class to provide the keycloak security configuration. */
 @KeycloakConfiguration
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class WebSecurityConfig {
@@ -24,9 +27,23 @@ public class WebSecurityConfig {
 
   @Autowired AuthorisationService authorisationService;
 
+  @Autowired
+  private AuthenticationManagerBuilder authenticationManagerBuilder;
+
+
+  @Bean
+  public AuthenticationManager authenticationManager() {
+    return authenticationManagerBuilder.getObject();
+  }
+
   @Bean
   public JwtAuthConverter jwtAuthConverter() {
     return new JwtAuthConverter(jwtAuthConverterProperties, authorisationService);
+  }
+
+  @Bean
+  public ApiTokenFilter apiTokenFilter() {
+    return new ApiTokenFilter();
   }
 
   @Bean
@@ -35,9 +52,11 @@ public class WebSecurityConfig {
         .disable()
         .sessionManagement()
         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-        //        .sessionAuthenticationStrategy(sessionAuthenticationStrategy())
         .and()
-        .authorizeRequests()
+        .addFilterBefore(apiTokenFilter(), UsernamePasswordAuthenticationFilter.class)
+        .authorizeHttpRequests()
+        .and()
+        .authorizeHttpRequests()
         .requestMatchers(new AntPathRequestMatcher("/tenant"))
         .authenticated()
         .requestMatchers(new AntPathRequestMatcher("/tenant/*"))

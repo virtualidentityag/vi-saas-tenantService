@@ -17,8 +17,8 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 public class ApiTokenFilter extends OncePerRequestFilter {
 
-  @Value("${external.access.api.token}")
-  private String externalApiToken;
+  @Value("${external.user.create.tenant.api.token}")
+  private String externalUserCreateTenantApiToken;
 
   public ApiTokenFilter() {
     //Empty constructor
@@ -37,10 +37,10 @@ public class ApiTokenFilter extends OncePerRequestFilter {
 
     String token = request.getHeader("Authorization");
 
-    if (validateToken(token)){
+    if (validateExternalUserCreateTenantApiToken(token)){
         // Create an authentication token
         UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-            "ExternalTecnicalAdmin", null,
+            "ExternalTechnicalAdmin", null,
             Collections.singletonList(new SimpleGrantedAuthority("AUTHORIZATION_CREATE_TENANT")));
         // Set the authentication in the SecurityContext
         SecurityContextHolder.getContext().setAuthentication(auth);
@@ -49,7 +49,7 @@ public class ApiTokenFilter extends OncePerRequestFilter {
     filterChain.doFilter(request, response);
   }
 
-  private boolean validateToken(String token) {
-    return Objects.equals(externalApiToken,token);
+  private boolean validateExternalUserCreateTenantApiToken(String token) {
+    return Objects.equals(externalUserCreateTenantApiToken, token);
   }
 }

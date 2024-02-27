@@ -57,6 +57,7 @@ import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -143,8 +144,7 @@ class TenantControllerIT {
   void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
-    giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
-    mockMvc
+    ResultActions result = mockMvc
         .perform(
             post(TENANTADMIN_RESOURCE)
                 .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
@@ -154,9 +154,8 @@ class TenantControllerIT {
                         .withName("tenant")
                         .withSubdomain("subdomain")
                         .withLicensing()
-                        .jsonify())
-                .contentType(APPLICATION_JSON))
-        .andExpect(status().isOk())
+                        .jsonify()));
+        result.andExpect(status().isOk())
         .andExpect(jsonPath("id").exists())
         .andExpect(jsonPath("name", is("tenant")))
         .andExpect(jsonPath("subdomain", is("subdomain")))
@@ -175,7 +174,7 @@ class TenantControllerIT {
   void createTenant_Should_returnStatusForbidden_When_calledWithoutTenantAdminAuthority()
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
-    mockMvc
+    ResultActions result = mockMvc
         .perform(
             post(TENANTADMIN_RESOURCE)
                 .with(authentication(builder.withUserRole(AUTHORITY_WITHOUT_PERMISSIONS).build()))
@@ -189,9 +188,55 @@ class TenantControllerIT {
                         .withName("tenant")
                         .withSubdomain("subdomain")
                         .withLicensing()
-                        .jsonify())
-                .contentType(APPLICATION_JSON))
-        .andExpect(status().isForbidden());
+                        .jsonify()));
+    result.andExpect(status().isForbidden());
+  }
+
+  @Test
+  void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
+      throws Exception {
+    ResultActions result = mockMvc
+        .perform(
+            post(TENANTADMIN_RESOURCE)
+                .header("Authorization", "7c066536-5283-478e-a574-d694f28aeeb6")
+                .contentType(APPLICATION_JSON)
+                .content(
+                    multilingualTenantTestDataBuilder
+                        .withName("tenant2")
+                        .withSubdomain("subdomain2")
+                        .withLicensing()
+                        .jsonify()));
+    result.andExpect(status().isOk())
+        .andExpect(jsonPath("id").exists())
+        .andExpect(jsonPath("name", is("tenant2")))
+        .andExpect(jsonPath("subdomain", is("subdomain2")))
+        .andExpect(jsonPath("settings.featureStatisticsEnabled", is(false)))
+        .andExpect(jsonPath("settings.featureTopicsEnabled", is(true)))
+        .andExpect(jsonPath("settings.topicsInRegistrationEnabled", is(true)))
+        .andExpect(jsonPath("settings.featureDemographicsEnabled", is(false)))
+        .andExpect(jsonPath("settings.featureAppointmentsEnabled", is(false)))
+        .andExpect(jsonPath("settings.featureGroupChatV2Enabled", is(false)))
+        .andExpect(jsonPath("settings.featureAttachmentUploadDisabled", is(true)))
+        .andExpect(jsonPath("settings.featureToolsOICDToken", is("token")))
+        .andExpect(jsonPath("settings.activeLanguages", is(Lists.newArrayList("de", "en"))));
+  }
+
+  @Test
+  void createTenant_Should_returnStatusUnauthorized_When_calledWithInvalidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
+      throws Exception {
+    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
+    ResultActions result = mockMvc
+        .perform(
+            post(TENANTADMIN_RESOURCE)
+                .header("Authorization", "Invalid token")
+                .contentType(APPLICATION_JSON)
+                .content(
+                    multilingualTenantTestDataBuilder
+                        .withName("tenant")
+                        .withSubdomain("subdomain")
+                        .withLicensing()
+                        .jsonify()));
+    result.andExpect(status().isUnauthorized());
   }
 
   @Test

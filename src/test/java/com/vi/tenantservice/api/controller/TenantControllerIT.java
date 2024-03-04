@@ -56,7 +56,6 @@ import org.springframework.test.context.TestPropertySource;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.context.jdbc.Sql.ExecutionPhase;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -198,7 +197,7 @@ class TenantControllerIT {
     ResultActions result = mockMvc
         .perform(
             post(TENANTADMIN_RESOURCE)
-                .header("Authorization", "7c066536-5283-478e-a574-d694f28aeeb6")
+                .header("api-token", "7c066536-5283-478e-a574-d694f28aeeb6")
                 .contentType(APPLICATION_JSON)
                 .content(
                     multilingualTenantTestDataBuilder
@@ -224,11 +223,10 @@ class TenantControllerIT {
   @Test
   void createTenant_Should_returnStatusUnauthorized_When_calledWithInvalidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
       throws Exception {
-    AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
     ResultActions result = mockMvc
         .perform(
             post(TENANTADMIN_RESOURCE)
-                .header("Authorization", "Invalid token")
+                .header("api-token", "Invalid token")
                 .contentType(APPLICATION_JSON)
                 .content(
                     multilingualTenantTestDataBuilder
@@ -377,7 +375,6 @@ class TenantControllerIT {
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     when(consultingTypeService.getConsultingTypesByTenantId(1))
         .thenReturn(new FullConsultingTypeResponseDTO().id(2));
-    MvcResult mvcResult =
         mockMvc
             .perform(
                 put("/tenantadmin/1")

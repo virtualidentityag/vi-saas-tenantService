@@ -35,7 +35,7 @@ public class ApiTokenFilter extends OncePerRequestFilter {
   protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
       @NonNull FilterChain filterChain) throws ServletException, IOException {
 
-    String token = request.getHeader("Authorization");
+    String token = request.getHeader("api-token");
 
     if (validateExternalUserCreateTenantApiToken(token)){
         // Create an authentication token

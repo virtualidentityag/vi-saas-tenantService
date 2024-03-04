@@ -21,7 +21,7 @@ public class ApiTokenFilter extends OncePerRequestFilter {
   private String externalUserCreateTenantApiToken;
 
   public ApiTokenFilter() {
-    //Empty constructor
+    // Empty constructor
   }
 
   @Override
@@ -32,18 +32,23 @@ public class ApiTokenFilter extends OncePerRequestFilter {
   }
 
   @Override
-  protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response,
-      @NonNull FilterChain filterChain) throws ServletException, IOException {
+  protected void doFilterInternal(
+      @NonNull HttpServletRequest request,
+      @NonNull HttpServletResponse response,
+      @NonNull FilterChain filterChain)
+      throws ServletException, IOException {
 
     String token = request.getHeader("api-token");
 
-    if (validateExternalUserCreateTenantApiToken(token)){
-        // Create an authentication token
-        UsernamePasswordAuthenticationToken auth = new UsernamePasswordAuthenticationToken(
-            "ExternalTechnicalAdmin", null,
-            Collections.singletonList(new SimpleGrantedAuthority("AUTHORIZATION_CREATE_TENANT")));
-        // Set the authentication in the SecurityContext
-        SecurityContextHolder.getContext().setAuthentication(auth);
+    if (validateExternalUserCreateTenantApiToken(token)) {
+      // Create an authentication token
+      UsernamePasswordAuthenticationToken auth =
+          new UsernamePasswordAuthenticationToken(
+              "ExternalTechnicalAdmin",
+              null,
+              Collections.singletonList(new SimpleGrantedAuthority("AUTHORIZATION_CREATE_TENANT")));
+      // Set the authentication in the SecurityContext
+      SecurityContextHolder.getContext().setAuthentication(auth);
     }
 
     filterChain.doFilter(request, response);

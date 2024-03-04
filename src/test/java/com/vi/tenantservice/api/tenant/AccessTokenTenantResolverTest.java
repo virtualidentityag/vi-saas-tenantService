@@ -29,8 +29,10 @@ class AccessTokenTenantResolverTest {
     headers.put("alg", "HS256"); // Signature algorithm
     headers.put("typ", "JWT"); // Token type
 
-    return new Jwt(
-        "token", Instant.now(), Instant.now(), headers, givenClaimMapContainingTenantId(1));
+    Instant issuedAt = Instant.now();
+    Instant expiresAt = issuedAt.plusSeconds(3600); // expires 1 hour after issuedAt
+
+    return new Jwt("token", issuedAt, expiresAt, headers, givenClaimMapContainingTenantId(1));
   }
 
   JwtAuthenticationToken token = new JwtAuthenticationToken(jwt, Lists.newArrayList(), "name");

@@ -27,9 +27,7 @@ public class WebSecurityConfig {
 
   @Autowired AuthorisationService authorisationService;
 
-  @Autowired
-  private AuthenticationManagerBuilder authenticationManagerBuilder;
-
+  @Autowired private AuthenticationManagerBuilder authenticationManagerBuilder;
 
   @Bean
   public AuthenticationManager authenticationManager() {

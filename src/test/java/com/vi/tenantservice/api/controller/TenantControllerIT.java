@@ -143,8 +143,8 @@ class TenantControllerIT {
   void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidAuthority()
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
-    ResultActions result = mockMvc
-        .perform(
+    ResultActions result =
+        mockMvc.perform(
             post(TENANTADMIN_RESOURCE)
                 .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
                 .contentType(APPLICATION_JSON)
@@ -154,7 +154,8 @@ class TenantControllerIT {
                         .withSubdomain("subdomain")
                         .withLicensing()
                         .jsonify()));
-        result.andExpect(status().isOk())
+    result
+        .andExpect(status().isOk())
         .andExpect(jsonPath("id").exists())
         .andExpect(jsonPath("name", is("tenant")))
         .andExpect(jsonPath("subdomain", is("subdomain")))
@@ -173,8 +174,8 @@ class TenantControllerIT {
   void createTenant_Should_returnStatusForbidden_When_calledWithoutTenantAdminAuthority()
       throws Exception {
     AuthenticationMockBuilder builder = new AuthenticationMockBuilder();
-    ResultActions result = mockMvc
-        .perform(
+    ResultActions result =
+        mockMvc.perform(
             post(TENANTADMIN_RESOURCE)
                 .with(authentication(builder.withUserRole(AUTHORITY_WITHOUT_PERMISSIONS).build()))
                 .with(
@@ -192,10 +193,11 @@ class TenantControllerIT {
   }
 
   @Test
-  void createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
-      throws Exception {
-    ResultActions result = mockMvc
-        .perform(
+  void
+      createTenant_Should_returnStatusOk_When_calledWithValidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
+          throws Exception {
+    ResultActions result =
+        mockMvc.perform(
             post(TENANTADMIN_RESOURCE)
                 .header("api-token", "7c066536-5283-478e-a574-d694f28aeeb6")
                 .contentType(APPLICATION_JSON)
@@ -205,7 +207,8 @@ class TenantControllerIT {
                         .withSubdomain("subdomain2")
                         .withLicensing()
                         .jsonify()));
-    result.andExpect(status().isOk())
+    result
+        .andExpect(status().isOk())
         .andExpect(jsonPath("id").exists())
         .andExpect(jsonPath("name", is("tenant2")))
         .andExpect(jsonPath("subdomain", is("subdomain2")))
@@ -221,10 +224,11 @@ class TenantControllerIT {
   }
 
   @Test
-  void createTenant_Should_returnStatusUnauthorized_When_calledWithInvalidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
-      throws Exception {
-    ResultActions result = mockMvc
-        .perform(
+  void
+      createTenant_Should_returnStatusUnauthorized_When_calledWithInvalidTenantCreateParamsAndValidExternalUserCreateTenantApiToken()
+          throws Exception {
+    ResultActions result =
+        mockMvc.perform(
             post(TENANTADMIN_RESOURCE)
                 .header("api-token", "Invalid token")
                 .contentType(APPLICATION_JSON)
@@ -375,25 +379,25 @@ class TenantControllerIT {
     giveAuthorisationServiceReturnProperAuthoritiesForRole(TENANT_ADMIN);
     when(consultingTypeService.getConsultingTypesByTenantId(1))
         .thenReturn(new FullConsultingTypeResponseDTO().id(2));
-        mockMvc
-            .perform(
-                put("/tenantadmin/1")
-                    .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
-                    .contentType(APPLICATION_JSON)
-                    .content(
-                        multilingualTenantTestDataBuilder
-                            .withId(1L)
-                            .withName("tenant")
-                            .withSubdomain("changed subdomain")
-                            .withSettingActiveLanguages(Lists.newArrayList("fr", "pl"))
-                            .withLicensing()
-                            .jsonify())
-                    .contentType(APPLICATION_JSON))
-            .andExpect(status().isOk())
-            .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
-            .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
-            .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")))
-            .andReturn();
+    mockMvc
+        .perform(
+            put("/tenantadmin/1")
+                .with(authentication(builder.withUserRole(TENANT_ADMIN.getValue()).build()))
+                .contentType(APPLICATION_JSON)
+                .content(
+                    multilingualTenantTestDataBuilder
+                        .withId(1L)
+                        .withName("tenant")
+                        .withSubdomain("changed subdomain")
+                        .withSettingActiveLanguages(Lists.newArrayList("fr", "pl"))
+                        .withLicensing()
+                        .jsonify())
+                .contentType(APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.subdomain").value("changed subdomain"))
+        .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
+        .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")))
+        .andReturn();
   }
 
   @Test

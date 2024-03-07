@@ -1,20 +1,38 @@
 package com.vi.tenantservice.api.converter;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Mockito.when;
 
 import com.vi.tenantservice.api.model.BasicTenantLicensingDTO;
+import com.vi.tenantservice.api.model.DataProtectionContactTemplateDTO;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.NoAgencyContextDTO;
 import com.vi.tenantservice.api.model.RestrictedTenantDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.TenantDTO;
 import com.vi.tenantservice.api.model.TenantEntity;
+import com.vi.tenantservice.api.service.TemplateDescriptionServiceException;
+import com.vi.tenantservice.api.service.TemplateRenderer;
+import com.vi.tenantservice.api.service.TemplateService;
 import com.vi.tenantservice.api.util.MultilingualTenantTestDataBuilder;
+import freemarker.template.TemplateException;
+import java.io.IOException;
 import java.util.Map;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.junit.jupiter.MockitoExtension;
 
+@ExtendWith(MockitoExtension.class)
 class TenantConverterTest {
 
-  TenantConverter tenantConverter = new TenantConverter();
+  @InjectMocks TenantConverter tenantConverter;
+
+  @Mock TemplateService templateService;
+
+  @Mock TemplateRenderer templateRenderer;
 
   @Test
   void toEntity_should_convertToEntityAndBackToDTO() {
@@ -43,7 +61,8 @@ class TenantConverterTest {
   }
 
   @Test
-  void toRestrictedTenantDTO_should_convertAttributesProperly() {
+  void toRestrictedTenantDTO_should_convertAttributesProperly()
+      throws TemplateException, IOException, TemplateDescriptionServiceException {
     // given
     MultilingualTenantDTO tenantDTO =
         new MultilingualTenantTestDataBuilder()
@@ -54,12 +73,21 @@ class TenantConverterTest {
             .withSettings()
             .build();
     tenantDTO.getSettings().extendedSettings(null);
-    TenantEntity entity = tenantConverter.toEntity(tenantDTO);
 
+    when(templateService.getMultilingualDataProtectionTemplate())
+        .thenReturn(
+            Map.of(
+                "de",
+                new DataProtectionContactTemplateDTO()
+                    .noAgencyContext(
+                        new NoAgencyContextDTO().dataProtectionOfficerContact("test"))));
+
+    TenantEntity entity = tenantConverter.toEntity(tenantDTO);
+    when(templateRenderer.renderTemplate(Mockito.anyString(), Mockito.anyMap()))
+        .thenReturn("renderedPrivacy");
     // when
     RestrictedTenantDTO restrictedTenantDTO =
         tenantConverter.toRestrictedTenantDTO(entity, TenantConverter.DE);
-
     // then
     assertThat(restrictedTenantDTO.getName()).isEqualTo(tenantDTO.getName());
     assertThat(restrictedTenantDTO.getId()).isEqualTo(tenantDTO.getId());
@@ -67,6 +95,8 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getTheming()).isEqualTo(tenantDTO.getTheming());
     assertContentIsProperlyConverted(tenantDTO, restrictedTenantDTO);
     assertThat(restrictedTenantDTO.getSettings()).isEqualTo(tenantDTO.getSettings());
+    Mockito.verify(templateRenderer).renderTemplate(Mockito.anyString(), Mockito.anyMap());
+    assertThat(restrictedTenantDTO.getContent().getRenderedPrivacy()).isEqualTo("renderedPrivacy");
   }
 
   @Test
@@ -91,6 +121,8 @@ class TenantConverterTest {
     assertThat(restrictedTenantDTO.getSubdomain()).isEqualTo(tenantDTO.getSubdomain());
     assertThat(restrictedTenantDTO.getTheming()).isEqualTo(tenantDTO.getTheming());
     assertContentIsProperlyConverted(tenantDTO, restrictedTenantDTO);
+    assertThat(restrictedTenantDTO.getContent().getRenderedPrivacy())
+        .isEqualTo(getGermanTranslation(tenantDTO.getContent().getPrivacy()));
     assertThat(restrictedTenantDTO.getSettings()).isEqualTo(new Settings());
   }
 

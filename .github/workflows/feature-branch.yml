@@ -21,6 +21,9 @@ jobs:
           java-package: jdk
           architecture: x64
 
+      - name: Display Maven Version
+        run: mvn -v
+
       - name: Caching maven dependencies
         uses: actions/cache@v2
         with:

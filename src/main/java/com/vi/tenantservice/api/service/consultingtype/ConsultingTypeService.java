@@ -50,7 +50,12 @@ public class ConsultingTypeService {
     var consultingTypeControllerApi =
         consultingTypeServiceApiControllerFactory.createControllerApi();
     addDefaultHeaders(consultingTypeControllerApi.getApiClient());
-    consultingTypeControllerApi.createConsultingType(consultingTypeDTO);
+    try {
+      consultingTypeControllerApi.createConsultingType(consultingTypeDTO);
+    } catch (RestClientException e) {
+      log.error("Error while creating consulting type {}", consultingTypeDTO, e);
+      throw e;
+    }
   }
 
   public FullConsultingTypeResponseDTO patchConsultingType(
@@ -58,15 +63,24 @@ public class ConsultingTypeService {
     var consultingTypeControllerApi =
         consultingTypeServiceApiControllerFactory.createControllerApi();
     addDefaultHeaders(consultingTypeControllerApi.getApiClient());
-    return consultingTypeControllerApi.patchConsultingType(id, consultingTypeDTO);
+    try {
+      return consultingTypeControllerApi.patchConsultingType(id, consultingTypeDTO);
+    } catch (RestClientException e) {
+      log.error("Error while patching consulting type {}", id, e);
+      throw e;
+    }
   }
 
   public FullConsultingTypeResponseDTO getConsultingTypesByTenantId(Integer tenantId) {
     var consultingTypeControllerApi =
         consultingTypeServiceApiControllerFactory.createControllerApi();
-
     addDefaultHeaders(consultingTypeControllerApi.getApiClient());
-    return consultingTypeControllerApi.getFullConsultingTypeByTenantId(tenantId);
+    try {
+      return consultingTypeControllerApi.getFullConsultingTypeByTenantId(tenantId);
+    } catch (RestClientException e) {
+      log.error("Error while getting consulting types for tenant {}", tenantId, e);
+      throw e;
+    }
   }
 
   private void addDefaultHeaders(

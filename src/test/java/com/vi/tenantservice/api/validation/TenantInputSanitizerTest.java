@@ -103,6 +103,7 @@ class TenantInputSanitizerTest {
     verify(inputSanitizer).sanitize(tenantDTO.getSubdomain());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getLogo());
     verify(inputSanitizer).sanitize(tenantDTO.getTheming().getFavicon());
+    verify(inputSanitizer).sanitize(tenantDTO.getTheming().getAssociationLogo());
     verify(inputSanitizer).sanitizeAllowingFormatting(Mockito.anyString());
     verify(inputSanitizer, Mockito.times(3))
         .sanitizeAllowingFormattingAndLinks(Mockito.anyString());

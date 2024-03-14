@@ -25,4 +25,8 @@ public class TenantSettings {
 
   String featureToolsOIDCToken;
   List<String> activeLanguages;
+
+  boolean featureCentralDataProtectionEnabled;
+
+  boolean featureCentralDataProtectionTemplateEnabled;
 }

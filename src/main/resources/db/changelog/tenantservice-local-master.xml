@@ -18,4 +18,5 @@
 	<include file="db/changelog/changeset/0010_tenant_id_default_value/tenantIdDefaultValue.xml"/>
 	<include file="db/changelog/changeset/0011_tenant_add_is_video_call_allowed/tenantAddIsVideoCallAllowed.xml"/>
 	<include file="db/changelog/changeset/0012_tenant_remove_is_video_call_allowed/tenantRemoveIsVideoCallAllowed.xml"/>
+	<include file="db/changelog/changeset/0010_add_association_logo/0010-addAssociationLogo.xml"/>
 </databaseChangeLog>

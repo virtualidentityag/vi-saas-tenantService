@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS TENANT
     subdomain varchar(255) NOT NULL,
     licensing_allowed_users int,
     theming_logo longtext,
+    theming_association_logo longtext,
     theming_favicon longtext,
     theming_primary_color varchar(15),
     theming_secondary_color varchar(15),

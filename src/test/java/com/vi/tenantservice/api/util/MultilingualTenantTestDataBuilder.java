@@ -2,9 +2,11 @@ package com.vi.tenantservice.api.util;
 
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.api.model.ConsultingTypePatchDTO;
+import com.vi.tenantservice.api.model.DataProtectionContactTemplateDTO;
 import com.vi.tenantservice.api.model.Licensing;
 import com.vi.tenantservice.api.model.MultilingualContent;
 import com.vi.tenantservice.api.model.MultilingualTenantDTO;
+import com.vi.tenantservice.api.model.NoAgencyContextDTO;
 import com.vi.tenantservice.api.model.Settings;
 import com.vi.tenantservice.api.model.Theming;
 import java.util.HashMap;
@@ -104,6 +106,7 @@ public class MultilingualTenantTestDataBuilder {
         .featureToolsEnabled(true)
         .featureToolsOICDToken("1234")
         .featureAttachmentUploadDisabled(false)
+        .featureCentralDataProtectionTemplateEnabled(true)
         .extendedSettings(
             new ConsultingTypePatchDTO().isVideoCallAllowed(true).languageFormal(true));
   }
@@ -133,6 +136,15 @@ public class MultilingualTenantTestDataBuilder {
     content.setClaim(defaultTranslations(CLAIM));
     content.setPrivacy(defaultTranslations(PRIVACY));
     content.setTermsAndConditions(defaultTranslations(TERMS_AND_CONDITIONS));
+    content.setDataProtectionContactTemplate(
+        Map.of(
+            "de",
+            new DataProtectionContactTemplateDTO()
+                .noAgencyContext(
+                    new NoAgencyContextDTO()
+                        .responsibleContact("responsibleContact placeholder text")
+                        .dataProtectionOfficerContact(
+                            "dataProtectionOfficerContact placeholder text"))));
     return content;
   }
 

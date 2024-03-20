@@ -4,8 +4,10 @@ import static com.vi.tenantservice.api.authorisation.UserRole.RESTRICTED_AGENCY_
 import static com.vi.tenantservice.api.authorisation.UserRole.SINGLE_TENANT_ADMIN;
 import static com.vi.tenantservice.api.authorisation.UserRole.TENANT_ADMIN;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.http.MediaType.APPLICATION_JSON;
@@ -19,7 +21,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.Lists;
 import com.vi.tenantservice.TenantServiceApplication;
 import com.vi.tenantservice.api.authorisation.Authority;
@@ -41,8 +42,6 @@ import com.vi.tenantservice.consultingtypeservice.generated.web.model.ExtendedCo
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.FullConsultingTypeResponseDTO;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.NotificationsDTOTeamSessions;
 import com.vi.tenantservice.consultingtypeservice.generated.web.model.TeamSessionsDTONewMessage;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Optional;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -298,7 +297,23 @@ class TenantControllerIT {
         .andExpect(
             jsonPath(
                 "settings.extendedSettings.notifications.teamSessions.newMessage.allTeamConsultants",
-                is(true)));
+                is(true)))
+        .andExpect(
+            jsonPath(
+                "content.dataProtectionContactTemplate.de.agencyContext.responsibleContact",
+                containsString("${name}")))
+        .andExpect(
+            jsonPath(
+                "content.dataProtectionContactTemplate.de.noAgencyContext.responsibleContact",
+                notNullValue()))
+        .andExpect(
+            jsonPath(
+                "content.dataProtectionContactTemplate.en.agencyContext.responsibleContact",
+                containsString("${name}")))
+        .andExpect(
+            jsonPath(
+                "content.dataProtectionContactTemplate.en.noAgencyContext.responsibleContact",
+                notNullValue()));
   }
 
   private com.vi.tenantservice.useradminservice.generated.web.model.AdminResponseDTO
@@ -337,10 +352,6 @@ class TenantControllerIT {
             .andExpect(jsonPath("$.settings.topicsInRegistrationEnabled").value("true"))
             .andExpect(jsonPath("$.settings.activeLanguages").value(Lists.newArrayList("fr", "pl")))
             .andReturn();
-
-    var response = mvcResult.getResponse().getContentAsString();
-    // .andExpect(jsonPath("$.settings.extendedSettings.languageFormal").value("true"));
-
   }
 
   @Test
@@ -500,7 +511,10 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.subdomain").exists())
         .andExpect(jsonPath("$.licensing").exists())
         .andExpect(jsonPath("$.theming").exists())
+        .andExpect(jsonPath("$.theming.logo").exists())
+        .andExpect(jsonPath("$.theming.associationLogo").exists())
         .andExpect(jsonPath("$.content").exists())
+        .andExpect(jsonPath("$.content.dataProtectionContactTemplate").exists())
         .andExpect(jsonPath("$.settings").exists());
   }
 
@@ -575,11 +589,6 @@ class TenantControllerIT {
       getRestrictedTenantDataByTenantId_Should_returnStatusOk_When_calledWithExistingTenantIdAndNoAuthentication()
           throws Exception {
 
-    Map<String, String> aMap = new HashMap<String, String>();
-    aMap.put("de", "de transl");
-    aMap.put("en", "en transl");
-
-    String s = new ObjectMapper().writeValueAsString(aMap);
     mockMvc
         .perform(get(EXISTING_PUBLIC_TENANT).contentType(APPLICATION_JSON))
         .andExpect(status().isOk())
@@ -589,7 +598,9 @@ class TenantControllerIT {
         .andExpect(jsonPath("$.licensing").doesNotExist())
         .andExpect(jsonPath("$.theming").exists())
         .andExpect(jsonPath("$.content").exists())
-        .andExpect(jsonPath("$.settings").exists());
+        .andExpect(jsonPath("$.content.renderedPrivacy").exists())
+        .andExpect(jsonPath("$.settings").exists())
+        .andReturn();
   }
 
   @Test

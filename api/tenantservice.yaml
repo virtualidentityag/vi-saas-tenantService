@@ -385,7 +385,6 @@ components:
         settings:
           $ref:
             '#/components/schemas/Settings'
-
     MultilingualTenantDTO:
           type: object
           required:
@@ -568,6 +567,14 @@ components:
           items:
             type: string
           example: "[en, de, fr]"
+        showAskerProfile:
+          type: boolean
+          default: false
+          example: "false"
+        isVideoCallAllowed:
+          type: boolean
+          default: false
+          example: "false"
         extendedSettings:
           $ref: './../services/consultingtypeservice.yaml#/components/schemas/ConsultingTypePatchDTO'
         featureCentralDataProtectionTemplateEnabled:

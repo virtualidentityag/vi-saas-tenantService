@@ -20,6 +20,8 @@ public class TenantSettings {
   boolean featureGroupChatV2Enabled;
   boolean featureToolsEnabled;
   boolean featureAttachmentUploadDisabled;
+  boolean isVideoCallAllowed;
+  boolean showAskerProfile;
 
   String featureToolsOIDCToken;
   List<String> activeLanguages;

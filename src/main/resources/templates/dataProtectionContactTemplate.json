@@ -1,10 +1,10 @@
 {
   "agencyContext": {
-    "responsibleContact": "<#if name?exists>${name}<br/></#if><#if postCode?exists>postcode: ${postCode}<br/></#if><#if city?exists> city: ${city}<br/></#if><#if phoneNumber?exists>phoneNumber: ${phoneNumber}<br/></#if><#if email?exists>email: ${email}</#if>",
+    "responsibleContact": "<#if name?exists>${name}<br/></#if><#if postCode?exists>PLZ: ${postCode}<br/></#if><#if city?exists> Stadt: ${city}<br/></#if><#if phoneNumber?exists>Telefonnummer: ${phoneNumber}<br/></#if><#if email?exists>E-Mail: ${email}</#if>",
     "dataProtectionOfficer": {
       "agencyResponsibleContact": "Die oder der Verantwortliche hat keine Datenschutzbeauftragte bzw. keinen Datenschutzbeauftragten bestellt. Für Anfragen zum Datenschutz nutzen Sie bitte die angegebenen Kontaktdaten der verantwortlichen Stelle.",
       "alternativeRepresentativeContact": "Die oder der Verantwortliche hat keine Datenschutzbeauftragte bzw. keinen Datenschutzbeauftragten bestellt. Bitte nutzen Sie für Anfragen zum Datenschutz die nachfolgenden Kontaktdaten:\n${phoneNumber}\n${email}",
-      "dataProtectionOfficerContact": "<#if name?exists>${name}<br/></#if><#if postCode?exists>postcode: ${postCode}<br/></#if><#if city?exists> city: ${city}<br/></#if><#if phoneNumber?exists>phoneNumber: ${phoneNumber}<br/></#if><#if email?exists>email: ${email}</#if>"
+      "dataProtectionOfficerContact": "<#if name?exists>${name}<br/></#if><#if postCode?exists>PLZ: ${postCode}<br/></#if><#if city?exists> Stadt: ${city}<br/></#if><#if phoneNumber?exists>Telefonnummer: ${phoneNumber}<br/></#if><#if email?exists>E-Mail: ${email}</#if>"
     }
   },
   "noAgencyContext": {

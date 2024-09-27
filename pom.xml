@@ -92,7 +92,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-hateoas</artifactId>
         </dependency>
-
         <!-- Spring actuator  -->
         <dependency>
             <groupId>org.springframework.boot</groupId>

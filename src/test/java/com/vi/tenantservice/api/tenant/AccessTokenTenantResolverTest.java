@@ -30,7 +30,11 @@ class AccessTokenTenantResolverTest {
     headers.put("typ", "JWT"); // Token type
 
     return new Jwt(
-        "token", Instant.now(), Instant.now(), headers, givenClaimMapContainingTenantId(1));
+        "token",
+        Instant.now(),
+        Instant.now().plusSeconds(1),
+        headers,
+        givenClaimMapContainingTenantId(1));
   }
 
   JwtAuthenticationToken token = new JwtAuthenticationToken(jwt, Lists.newArrayList(), "name");

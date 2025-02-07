@@ -10,7 +10,7 @@ import com.vi.tenantservice.api.model.TenantsSearchResultDTO;
 import com.vi.tenantservice.config.security.AuthorisationService;
 import com.vi.tenantservice.generated.api.controller.TenantApi;
 import com.vi.tenantservice.generated.api.controller.TenantadminApi;
-import io.swagger.annotations.Api;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
@@ -29,8 +29,8 @@ import org.springframework.web.context.request.NativeWebRequest;
 /** Controller for tenant API operations. */
 @RestController
 @RequiredArgsConstructor
-@Api(tags = "tenant-controller")
 @Slf4j
+@Tag(name = "tenant-controller")
 public class TenantController implements TenantApi, TenantadminApi {
 
   private final @NonNull TenantServiceFacade tenantServiceFacade;

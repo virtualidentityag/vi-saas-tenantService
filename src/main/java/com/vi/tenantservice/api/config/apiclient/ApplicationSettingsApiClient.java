@@ -61,8 +61,7 @@ public class ApplicationSettingsApiClient
 
     } catch (IntrospectionException exception) {
       throw new IllegalStateException(
-          String.format("Could not obtain method properties of %s", queryValue.toString()),
-          exception);
+          "Could not obtain method properties of %s".formatted(queryValue.toString()), exception);
     }
   }
 
@@ -75,7 +74,7 @@ public class ApplicationSettingsApiClient
       }
     } catch (Exception exception) {
       throw new IllegalStateException(
-          String.format("Could not obtain method key value pairs of %s", queryValue.toString()),
+          "Could not obtain method key value pairs of %s".formatted(queryValue.toString()),
           exception);
     }
   }

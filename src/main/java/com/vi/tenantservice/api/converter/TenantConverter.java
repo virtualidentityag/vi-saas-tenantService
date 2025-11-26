@@ -79,6 +79,8 @@ public class TenantConverter {
         .featureToolsOIDCToken(settings.getFeatureToolsOICDToken())
         .featureAttachmentUploadDisabled(nullAsFalse(settings.getFeatureAttachmentUploadDisabled()))
         .activeLanguages(nullAsGerman(settings.getActiveLanguages()))
+        .isVideoCallAllowed(nullAsFalse(settings.getIsVideoCallAllowed()))
+        .showAskerProfile(nullAsFalse(settings.getShowAskerProfile()))
         .featureCentralDataProtectionTemplateEnabled(
             nullAsFalse(settings.getFeatureCentralDataProtectionTemplateEnabled()))
         .build();
@@ -181,6 +183,8 @@ public class TenantConverter {
         .featureToolsOICDToken(tenantSettings.getFeatureToolsOIDCToken())
         .featureToolsEnabled(tenantSettings.isFeatureToolsEnabled())
         .featureAttachmentUploadDisabled(tenantSettings.isFeatureAttachmentUploadDisabled())
+        .isVideoCallAllowed(tenantSettings.isVideoCallAllowed())
+        .showAskerProfile(tenantSettings.isShowAskerProfile())
         .featureCentralDataProtectionTemplateEnabled(
             tenantSettings.isFeatureCentralDataProtectionTemplateEnabled())
         .activeLanguages(nullAsGerman(tenantSettings.getActiveLanguages()));
